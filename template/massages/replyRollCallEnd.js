@@ -1,8 +1,31 @@
-exports.main = async (names) => {
+exports.main = async (names, genres) => {
+
+    let genreMassages = [];
+    for (let id in genres) {
+        const genreMassage = {
+            "type": "bubble",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "message",
+                            "label": genres[id],
+                            "text": genres[id]
+                        }
+                    }
+                ]
+            }
+        }
+        genreMassages.push(genreMassage);
+    }
+
     return [
         {
             type: "text",
-            text: `点呼を終了します`
+            text: `参加受付を終了します`
         },
         {
             type: "text",
@@ -10,41 +33,15 @@ exports.main = async (names) => {
         },
         {
             type: "text",
-            text: `ゲームを開始します`
+            text: `ワードのジャンルを選んでください`
         },
         {
             "type": "flex",
             "altText": "This is a Flex Message",
             "contents": {
-            "type": "bubble",
-            "body": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "ワードのジャンルを選んでください。",
-                  "wrap": true,
-                  "style": "normal",
-                  "size": "md"
-                }
-              ]
-            },
-            "footer": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "button",
-                  "action": {
-                    "type": "message",
-                    "label": "食べ物",
-                    "text": "食べ物"
-                  }
-                }
-              ]
+                "type": "carousel",
+                "contents": genreMassages
             }
-          }
         }
     ]
 
