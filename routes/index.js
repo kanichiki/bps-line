@@ -251,34 +251,6 @@ const lineBot = async (req, res) => {
 
 
 
-
-/**
- * グループへのデフォルトリプライ
- *
- * @param {*} event
- * @returns
- */
-
-const replyDefaultGroupMessage = async (event) => {
-  // const userIds = await pl.getUserIds(event);
-
-  const profiles = await getDisplayNames(userIds);
-
-  const name = profiles.join('さん、');
-  return client.replyMessage(event.replyToken, [
-    {
-      type: "text",
-      text: `${name}さんおはようございます！`
-      // text: `${pro.displayName}さん、今「${event.message.text}」って言いました？\n${pro.statusMessage}`
-    },
-    // {
-    //   type: "text",
-    //   text: `${event.source.groupId}`
-    // }
-  ])
-}
-
-
 /**
  * 個チャのデフォルトリプライ
  *
@@ -293,7 +265,7 @@ const replyDefaultPersonalMessage = async (event) => {
   return client.replyMessage(event.replyToken, [
     {
       type: "text",
-      text: `${pro.displayName}さん、今「${event.message.text}」って言いました？\n${pro.statusMessage}`
+      text: `${pro.displayName}さん、今「${event.message.text}」って言いました？`
     }
   ])
 }
