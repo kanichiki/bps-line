@@ -18,3 +18,13 @@ exports.makeShuffuleNumberArray = async (number) => {
 
     return shuffleNumbers;
 }
+
+exports.calculateMaxNumberLessThanHalf = async (number) =>{
+    let res = 0;
+    if(number%2 == 0){
+        res = number / 2 - 1;
+    }else{
+        res = number / 2 ;
+    }
+    return res;
+}

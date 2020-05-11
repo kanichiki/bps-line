@@ -27,15 +27,14 @@ module.exports = class ParticipantList {
 
     /**
      * 参加者リストを作成
-     * デフォルトで発言者をuseridsに追加
+     * デフォルトで発言者をuseridsに追加　→廃止
      *
      * @param {*} groupId
-     * @param {*} userId
      * @returns
      */
 
-    async createPaticipantList(groupId,userId) {
-        const userIds = [userId];
+    async createPaticipantList(groupId) {
+        const userIds = [];
         const query = {
             text: 'INSERT INTO participant_list (group_id,user_ids) VALUES ($1,$2);',
             values: [groupId, userIds]
@@ -57,7 +56,7 @@ module.exports = class ParticipantList {
     * @returns
     */
 
-    async readUserIds(plId) {
+    async getUserIds(plId) {
         const query = {
             text: 'SELECT user_ids FROM participant_list WHERE id = $1',
             values: [plId]
@@ -80,7 +79,7 @@ module.exports = class ParticipantList {
      * @returns
      */
 
-    async addUserToPaticipantList(plId,userId) {
+    async addUserToPaticipantList(plId, userId) {
         const query = {
             text: 'UPDATE participant_list SET user_ids = array_append(user_ids, $1) WHERE id = $2;',
             values: [userId, plId]
@@ -103,8 +102,8 @@ module.exports = class ParticipantList {
      * @returns boolean
      */
 
-    async isUserParticipant(plId,userId) {
-        const userIds = await this.readUserIds(plId);
+    async isUserParticipant(plId, userId) {
+        const userIds = await this.getUserIds(plId);
         let res = false;
         for (const id of userIds) {
             if (userId == id) {
@@ -113,6 +112,8 @@ module.exports = class ParticipantList {
         }
         return res;
     }
+
+    // ここから募集状況（is_recruiting）に関する関数
 
 
     /**
@@ -131,7 +132,7 @@ module.exports = class ParticipantList {
             if (res.rowCount == 1) {
                 console.log("true");
                 return true;
-            }else if(res.rowCount > 1){
+            } else if (res.rowCount > 1) {
                 throw "募集中の参加者リストが１グループに２つ以上ある";
             } else {
                 console.log("false");
@@ -141,6 +142,75 @@ module.exports = class ParticipantList {
             console.log(err);
         }
     }
+
+    /**
+     * plIdの参加者リストの募集を解除する
+     * is_recruitingをfalseにする
+     *
+     * @param {*} plId
+     */
+
+    async updateIsRecruitingFalse(plId) {
+        const query = {
+            text: 'UPDATE participant_list set is_recruiting = false where id = $1',
+            values: [plId]
+        }
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_recruitingをfalseにできんやった");
+        }
+    }
+
+    /**
+     * groupIdの参加者リストの募集中をすべて解除する
+     * is_recruitingをfalseにする
+     *
+     * @param {*} groupId
+     */
+
+    async updateIsRecruitingOfGroupFalse(groupId) {
+        const query = {
+            text: 'UPDATE participant_list set is_recruiting = false where group_id = $1',
+            values: [groupId]
+        }
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_recruitingを全部falseにできんやった");
+        }
+    }
+
+
+    /**
+     * groupIdのグループの募集中の参加者リストのidを返す
+     * is_recruitingをすべてfalseにする前に実行するよう注意
+     * なかったら-1を返す
+     * 嘘、返さない
+     *
+     * @returns
+     */
+
+    async getRecruitingParticipantListId(groupId) {
+        const query = {
+            text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_recruiting = true;',
+            values: [groupId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].id;
+        } catch (err) {
+            console.log(err);
+            return -1;
+        }
+    }
+
+
+    // ここまで募集状況
+
+    // ここからプレイ状況（is_playing）に関する関数
 
     /**
     * 発言グループがプレイ中の参加者リストを有するかどうかを返す
@@ -158,7 +228,7 @@ module.exports = class ParticipantList {
             if (res.rowCount == 1) {
                 console.log("true");
                 return true;
-            }else if(res.rowCount > 1){
+            } else if (res.rowCount > 1) {
                 throw "プレイ中の参加者リストが１グループに２つ以上ある";
             } else {
                 console.log("false");
@@ -168,29 +238,6 @@ module.exports = class ParticipantList {
             console.log(err);
         }
     }
-
-    /**
-     * 参加者の表示名の配列を返す
-     *
-     * @param plId
-     * @returns
-     */
-
-    async readDisplayNames(plId) {
-        const profiles = [];
-        const userIds = await this.readUserIds(plId);
-        try {
-            for (const userId of userIds) {
-                const profile = await client.getProfile(userId).then(profile =>
-                    profiles.push(profile.displayName)
-                );
-            }
-            return profiles;
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
 
     /**
      * 参加者リストをPlay中にする
@@ -252,77 +299,10 @@ module.exports = class ParticipantList {
             console.log("This group began to play");
         } catch (err) {
             console.log(err);
-            console.log("is_playingをtrueにできんやった");
+            console.log("is_playingを全部falseにできんやった");
         }
     }
 
-
-    /**
-     * plIdの参加者リストの募集を解除する
-     * is_recruitingをfalseにする
-     *
-     * @param {*} plId
-     */
-
-    async updateIsRecruitingFalse(plId) {
-        const query = {
-            text: 'UPDATE participant_list set is_recruiting = false where id = $1',
-            values: [plId]
-        }
-        try {
-            await pg.query(query);
-        } catch (err) {
-            console.log(err);
-            console.log("is_recruitingをfalseにできんやった");
-        }
-    }
-
-    /**
-     * groupIdの参加者リストの募集中をすべて解除する
-     * is_recruitingをfalseにする
-     *
-     * @param {*} groupId
-     */
-
-    async updateIsRecruitingOfGroupFalse(groupId) {
-        const query = {
-            text: 'UPDATE participant_list set is_recruiting = false where group_id = $1',
-            values: [groupId]
-        }
-        try {
-            await pg.query(query);
-        } catch (err) {
-            console.log(err);
-            console.log("is_recruitingをfalseにできんやった");
-        }
-    }
-
-
-    /**
-     * groupIdのグループの募集中の参加者リストのidを返す
-     * is_recruitingをfalseにする前に実行するよう注意
-     * なかったら-1を返す
-     * 嘘、返さない
-     *
-     * @returns
-     */
-
-    async readRecruitingParticipantListId(groupId) {
-        const query = {
-            text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_recruiting = true;',
-            values: [groupId]
-        }
-        try {
-            const res = await pg.query(query);
-            return res.rows[0].id;
-        } catch (err) {
-            console.log(err);
-            return -1;
-        }
-    }
-
-
-    
     /**
      * 発言グループのプレイ中の参加者リストのidを返す
      * なかったら-1を返す
@@ -331,7 +311,7 @@ module.exports = class ParticipantList {
      * @param {*} groupId
      * @returns
      */
-    async readPlayingParticipantListId(groupId) {
+    async getPlayingParticipantListId(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_playing = true;',
             values: [groupId]
@@ -344,6 +324,145 @@ module.exports = class ParticipantList {
         }
     }
 
+    // ここまでプレイ状況
+
+    // ここからリスタート待ち状況（is_restarting）に関する関数
+    // リスタート待ち状況とは募集中、並びにプレイ中にゲーム名が発言された場合に本当にリスタートするか確認待ちの状況
+
+    /**
+    * 発言グループがリスタート待ちの参加者リストを有するかどうかを返す
+    *
+    * @param
+    * @returns
+    */
+    async hasGroupRestartingParticipantList(groupId) {
+        const query = {
+            text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_restarting = true;',
+            values: [groupId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                console.log("true");
+                return true;
+            } else if (res.rowCount > 1) {
+                throw "リスタート待ちの参加者リストが１グループに２つ以上ある";
+            } else {
+                console.log("false");
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 参加者リストをリスタート待ちにする
+     * is_restartingをtrueにする
+     *
+     * @param {*} plId
+     */
+
+    async updateIsRestartingTrue(plId) {
+        const query = {
+            text: 'UPDATE participant_list set is_restarting = true where id = $1',
+            values: [plId]
+        };
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_restartingをtrueにできんやった");
+        }
+    }
+
+    /**
+     * 参加者リストのリスタート待ちを解除する
+     * is_restartingをfalseにする
+     *
+     * @param {*} plId
+     */
+
+    async updateIsRestartingFalse(plId) {
+        const query = {
+            text: 'UPDATE participant_list set is_restarting = false where id = $1',
+            values: [plId]
+        };
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_restartingをfalseにできんやった");
+        }
+    }
+
+    /**
+     * groupIdのグループの参加者リストのリスタート待ちをすべて解除する
+     * is_restartingをfalseにする
+     *
+     * @param {*} groupId
+     */
+
+    async updateIsRestartingOfGroupFalse(groupId) {
+        const query = {
+            text: 'UPDATE participant_list set is_restarting = false where group_id = $1',
+            values: [groupId]
+        }
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_restartingを全部falseにできんやった");
+        }
+    }
+
+    /**
+     * 発言グループのリスタート待ちの参加者リストのidを返す
+     * これ絶対使わんくない？
+     *
+     * @param {*} groupId
+     * @returns
+     */
+    async getRestartingParticipantListId(groupId) {
+        const query = {
+            text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_restarting = true;',
+            values: [groupId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].id;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    // ここまでリスタート待ち状況
+
+    /**
+     * 参加者の表示名の配列を返す
+     *
+     * @param plId
+     * @returns
+     */
+
+    async getDisplayNames(plId) {
+        const profiles = [];
+        const userIds = await this.getUserIds(plId);
+        try {
+            for (const userId of userIds) {
+                const profile = await client.getProfile(userId).then(profile =>
+                    profiles.push(profile.displayName)
+                );
+            }
+            return profiles;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+
+
 
     /**
      * plIdの参加者リストの参加ユーザー数を返す
@@ -351,7 +470,7 @@ module.exports = class ParticipantList {
      * @param {*} plId
      * @returns
      */
-    async countUserNumber(plId) {
+    async getUserNumber(plId) {
         const query = {
             text: 'SELECT user_ids FROM participant_list WHERE id = $1',
             values: [plId]
@@ -371,9 +490,9 @@ module.exports = class ParticipantList {
      * @param {*} index
      * @returns
      */
-    async readUserId(plId, index) {
+    async getUserId(plId, index) {
         try {
-            const userIds = await this.readUserIds(plId);
+            const userIds = await this.getUserIds(plId);
             return userIds[index];
         } catch (err) {
             console.log(err);
@@ -387,9 +506,9 @@ module.exports = class ParticipantList {
      * @param {*} name
      * @returns
      */
-    async readUserIndexFromName(plId, name) {
+    async getUserIndexFromName(plId, name) {
         try {
-            const displayNames = await this.readDisplayNames(plId);
+            const displayNames = await this.getDisplayNames(plId);
             let index = -1;
             for (let i = 0; i < displayNames.length; i++) {
                 if (displayNames[i] == name) {
@@ -409,9 +528,9 @@ module.exports = class ParticipantList {
      * @param {*} userId
      * @returns
      */
-    async readUserIndexFromUserId(plId, userId) {
+    async getUserIndexFromUserId(plId, userId) {
         try {
-            const userIds = await this.readUserIds(plId);
+            const userIds = await this.getUserIds(plId);
             let index = -1;
             for (let i = 0; i < userIds.length; i++) {
                 if (userIds[i] == userId) {

@@ -1,12 +1,14 @@
-exports.main = async (messageText, names) => {
+exports.main = async (displayNames,userNumber,recruitingGameName) => {
+    const displayNamesSan = displayNames.join("さん、\n");
+
     return [
         {
             type: "text",
-            text: messageText
+            text: `現在の参加者数は${userNumber}人です\nワードウルフを始めるには3人以上必要です`
         },
         {
             type: "text",
-            text: `現在の参加者は\n${names}さん\nです！`
+            text: `現在の参加者は\n${displayNamesSan}さん\nです！\n引き続き${recruitingGameName}の参加者を募集しています！`
         },
         {
             "type": "flex",

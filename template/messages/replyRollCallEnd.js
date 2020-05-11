@@ -1,8 +1,8 @@
-exports.main = async (names, genres) => {
+exports.main = async (displayNames, genres) => {
 
-    let genreMassages = [];
+    let genreMessages = [];
     for (let id in genres) {
-        const genreMassage = {
+        const genreMessage = {
             "type": "bubble",
             "body": {
                 "type": "box",
@@ -19,8 +19,10 @@ exports.main = async (names, genres) => {
                 ]
             }
         }
-        genreMassages.push(genreMassage);
+        genreMessages.push(genreMessage);
     }
+
+    const displayNamesSan = displayNames.join("さん、\n");
 
     return [
         {
@@ -29,7 +31,7 @@ exports.main = async (names, genres) => {
         },
         {
             type: "text",
-            text: `参加者は\n${names}さん\nです！`
+            text: `参加者は\n${displayNamesSan}さん\nです！`
         },
         {
             type: "text",
@@ -37,10 +39,10 @@ exports.main = async (names, genres) => {
         },
         {
             "type": "flex",
-            "altText": "This is a Flex Message",
+            "altText": "ワードのジャンル候補",
             "contents": {
                 "type": "carousel",
-                "contents": genreMassages
+                "contents": genreMessages
             }
         }
     ]

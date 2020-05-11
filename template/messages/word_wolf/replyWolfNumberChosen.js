@@ -19,7 +19,7 @@ exports.main = async (wolfNumber, genreName) => {
                       "contents": [
                         {
                           "type": "text",
-                          "text": "以下の内容でよろしいですね？",
+                          "text": "以下の内容でよろしいですか？",
                           "size": "md"
                         }
                       ]

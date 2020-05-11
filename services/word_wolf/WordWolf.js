@@ -6,6 +6,7 @@ pg.connect().catch((error) => {
 })
 
 const ParticipantList = require("../ParticipantList");
+const commonFunction = require("../commonFunction");
 
 module.exports = class WordWolf {
 
@@ -25,7 +26,7 @@ module.exports = class WordWolf {
      * @param {*} genreId
      * @returns
      */
-    async readWordSetIds(genreId) {
+    async getWordSetIds(genreId) {
         const query = {
             text: 'SELECT id FROM word_set WHERE genre_id = $1;',
             values: [genreId]
@@ -33,7 +34,7 @@ module.exports = class WordWolf {
         try {
             const res = await pg.query(query);
             let wordSetIds = [];
-            for(let i=0;i<res.rowCount;i++){
+            for (let i = 0; i < res.rowCount; i++) {
                 wordSetIds.push(res.rows[i].id);
             }
             return wordSetIds;
@@ -50,8 +51,8 @@ module.exports = class WordWolf {
      * @returns
      */
     async chooseWordSetId(genreId) {
-        const wordSetIds = await this.readWordSetIds(genreId);
-        console.log("wordSetIds :"+wordSetIds);
+        const wordSetIds = await this.getWordSetIds(genreId);
+        console.log("wordSetIds :" + wordSetIds);
         const index = Math.floor(Math.random() * wordSetIds.length);
         return wordSetIds[index];
     }
@@ -103,7 +104,7 @@ module.exports = class WordWolf {
      * @returns
      */
 
-    async readWordSetId() {
+    async getWordSetId() {
         const query = {
             text: 'SELECT word_set_id FROM word_wolf_setting WHERE pl_id = $1;',
             values: [this.plId]
@@ -121,8 +122,8 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readGenreId() {
-        const wordSetId = await this.readWordSetId();
+    async getGenreId() {
+        const wordSetId = await this.getWordSetId();
         const query = {
             text: 'SELECT genre_id FROM word_set WHERE id = $1;',
             values: [wordSetId]
@@ -140,7 +141,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readIsReverse() {
+    async getIsReverse() {
         const query = {
             text: 'SELECT is_reverse FROM word_wolf_setting WHERE pl_id = $1;',
             values: [this.plId]
@@ -159,10 +160,10 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readCitizenWord() {
-        const wordSetId = await this.readWordSetId();
-        const isReverse = await this.readIsReverse();
-        
+    async getCitizenWord() {
+        const wordSetId = await this.getWordSetId();
+        const isReverse = await this.getIsReverse();
+
         let query = {}
         if (!isReverse) {
             query = {
@@ -195,9 +196,9 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readWolfWord() {
-        const wordSetId = await this.readWordSetId();
-        const isReverse = await this.readIsReverse();
+    async getWolfWord() {
+        const wordSetId = await this.getWordSetId();
+        const isReverse = await this.getIsReverse();
 
         let query = {}
         if (!isReverse) {
@@ -248,7 +249,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readWolfNumber() {
+    async getWolfNumber() {
         const query = {
             text: 'SELECT wolf_number FROM word_wolf_setting WHERE pl_id = $1;',
             values: [this.plId]
@@ -267,9 +268,9 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async countUserNumber(){
+    async getUserNumber() {
         const participantList = new ParticipantList();
-        return participantList.countUserNumber(this.plId);
+        return participantList.getUserNumber(this.plId);
     }
 
     /**
@@ -281,7 +282,7 @@ module.exports = class WordWolf {
      */
     async chooseWolfIndexes(wolfNumber) {
         await this.updateWolfNumber(wolfNumber);
-        const userNumber = await this.countUserNumber();
+        const userNumber = await this.getUserNumber();
 
         try {
             let wolfIndexes = [];
@@ -333,7 +334,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readWolfIndexes() {
+    async getWolfIndexes() {
         const query = {
             text: 'SELECT wolf_indexes FROM word_wolf_setting WHERE pl_id = $1;',
             values: [this.plId]
@@ -390,7 +391,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readGenreStatus() {
+    async getGenreStatus() {
         const query = {
             text: 'SELECT genre FROM word_wolf_status WHERE pl_id = $1;',
             values: [this.plId]
@@ -425,7 +426,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readWolfNumberStatus() {
+    async getWolfNumberStatus() {
         const query = {
             text: 'SELECT wolf_number FROM word_wolf_status WHERE pl_id = $1;',
             values: [this.plId]
@@ -456,11 +457,11 @@ module.exports = class WordWolf {
     }
 
     /**
-     * 確認済みかどうかを返す
+     * 設定を確認済みかどうかを返す
      *
      * @returns
      */
-    async readConfirmStatus() {
+    async getSettingConfirmStatus() {
         const query = {
             text: 'SELECT confirm FROM word_wolf_status WHERE pl_id = $1;',
             values: [this.plId]
@@ -495,7 +496,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readFinishedStatus() {
+    async getFinishedStatus() {
         const query = {
             text: 'SELECT finished FROM word_wolf_status WHERE pl_id = $1;',
             values: [this.plId]
@@ -530,7 +531,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readResultStatus() {
+    async getResultStatus() {
         const query = {
             text: 'SELECT result FROM word_wolf_status WHERE pl_id = $1;',
             values: [this.plId]
@@ -549,7 +550,7 @@ module.exports = class WordWolf {
      * @param {*} genreId
      * @returns
      */
-    async readGenreName(genreId) {
+    async getGenreName(genreId) {
         const query = {
             text: 'SELECT name FROM word_genre WHERE id = $1;',
             values: [genreId]
@@ -569,25 +570,26 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readDisplayNames() {
+    async getDisplayNames() {
         const participantList = new ParticipantList();
-        return participantList.readDisplayNames(this.plId);
+        return participantList.getDisplayNames(this.plId);
     }
 
     /**
      * すべてのジャンルのidと名前を連想配列にして返す
+     * 配列にするとidふりなおしたときだるいけん辞書にしとく
      *
      * @returns
      */
-    async readAllGenreIdAndName() {
+    async getAllGenreIdAndName() {
         const query = {
             text: 'SELECT id, name FROM word_genre'
         }
         try {
             let obj = {};
             const res = await pg.query(query);
-            for(let i=0;i<res.rowCount;i++){
-                obj[res.rows[i].id]=res.rows[i].name;
+            for (let i = 0; i < res.rowCount; i++) {
+                obj[res.rows[i].id] = res.rows[i].name;
             }
             console.log(obj);
             return obj;
@@ -602,7 +604,7 @@ module.exports = class WordWolf {
      * @param {*} genreName
      * @returns
      */
-    async readGenreIdFromName(genreName){
+    async getGenreIdFromName(genreName) {
         const query = {
             text: 'SELECT id FROM word_genre WHERE name = $1',
             values: [genreName]
@@ -618,21 +620,21 @@ module.exports = class WordWolf {
     /**
      * ジャンルの名前が存在するかどうかを返す
      *
-     * @param {*} genreName
+     * @param {*} text
      * @returns
      */
-    async genreNameExists(genreName){
+    async genreNameExists(text) {
         const query = {
             text: 'SELECT id FROM word_genre WHERE name = $1',
-            values: [genreName]
+            values: [text]
         }
         try {
             const res = await pg.query(query);
-            if(res.rowCount == 1){
+            if (res.rowCount == 1) {
                 return true;
-            }else if(res.rowCount > 1){
+            } else if (res.rowCount > 1) {
                 throw "同じ名前のジャンルが二個以上あるよ"
-            }else{
+            } else {
                 return false;
             }
         } catch (err) {
@@ -647,9 +649,9 @@ module.exports = class WordWolf {
      * @param {*} index
      * @returns
      */
-    async readUserId(index){
+    async getUserId(index) {
         const participantList = new ParticipantList();
-        return participantList.readUserId(this.plId,index);
+        return participantList.getUserId(this.plId, index);
     }
 
 
@@ -660,11 +662,11 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async createWordWolfVote(){
-        const userNumber = await this.countUserNumber();
+    async createWordWolfVote() {
+        const userNumber = await this.getUserNumber();
         let votes = [];
         let status = [];
-        for(let i=0;i<userNumber;i++){
+        for (let i = 0; i < userNumber; i++) {
             votes.push(0);
             status.push(false);
         }
@@ -684,13 +686,13 @@ module.exports = class WordWolf {
         }
     }
 
-    
+
     /**
      * 得票数の配列を返す
      *
      * @returns
      */
-    async readVoteNumbers(){
+    async getVoteNumbers() {
         const query = {
             text: 'SELECT numbers FROM word_wolf_vote WHERE pl_id = $1',
             values: [this.plId]
@@ -708,7 +710,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async readVoteStatus(){
+    async getVoteStatus() {
         const query = {
             text: 'SELECT status FROM word_wolf_vote WHERE pl_id = $1',
             values: [this.plId]
@@ -727,8 +729,8 @@ module.exports = class WordWolf {
      * @param {*} userIndex
      * @returns
      */
-    async readVoteState(userIndex){
-        const status = await this.readVoteStatus();
+    async getVoteState(userIndex) {
+        const status = await this.getVoteStatus();
         return status[userIndex];
     }
 
@@ -738,11 +740,11 @@ module.exports = class WordWolf {
      * @param {*} userIndex
      */
     async updateVoteNumber(userIndex) {
-        let numbers = await this.readVoteNumbers();
+        let numbers = await this.getVoteNumbers();
         numbers[userIndex] += 1; // 得票数1追加
         const query = {
             text: 'UPDATE word_wolf_vote set numbers = $1 where pl_id = $2',
-            values: [numbers,this.plId]
+            values: [numbers, this.plId]
         };
         try {
             await pg.query(query);
@@ -758,15 +760,15 @@ module.exports = class WordWolf {
      * @param {*} userIndex
      */
     async updateVoteStatus(userIndex) {
-        let status = await this.readVoteStatus();
-        if(!status[userIndex]){
-            status[userIndex]=true;
-        }else{
+        let status = await this.getVoteStatus();
+        if (!status[userIndex]) {
+            status[userIndex] = true;
+        } else {
             throw "既に投票済み";
         }
         const query = {
             text: 'UPDATE word_wolf_vote set status = $1 where pl_id = $2',
-            values: [status,this.plId]
+            values: [status, this.plId]
         };
         try {
             await pg.query(query);
@@ -776,5 +778,78 @@ module.exports = class WordWolf {
         }
     }
 
-    
+    /**
+     * ウルフの人数の選択肢の配列を返す
+     * 整数の配列
+     * 1人～参加者の半分未満となるうち最大の人数
+     *
+     * @returns
+     */
+    async getWolfNumberOptions() {
+        const userNumber = await this.getUserNumber();
+        const maxWolfNumber = await commonFunction.calculateMaxNumberLessThanHalf(userNumber);
+
+        let res = [];
+        for (let i = 1; i <= maxWolfNumber; i++) {
+            res.push(i);
+        }
+        return res;
+    }
+
+    /**
+     * ウルフの人数の選択肢の整数配列の要素それぞれに「人」をつけたものを返す
+     *
+     * @returns
+     */
+    async getWolfNumberNinOptions() {
+        const wolfNumberOptions = await this.getWolfNumberOptions();
+        let wolfNumberNinOptions = [];
+        for (let i = 0; i < wolfNumberOptions.length; i++) {
+            wolfNumberNinOptions[i] = wolfNumberOptions[i] + "人";
+        }
+        return wolfNumberNinOptions;
+    }
+
+    /**
+     * テキストがウルフの人数に一致するかどうかを返す
+     * 1人、2人などじゃないとtrueにならない
+     *
+     * @param {*} text
+     * @returns
+     */
+    async wolfNumberExists(text) {
+        const wolfNumberNinOptions = await this.getWolfNumberNinOptions();
+        let res = false;
+        for (let wolfNumberNinOption of wolfNumberNinOptions) {
+            if (text == wolfNumberNinOption) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * テキストからウルフの人数を返す
+     *
+     * @param {*} text
+     * @returns
+     */
+    async getWolfNumberFromText(text) {
+
+        const wolfNumberNinOptions = await this.getWolfNumberNinOptions();
+        let wolfNumber = -1;
+        for (let i = 0; i < wolfNumberNinOptions.length; i++) {
+            if (text == wolfNumberNinOptions[i]) {
+                wolfNumber = i + 1;
+            }
+        }
+        if (wolfNumber != -1) {
+            return wolfNumber;
+        } else {
+            throw "ウルフの人数と一致しないよ"
+        }
+
+    }
+
+
 }
