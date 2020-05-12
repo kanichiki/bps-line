@@ -73,18 +73,17 @@ module.exports = class WordWolf {
 
     /**
      * ワードウルフの設定データを挿入する
-     * このとき、ウルフの番号はまだ決まっていない
+     * is_reverse(ワードセットの順番を入れ替えるかどうか)だけデフォルトで入れておく
      *
-     * @param {*} genreId
      * @returns
      */
 
-    async createWordWolfSetting(genreId) {
-        const wordSetId = await this.chooseWordSetId(genreId);
+    async createWordWolfSetting() {
+        // const wordSetId = await this.chooseWordSetId(genreId);
         const isReverse = await this.chooseIsReverse();
         const query = {
-            text: 'INSERT INTO word_wolf_setting (pl_id,word_set_id,is_reverse) VALUES ($1,$2,$3);',
-            values: [this.plId, wordSetId, isReverse]
+            text: 'INSERT INTO word_wolf_setting (pl_id,is_reverse) VALUES ($1,$2);',
+            values: [this.plId, isReverse]
         }
         try {
             await pg.query(query);
@@ -94,6 +93,54 @@ module.exports = class WordWolf {
             console.log(err);
             console.log("新しいワードウルフの設定作れんかったよ");
             return false;
+        }
+    }
+
+
+    /**
+     * ワードウルフの設定データがあるかどうかを返す
+     *
+     * @returns
+     */
+    async hasWordWolfSetting(){
+        const query = {
+            text: 'SELECT pl_id from word_wolf_setting where pl_id = $1',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                return true;
+            } else if (res.rowCount > 1) {
+                throw "同じpl_idの設定データが二個以上あるよ"
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+
+    /**
+     * ワードセットのidを更新する
+     *
+     * @param {*} genreId
+     */
+    async updateWordSetId(genreId){
+        const wordSetId = await this.chooseWordSetId(genreId);
+
+        const query = {
+            text: 'UPDATE word_wolf_setting set word_set_id = $1 where pl_id = $2',
+            values: [wordSetId, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated word-set-id");
+        } catch (err) {
+            console.log(err);
+            console.log("単語セットのid設定できんかった");
         }
     }
 
@@ -370,6 +417,30 @@ module.exports = class WordWolf {
     }
 
     /**
+     * ワードウルフの進捗状況データがあるかどうかを返す
+     *
+     * @returns
+     */
+    async hasWordWolfStatus(){
+        const query = {
+            text: 'SELECT pl_id from word_wolf_status where pl_id = $1',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                return true;
+            } else if (res.rowCount > 1) {
+                throw "同じpl_idのステータスデータが二個以上あるよ"
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
      * genreの選択状況をtrueにする
      *
      */
@@ -381,6 +452,23 @@ module.exports = class WordWolf {
         try {
             await pg.query(query);
             console.log("Updated genre status");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * genreの選択状況をfalseにする
+     *
+     */
+    async updateGenreStatusFalse() {
+        const query = {
+            text: 'UPDATE word_wolf_status set genre = false where pl_id = $1',
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated genre status to false");
         } catch (err) {
             console.log(err);
         }
@@ -415,6 +503,23 @@ module.exports = class WordWolf {
         };
         try {
             await pg.query(query).then(console.log("Updated wolf-number status"));
+        } catch (err) {
+            console.log(err);
+            console.log("ウルフの人数の設定状況更新できんかった");
+        }
+    }
+
+    /**
+     * wolf_numberの選択状況をfalseにする
+     *
+     */
+    async updateWolfNumberStatusFalse() {
+        const query = {
+            text: 'UPDATE word_wolf_status set wolf_number = false where pl_id = $1',
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query).then(console.log("Updated wolf-number status to false"));
         } catch (err) {
             console.log(err);
             console.log("ウルフの人数の設定状況更新できんかった");

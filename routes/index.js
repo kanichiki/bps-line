@@ -122,18 +122,6 @@ const main = async (req, res) => {
 
                   await wordWolfBranch.rollCallBranch(plId,replyToken,promises);
                   continue;
-                  /* 
-                  const userNumber = await pl.getUserNumber(plId); // 
-                  if (userNumber < 3) { // 参加者数が2人以下の場合
-                    promises.push(wordWolfBranch.replyTooFewParticipant(plId, replyToken));
-                    continue;
-                  } else {
-                    // 参加受付終了の意思表明に対するリプライ
-                    // 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
-                    promises.push(replyRollCallEnd(plId, replyToken));
-                    continue;
-                  }
-                  */
                 }
               }
             }
@@ -151,50 +139,8 @@ const main = async (req, res) => {
               const gameId = await playingGame.getGameId();
               if (gameId == 1) { // プレイするゲームがワードウルフの場合
 
-                // ここから設定状況確認に入る
-                const wordWolf = new WordWolf(plId);
-                const genreStatus = await wordWolf.getGenreStatus();
-                if (!genreStatus) { // ジャンルがまだ指定されてない場合
-
-                  const genreNameExists = await wordWolf.genreNameExists(text); // 存在するジャンルの名前が発言されたかどうか
-                  if (genreNameExists) { // ジャンルの名前が発言された場合
-                    const genreId = await wordWolf.getGenreIdFromName(text); // 名前からジャンルのidをとってくる
-                    console.log("genreId:" + genreId);
-                    // ジャンル選択後のリプライ
-                    promises.push(wordWolfBranch.replyGenreChosen(plId, genreId, replyToken));
-                    continue;
-                  }
-                } else { // ジャンルが選択済みの場合
-
-                  const wolfNumberStatus = await wordWolf.getWolfNumberStatus();
-                  if (!wolfNumberStatus) { // ウルフの人数がまだ指定されてない場合
-
-                    const wolfNumberExists = await wordWolf.wolfNumberExists(text); // ウルフの人数（"2人"など)が発言されたかどうか
-                    if (wolfNumberExists) {
-
-                      const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
-                      console.log("wolfNumber:" + wolfNumber);
-                      promises.push(wordWolfBranch.replyWolfNumberChosen(plId, wolfNumber, replyToken));
-                      continue;
-                    }
-                  } else {
-                    const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
-                    if (!settingConfirmStatus) {
-                      if (text == "はい！") {
-                        promises.push(wordWolfBranch.replyConfirm(plId, replyToken));
-                        continue;
-                      }
-                    } else {
-                      const finishedStatus = await wordWolf.getFinishedStatus();
-                      if (!finishedStatus) {
-                        if (text == "終了") { //TODO 参加者が言わないと無効
-                          promises.push(wordWolfBranch.replyFinish(plId, replyToken));
-                          continue;
-                        }
-                      }
-                    }
-                  }
-                }
+                await wordWolfBranch.playingBranch(plId,text,replyToken,promises);
+                continue;
               }
             }
           }

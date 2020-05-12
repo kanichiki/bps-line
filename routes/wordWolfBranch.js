@@ -11,6 +11,13 @@ const ParticipantList = require("../classes/ParticipantList")
 
 const commonFunction = require("../template/functions/commonFunction");
 
+/**
+ * ワードウルフの参加者が募集中の場合に点呼終了コールされたときの分岐
+ *
+ * @param {*} plId
+ * @param {*} replyToken
+ * @param {*} promises
+ */
 exports.rollCallBranch = async (plId, replyToken, promises) => {
     const pl = new ParticipantList();
     const userNumber = await pl.getUserNumber(plId); // 
@@ -23,13 +30,65 @@ exports.rollCallBranch = async (plId, replyToken, promises) => {
     }
 }
 
+/**
+ * ワードウルフがプレイ中の場合の分岐
+ *
+ * @param {*} plId
+ * @param {*} text
+ * @param {*} replyToken
+ * @param {*} promises
+ */
+exports.playingBranch = async (plId, text, replyToken, promises) => {
+    const wordWolf = new WordWolf(plId);
+    const genreStatus = await wordWolf.getGenreStatus();
+    if (!genreStatus) { // ジャンルがまだ指定されてない場合
+
+        const genreNameExists = await wordWolf.genreNameExists(text); // 存在するジャンルの名前が発言されたかどうか
+        if (genreNameExists) { // ジャンルの名前が発言された場合
+            const genreId = await wordWolf.getGenreIdFromName(text); // 名前からジャンルのidをとってくる
+            console.log("genreId:" + genreId);
+            // ジャンル選択後のリプライ
+            promises.push(replyGenreChosen(plId, genreId, replyToken));
+        }
+    } else { // ジャンルが選択済みの場合
+
+        const wolfNumberStatus = await wordWolf.getWolfNumberStatus();
+        if (!wolfNumberStatus) { // ウルフの人数がまだ指定されてない場合
+
+            const wolfNumberExists = await wordWolf.wolfNumberExists(text); // ウルフの人数（"2人"など)が発言されたかどうか
+            if (wolfNumberExists) {
+
+                const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
+                console.log("wolfNumber:" + wolfNumber);
+                promises.push(replyWolfNumberChosen(plId, wolfNumber, replyToken));
+            }
+        } else {
+            const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
+            if (!settingConfirmStatus) {
+                if (text == "はい") {
+                    promises.push(replyConfirmYes(plId, replyToken));
+                }else if(text == "いいえ"){
+                    promises.push(replyConfirmNo(plId, replyToken));
+                }
+            } else {
+                const finishedStatus = await wordWolf.getFinishedStatus();
+                if (!finishedStatus) {
+                    if (text == "終了") { //TODO 参加者が言わないと無効
+                        promises.push(replyFinish(plId, replyToken));
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 /**
  * 参加受付終了に対するリプライ
  * 
  * DB変更操作は以下の通り
  * １．参加者リストをプレイ中にして、募集中を解除する
- * ２．ゲームの進行状況のテーブルにデータを挿入
+ * ２．ゲームの進行状況のテーブルにデータを挿入（まだなかった場合。確認をNoで帰ってくるパターンもある）
  *
  * @param {*} plId
  * @param {*} replyToken
@@ -46,7 +105,11 @@ const replyRollCallEnd = async (plId, replyToken) => {
 
     // DB変更操作２
     const wordWolf = new WordWolf(plId);
-    await wordWolf.createWordWolfStatus(); // ワードウルフのゲーム進行状況データを作成
+    const hasWordWolfStatus = await wordWolf.hasWordWolfStatus(); // ステータスデータがあるかどうか
+
+    if(!hasWordWolfStatus){
+        await wordWolf.createWordWolfStatus(); // ワードウルフのゲーム進行状況データを作成
+    }
 
     const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
 
@@ -74,21 +137,53 @@ const replyTooFewParticipant = async (plId, replyToken) => {
     return client.replyMessage(replyToken, await replyMessage.main(displayNames, userNumber, recruitingGameName));
 }
 
-exports.replyGenreChosen = async (plId, genreId, replyToken) => {
-    const message = require("../template/messages/word_wolf/replyGenreChosen");
+/**
+ * ジャンルが選ばれたときのリプライ
+ * 
+ * DB変更操作は以下の通り
+ * １．ワードウルフ設定テーブルを作成（なかった場合。確認でNoで帰ってくるパターンあり）
+ * ２．ワードウルフ設定テーブルにワードセットIDを挿入
+ * ３．ワードウルフ設定ステータステーブルのジャンルステータスをtrueに更新
+ *
+ * @param {*} plId
+ * @param {*} genreId
+ * @param {*} replyToken
+ * @returns
+ */
+const replyGenreChosen = async (plId, genreId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyGenreChosen");
 
     const wordWolf = new WordWolf(plId);
     const genreName = await wordWolf.getGenreName(genreId);
-    await wordWolf.createWordWolfSetting(genreId).then(wordWolf.updateGenreStatusTrue());
+
+    // DB変更操作１、２
+    // ワードセットはランダムで選んでる
+    const hasWordWolfSetting = await wordWolf.hasWordWolfSetting(); // 設定テーブルを持っているかどうか
+    if(!hasWordWolfSetting){
+        await wordWolf.createWordWolfSetting(); // 設定テーブル作成
+    }
+    await wordWolf.updateWordSetId(genreId).then(wordWolf.updateGenreStatusTrue());
 
     const wolfNumberOptions = await wordWolf.getWolfNumberOptions()
 
-    return client.replyMessage(replyToken, await message.main(genreName, wolfNumberOptions));
+    return client.replyMessage(replyToken, await replyMessage.main(genreName, wolfNumberOptions));
 }
 
 
-exports.replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
-    const message = require("../template/messages/word_wolf/replyWolfNumberChosen");
+/**
+ * ウルフの人数が選ばれたときのリプライ
+ * 
+ * DB変更操作は以下の通り
+ * １．ワードウルフ設定テーブルのウルフナンバーを更新
+ * ２．ワードウルフ設定ステータステーブルのウルフナンバーステータスをtrueに更新
+ *
+ * @param {*} plId
+ * @param {*} wolfNumber
+ * @param {*} replyToken
+ * @returns
+ */
+const replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyWolfNumberChosen");
 
     const wordWolf = new WordWolf(plId);
 
@@ -98,11 +193,18 @@ exports.replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
     const genreId = await wordWolf.getGenreId();
     const genreName = await wordWolf.getGenreName(genreId);
 
-    return client.replyMessage(replyToken, await message.main(wolfNumber, genreName));
+    return client.replyMessage(replyToken, await replyMessage.main(wolfNumber, genreName));
 }
 
-exports.replyConfirm = async (plId, replyToken) => {
-    const replyMessage = require("../template/messages/word_wolf/replyConfirm");
+/**
+ * 設定確認に対してYesだった場合のリプライ
+ *
+ * @param {*} plId
+ * @param {*} replyToken
+ * @returns
+ */
+const replyConfirmYes = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyConfirmYes");
     const pushMessage = require("../template/messages/word_wolf/pushUserWord");
 
     const wordWolf = new WordWolf(plId);
@@ -136,7 +238,32 @@ exports.replyConfirm = async (plId, replyToken) => {
     return client.replyMessage(replyToken, await replyMessage.main());
 }
 
-exports.replyFinish = async (plId, replyToken) => {
+/**
+ * 設定確認に対してNoだった場合のリプライ
+ * 
+ * DB変更操作は以下の通り
+ * １．ワードウルフ設定ステータステーブルのジャンルステータスをfalseに変更
+ * ２．ワードウルフ設定ステータステーブルのウルフナンバーステータスをfalseに変更
+ *
+ * @param {*} plId
+ * @param {*} replyToken
+ */
+const replyConfirmNo = async (plId,replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyConfirmNo");
+
+    const wordWolf = new WordWolf(plId);
+
+    // DB変更操作１
+    await wordWolf.updateGenreStatusFalse();
+    // DB変更操作２
+    await wordWolf.updateWolfNumberStatusFalse();
+
+    const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
+
+    return client.replyMessage(replyToken, await replyMessage.main(genres));
+}
+
+const replyFinish = async (plId, replyToken) => {
     const replyMessage = require("../template/messages/word_wolf/replyFinish");
     const wordWolf = new WordWolf(plId);
 

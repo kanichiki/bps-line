@@ -56,8 +56,16 @@ exports.main = async (wolfNumber, genreName) => {
                       "type": "button",
                       "action": {
                         "type": "message",
-                        "label": "はい！",
-                        "text": "はい！"
+                        "label": "はい",
+                        "text": "はい"
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "action": {
+                        "type": "message",
+                        "label": "いいえ",
+                        "text": "いいえ"
                       }
                     }
                   ]
