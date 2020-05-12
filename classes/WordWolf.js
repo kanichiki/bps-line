@@ -5,8 +5,8 @@ pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
 
-const ParticipantList = require("../ParticipantList");
-const commonFunction = require("../commonFunction");
+const ParticipantList = require("./ParticipantList");
+const commonFunction = require("../template/functions/commonFunction");
 
 module.exports = class WordWolf {
 

@@ -16,7 +16,7 @@ exports.main = async (recruitingGameName,displayName,isUserParticipant,displayNa
         },
         {
             type: "text",
-            text: `現在の参加者は\n${displayNamesSan}さん\nです！\n引き続き${recruitingGameName}の参加者を募集します！`
+            text: `現在の参加者は\n\n${displayNamesSan}さん\n\nです！\n引き続き${recruitingGameName}の参加者を募集します！`
         },
         {
             "type": "flex",

@@ -85,7 +85,7 @@ module.exports = class PlayingGame {
      *
      */
     async createWordWolfStatus(){
-            const WordWolf = require("./word_wolf/WordWolf");
+            const WordWolf = require("./WordWolf");
             const wordWolf = new WordWolf(this.plId);
             await wordWolf.createWordWolfStatus();
         }

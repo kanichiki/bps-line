@@ -8,7 +8,7 @@ exports.main = async (displayNames,userNumber,recruitingGameName) => {
         },
         {
             type: "text",
-            text: `現在の参加者は\n${displayNamesSan}さん\nです！\n引き続き${recruitingGameName}の参加者を募集しています！`
+            text: `現在の参加者は\n\n${displayNamesSan}さん\n\nです！\n引き続き${recruitingGameName}の参加者を募集しています！`
         },
         {
             "type": "flex",

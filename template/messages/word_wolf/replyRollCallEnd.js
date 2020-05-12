@@ -31,7 +31,7 @@ exports.main = async (displayNames, genres) => {
         },
         {
             type: "text",
-            text: `参加者は\n${displayNamesSan}さん\nです！`
+            text: `参加者は\n\n${displayNamesSan}さん\n\nです！`
         },
         {
             type: "text",

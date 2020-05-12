@@ -25,16 +25,6 @@ exports.main = async (gameName) => {
                             }
                         },
                         {
-                            "type": "button",
-                            "style": "link",
-                            "height": "sm",
-                            "action": {
-                                "type": "message",
-                                "label": "参加受付終了",
-                                "text": "参加受付終了"
-                            }
-                        },
-                        {
                             "type": "spacer",
                             "size": "sm"
                         }

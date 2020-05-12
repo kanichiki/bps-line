@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const line = require("@line/bot-sdk");
 
-const ParticipantList = require("../services/ParticipantList");
-const PlayingGame = require("../services/PlayingGame");
-const WordWolf = require("../services/word_wolf/WordWolf");
-const Game = require("../services/Game")
+const ParticipantList = require("../classes/ParticipantList");
+const PlayingGame = require("../classes/PlayingGame");
+const WordWolf = require("../classes/WordWolf");
+const Game = require("../classes/Game")
 
-const replyWordWolf = require("../services/word_wolf/replyWordWolf");
+const wordWolfBranch = require("./wordWolfBranch");
 
 
 const config = {
@@ -23,8 +23,7 @@ const client = new line.Client(config);
  */
 
 router.post('/', (req, res, next) => {
-  // res.render('index', { title: 'Express' });
-  lineBot(req, res);
+  main(req, res);
 });
 
 
@@ -35,7 +34,7 @@ router.post('/', (req, res, next) => {
  * @param {*} res
  */
 
-const lineBot = async (req, res) => {
+const main = async (req, res) => {
   res.status(200).end(); // 先に200を返してあげる
 
   // イベント内容をコンソールに表示
@@ -121,9 +120,12 @@ const lineBot = async (req, res) => {
                 const gameId = await playingGame.getGameId();
                 if (gameId == 1) { // ワードウルフの場合
 
+                  await wordWolfBranch.rollCallBranch(plId,replyToken,promises);
+                  continue;
+                  /* 
                   const userNumber = await pl.getUserNumber(plId); // 
                   if (userNumber < 3) { // 参加者数が2人以下の場合
-                    promises.push(replyWordWolf.replyTooFewParticipant(plId, replyToken));
+                    promises.push(wordWolfBranch.replyTooFewParticipant(plId, replyToken));
                     continue;
                   } else {
                     // 参加受付終了の意思表明に対するリプライ
@@ -131,6 +133,7 @@ const lineBot = async (req, res) => {
                     promises.push(replyRollCallEnd(plId, replyToken));
                     continue;
                   }
+                  */
                 }
               }
             }
@@ -158,7 +161,7 @@ const lineBot = async (req, res) => {
                     const genreId = await wordWolf.getGenreIdFromName(text); // 名前からジャンルのidをとってくる
                     console.log("genreId:" + genreId);
                     // ジャンル選択後のリプライ
-                    promises.push(replyWordWolf.replyGenreChosen(plId, genreId, replyToken));
+                    promises.push(wordWolfBranch.replyGenreChosen(plId, genreId, replyToken));
                     continue;
                   }
                 } else { // ジャンルが選択済みの場合
@@ -171,21 +174,21 @@ const lineBot = async (req, res) => {
 
                       const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
                       console.log("wolfNumber:" + wolfNumber);
-                      promises.push(replyWordWolf.replyWolfNumberChosen(plId, wolfNumber, replyToken));
+                      promises.push(wordWolfBranch.replyWolfNumberChosen(plId, wolfNumber, replyToken));
                       continue;
                     }
                   } else {
                     const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
                     if (!settingConfirmStatus) {
                       if (text == "はい！") {
-                        promises.push(replyWordWolf.replyConfirm(plId, replyToken));
+                        promises.push(wordWolfBranch.replyConfirm(plId, replyToken));
                         continue;
                       }
                     } else {
                       const finishedStatus = await wordWolf.getFinishedStatus();
                       if (!finishedStatus) {
                         if (text == "終了") { //TODO 参加者が言わないと無効
-                          promises.push(replyWordWolf.replyFinish(plId, replyToken));
+                          promises.push(wordWolfBranch.replyFinish(plId, replyToken));
                           continue;
                         }
                       }
@@ -229,13 +232,13 @@ const lineBot = async (req, res) => {
 
                   if (!voteState) {
                     if (userIndex != postbackData) {
-                      wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(postbackData).then(promises.push(replyWordWolf.replyVoteSuccess(plId, replyToken, userIndex))));
+                      wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(postbackData).then(promises.push(wordWolfBranch.replyVoteSuccess(plId, replyToken, userIndex))));
                       continue;
                     } else {
-                      promises.push(replyWordWolf.replySelfVote(plId, replyToken, userIndex));
+                      promises.push(wordWolfBranch.replySelfVote(plId, replyToken, userIndex));
                     }
                   } else {
-                    promises.push(replyWordWolf.replyDuplicateVote(plId, replyToken, userIndex));
+                    promises.push(wordWolfBranch.replyDuplicateVote(plId, replyToken, userIndex));
                   }
                 }
               }
@@ -344,36 +347,6 @@ const replyRollCallReaction = async (plId, userId, replyToken) => {
   return client.replyMessage(replyToken, await replyMessage.main(recruitingGameName, displayName, isUserParticipant, displayNames));
 }
 
-
-
-/**
- * 参加受付終了に対するリプライ
- * 
- * DB変更操作は以下の通り
- * １．参加者リストをプレイ中にして、募集中を解除する
- * ２．ゲームの進行状況のテーブルにデータを挿入
- *
- * @param {*} plId
- * @param {*} replyToken
- * @returns
- */
-const replyRollCallEnd = async (plId, replyToken) => {
-  const replyMessage = require("../template/messages/replyRollCallEnd");
-  const pl = new ParticipantList();
-
-  const displayNames = await pl.getDisplayNames(plId); // 参加者の表示名リスト
-
-  // DB変更操作１
-  await pl.updateIsPlayingTrue(plId).then(await pl.updateIsRecruitingFalse(plId)); // 参加者リストをプレイ中にして、募集中を解除する
-
-  // DB変更操作２
-  const wordWolf = new WordWolf(plId);
-  await wordWolf.createWordWolfStatus(); // ワードウルフのゲーム進行状況データを作成
-
-  const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
-
-  return client.replyMessage(replyToken, await replyMessage.main(displayNames, genres));
-}
 
 /**
  * 参加募集中にゲーム名が発言された際のリプライ
