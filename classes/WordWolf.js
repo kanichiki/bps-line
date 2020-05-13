@@ -8,7 +8,50 @@ pg.connect().catch((error) => {
 const ParticipantList = require("./ParticipantList");
 const commonFunction = require("../template/functions/commonFunction");
 
-module.exports = class WordWolf {
+/**
+ * 関連テーブル一覧
+ * 
+ * word_wolf_status
+ *  pl_id(int) : 参加者リストid
+ *  genre(boolean) : ジャンルを選んだかどうか
+ *  wolf_number(boolean) : ウルフ数を選んだかどうか
+ *  confirm(boolean) : 設定を確認したかどうか
+ *  finished(boolean) : 話し合いが終了したかどうか
+ *  winner(boolean) : 勝者を発表したかどうか
+ *  result(boolean) : ワードを公開したかどうか
+ * 
+ * word_wolf_setting
+ *  pl_id(int) : 参加者リストid
+ *  word_set_id(int) : 使用するワードセット
+ *  is_reverse(boolean) : trueなら市民用はword1、falseならword2
+ *  wolf_indexes(int[]) : ウルフのインデックス（参加者リストのuser_idsに対応）
+ *  wolf_number(int[]) : ウルフの数
+ * 
+ * word_wolf_vote
+ *  pl_id(int) : 参加者リストid
+ *  numbers(int[]) : ユーザーの得票数の配列
+ *  status(boolean[]) : ユーザーが投票済み
+ * 
+ * word_wolf_revote
+ *  pl_id(int) : 参加者リストid
+ *  indexes(int[]) : 再投票の候補者の配列
+ * 
+ * word_set
+ *  id(int) : ワードセットid
+ *  word1(varchar(33)) : 単語1
+ *  word2(varchar(33)) : 単語2
+ *  genre_id(int) : ジャンルid
+ *  depth(int) : 単語の深さ
+ * 
+ * word_genre
+ *  id(int) : ワードジャンルid
+ *  name(varchar) : ジャンル名
+ *  
+ *
+ * @class WordWolf
+ */
+
+class WordWolf {
 
 
     /**
@@ -20,56 +63,7 @@ module.exports = class WordWolf {
         this.plId = plId;
     }
 
-    /**
-     * 与えられたgenreIdに一致したwordSetIdを配列で返す
-     *
-     * @param {*} genreId
-     * @returns
-     */
-    async getWordSetIds(genreId) {
-        const query = {
-            text: 'SELECT id FROM word_set WHERE genre_id = $1;',
-            values: [genreId]
-        }
-        try {
-            const res = await pg.query(query);
-            let wordSetIds = [];
-            for (let i = 0; i < res.rowCount; i++) {
-                wordSetIds.push(res.rows[i].id);
-            }
-            return wordSetIds;
-        } catch (err) {
-            console.log(err);
-        }
-    }
 
-
-    /**
-     * 与えられたジャンルのワードセットをランダムに選んで返す
-     *
-     * @param {*} genreId
-     * @returns
-     */
-    async chooseWordSetId(genreId) {
-        const wordSetIds = await this.getWordSetIds(genreId);
-        console.log("wordSetIds :" + wordSetIds);
-        const index = Math.floor(Math.random() * wordSetIds.length);
-        return wordSetIds[index];
-    }
-
-    /**
-     * ワードの順番（ウルフ用とそれ以外用）をひっくり返すかどうかをランダムで決めて返す
-     *
-     * @returns
-     */
-    async chooseIsReverse() {
-        const i = Math.floor(Math.random() * 2);
-        if (i == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     /**
      * ワードウルフの設定データを挿入する
@@ -79,7 +73,6 @@ module.exports = class WordWolf {
      */
 
     async createWordWolfSetting() {
-        // const wordSetId = await this.chooseWordSetId(genreId);
         const isReverse = await this.chooseIsReverse();
         const query = {
             text: 'INSERT INTO word_wolf_setting (pl_id,is_reverse) VALUES ($1,$2);',
@@ -122,28 +115,58 @@ module.exports = class WordWolf {
     }
 
 
+    // ここからワードに関する関数
 
     /**
-     * ワードセットのidを更新する
+     * 与えられたgenreIdに一致したwordSetIdを配列で返す
      *
      * @param {*} genreId
+     * @returns
      */
-    async updateWordSetId(genreId) {
-        const wordSetId = await this.chooseWordSetId(genreId);
-
+    async getWordSetIdsMatchGenreId(genreId) {
         const query = {
-            text: 'UPDATE word_wolf_setting set word_set_id = $1 where pl_id = $2',
-            values: [wordSetId, this.plId]
-        };
+            text: 'SELECT id FROM word_set WHERE genre_id = $1;',
+            values: [genreId]
+        }
         try {
-            await pg.query(query);
-            console.log("Updated word-set-id");
+            const res = await pg.query(query);
+            let wordSetIds = [];
+            for (let i = 0; i < res.rowCount; i++) {
+                wordSetIds.push(res.rows[i].id);
+            }
+            return wordSetIds;
         } catch (err) {
             console.log(err);
-            console.log("単語セットのid設定できんかった");
         }
     }
 
+
+    /**
+     * 与えられたジャンルのワードセットをランダムに選んで返す
+     *
+     * @param {*} genreId
+     * @returns
+     */
+    async chooseWordSetIdMatchGenreId(genreId) {
+        const wordSetIds = await this.getWordSetIdsMatchGenreId(genreId);
+        console.log("wordSetIds :" + wordSetIds);
+        const index = Math.floor(Math.random() * wordSetIds.length);
+        return wordSetIds[index];
+    }
+
+    /**
+     * ワードの順番（ウルフ用とそれ以外用）をひっくり返すかどうかをランダムで決めて返す
+     *
+     * @returns
+     */
+    async chooseIsReverse() {
+        const i = Math.floor(Math.random() * 2);
+        if (i == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * ワードセットのidを返す
@@ -165,6 +188,28 @@ module.exports = class WordWolf {
     }
 
     /**
+     * ワードセットのidを更新する
+     *
+     * @param {*} genreId
+     */
+    async updateWordSetIdMatchGenreId(genreId) {
+        const wordSetId = await this.chooseWordSetIdMatchGenreId(genreId);
+
+        const query = {
+            text: 'UPDATE word_wolf_setting set word_set_id = $1 where pl_id = $2',
+            values: [wordSetId, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated word-set-id");
+        } catch (err) {
+            console.log(err);
+            console.log("単語セットのid設定できんかった");
+        }
+    }
+
+
+    /**
      * ワードのジャンルidを返す
      *
      * @returns
@@ -178,6 +223,93 @@ module.exports = class WordWolf {
         try {
             const res = await pg.query(query);
             return res.rows[0].genre_id;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+    /**
+     * 与えられたgenreIdの名前を返す
+     *
+     * @param {*} genreId
+     * @returns
+     */
+    async getGenreName(genreId) {
+        const query = {
+            text: 'SELECT name FROM word_genre WHERE id = $1;',
+            values: [genreId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].name;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * すべてのジャンルのidと名前を連想配列にして返す
+     * 配列にするとidふりなおしたときだるいけん辞書にしとく
+     *
+     * @returns
+     */
+    async getAllGenreIdAndName() {
+        const query = {
+            text: 'SELECT id, name FROM word_genre'
+        }
+        try {
+            let obj = {};
+            const res = await pg.query(query);
+            for (let i = 0; i < res.rowCount; i++) {
+                obj[res.rows[i].id] = res.rows[i].name;
+            }
+            console.log(obj);
+            return obj;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 与えられたジャンルの名前のジャンルidを返す
+     *
+     * @param {*} genreName
+     * @returns
+     */
+    async getGenreIdFromName(genreName) {
+        const query = {
+            text: 'SELECT id FROM word_genre WHERE name = $1',
+            values: [genreName]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].id;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * ジャンルの名前が存在するかどうかを返す
+     *
+     * @param {*} text
+     * @returns
+     */
+    async genreNameExists(text) {
+        const query = {
+            text: 'SELECT id FROM word_genre WHERE name = $1',
+            values: [text]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                return true;
+            } else if (res.rowCount > 1) {
+                throw "同じ名前のジャンルが二個以上あるよ"
+            } else {
+                return false;
+            }
         } catch (err) {
             console.log(err);
         }
@@ -273,6 +405,88 @@ module.exports = class WordWolf {
     }
 
     /**
+     * 与えられたdepthに一致したwordSetIdを配列で返す
+     *
+     * @param {*} depth
+     * @returns
+     */
+    async getWordSetIdsMatchDepth(depth) {
+        const query = {
+            text: 'SELECT id FROM word_set WHERE depth = $1;',
+            values: [depth]
+        }
+        try {
+            const res = await pg.query(query);
+            let wordSetIds = [];
+            for (let i = 0; i < res.rowCount; i++) {
+                wordSetIds.push(res.rows[i].id);
+            }
+            return wordSetIds;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+    /**
+     * 与えられたジャンルのワードセットをランダムに選んで返す
+     *
+     * @param {*} depth
+     * @returns
+     */
+    async chooseWordSetIdMatchDepth(depth) {
+        const wordSetIds = await this.getWordSetIdsMatchDepth(depth);
+        console.log("wordSetIds :" + wordSetIds);
+        const index = Math.floor(Math.random() * wordSetIds.length);
+        return wordSetIds[index];
+    }
+
+    /**
+     * ワードセットのidを更新する
+     *
+     * @param {*} depth
+     */
+    async updateWordSetIdMatchDepth(depth) {
+        const wordSetId = await this.chooseWordSetIdMatchDepth(depth);
+
+        const query = {
+            text: 'UPDATE word_wolf_setting set word_set_id = $1 where pl_id = $2',
+            values: [wordSetId, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated word-set-id");
+        } catch (err) {
+            console.log(err);
+            console.log("単語セットのid設定できんかった");
+        }
+    }
+
+
+    /**
+     * ワードのdepthを返す
+     *
+     * @returns
+     */
+    async getDepth() {
+        const wordSetId = await this.getWordSetId();
+        const query = {
+            text: 'SELECT depth FROM word_set WHERE id = $1;',
+            values: [wordSetId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].depth;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    
+
+    // ここまでワードに関する関数
+
+    /**
      * ウルフの人数を設定する
      *
      * @param {*} wolfNumber
@@ -326,7 +540,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async getUserIndexes(){
+    async getUserIndexes() {
         const participantList = new ParticipantList();
         return participantList.getUserIndexes(this.plId);
     }
@@ -403,6 +617,9 @@ module.exports = class WordWolf {
             console.log(err);
         }
     }
+
+
+    // word_wolf_statusテーブルに関する関数
 
     /**
      * ワードウルフの進捗状況データを挿入する
@@ -694,24 +911,7 @@ module.exports = class WordWolf {
         }
     }
 
-    /**
-     * 与えられたgenreIdの名前を返す
-     *
-     * @param {*} genreId
-     * @returns
-     */
-    async getGenreName(genreId) {
-        const query = {
-            text: 'SELECT name FROM word_genre WHERE id = $1;',
-            values: [genreId]
-        }
-        try {
-            const res = await pg.query(query);
-            return res.rows[0].name;
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    // ここまでword_wolf_statusに関する関数
 
 
     /**
@@ -736,72 +936,6 @@ module.exports = class WordWolf {
         return participantList.getDisplayName(userIndex, this.plId);
     }
 
-    /**
-     * すべてのジャンルのidと名前を連想配列にして返す
-     * 配列にするとidふりなおしたときだるいけん辞書にしとく
-     *
-     * @returns
-     */
-    async getAllGenreIdAndName() {
-        const query = {
-            text: 'SELECT id, name FROM word_genre'
-        }
-        try {
-            let obj = {};
-            const res = await pg.query(query);
-            for (let i = 0; i < res.rowCount; i++) {
-                obj[res.rows[i].id] = res.rows[i].name;
-            }
-            console.log(obj);
-            return obj;
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    /**
-     * 与えられたジャンルの名前のジャンルidを返す
-     *
-     * @param {*} genreName
-     * @returns
-     */
-    async getGenreIdFromName(genreName) {
-        const query = {
-            text: 'SELECT id FROM word_genre WHERE name = $1',
-            values: [genreName]
-        }
-        try {
-            const res = await pg.query(query);
-            return res.rows[0].id;
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    /**
-     * ジャンルの名前が存在するかどうかを返す
-     *
-     * @param {*} text
-     * @returns
-     */
-    async genreNameExists(text) {
-        const query = {
-            text: 'SELECT id FROM word_genre WHERE name = $1',
-            values: [text]
-        }
-        try {
-            const res = await pg.query(query);
-            if (res.rowCount == 1) {
-                return true;
-            } else if (res.rowCount > 1) {
-                throw "同じ名前のジャンルが二個以上あるよ"
-            } else {
-                return false;
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }
 
     /**
      * ParticipantListクラスの転用メソッド
@@ -821,7 +955,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async getUserIds(){
+    async getUserIds() {
         const participantList = new ParticipantList();
         return participantList.getUserIds(this.plId);
     }
@@ -1171,7 +1305,7 @@ module.exports = class WordWolf {
      * @param {*} userIndexes
      * @returns
      */
-    async chooseExecutorIndex(userIndexes){
+    async chooseExecutorIndex(userIndexes) {
         const index = Math.floor(Math.random() * userIndexes.length); // これは返さない
         return userIndexes[index];
     }
@@ -1265,9 +1399,6 @@ module.exports = class WordWolf {
         }
         return res;
     }
-
-
-
-
-
 }
+
+module.exports = WordWolf;

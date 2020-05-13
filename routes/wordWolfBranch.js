@@ -44,12 +44,19 @@ exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promi
     const genreStatus = await wordWolf.getGenreStatus();
     if (!genreStatus) { // ジャンルがまだ指定されてない場合
 
+        /* ジャンル
         const genreNameExists = await wordWolf.genreNameExists(text); // 存在するジャンルの名前が発言されたかどうか
         if (genreNameExists) { // ジャンルの名前が発言された場合
             const genreId = await wordWolf.getGenreIdFromName(text); // 名前からジャンルのidをとってくる
             console.log("genreId:" + genreId);
             // ジャンル選択後のリプライ
             promises.push(replyGenreChosen(plId, genreId, replyToken));
+        }
+        */
+
+        // depth
+        if((text==1||text==2)||(text==3||text==4)){
+            promises.push(replyDepthChosen(plId, text, replyToken));
         }
     } else { // ジャンルが選択済みの場合
 
@@ -183,9 +190,15 @@ const replyRollCallEnd = async (plId, replyToken) => {
         await wordWolf.createWordWolfStatus(); // ワードウルフのゲーム進行状況データを作成
     }
 
+    /* ジャンル
     const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
 
     return client.replyMessage(replyToken, await replyMessage.main(displayNames, genres));
+    */
+
+    // 深さ
+    
+    return client.replyMessage(replyToken, await replyMessage.main(displayNames));
 }
 
 
@@ -234,11 +247,30 @@ const replyGenreChosen = async (plId, genreId, replyToken) => {
     if (!hasWordWolfSetting) {
         await wordWolf.createWordWolfSetting(); // 設定テーブル作成
     }
-    await wordWolf.updateWordSetId(genreId).then(wordWolf.updateGenreStatusTrue());
+    await wordWolf.updateWordSetIdMatchGenreId(genreId).then(wordWolf.updateGenreStatusTrue());
 
     const wolfNumberOptions = await wordWolf.getWolfNumberOptions()
 
     return client.replyMessage(replyToken, await replyMessage.main(genreName, wolfNumberOptions));
+}
+
+// depth
+const replyDepthChosen = async (plId, text, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyGenreChosen");
+
+    const wordWolf = new WordWolf(plId);
+
+    // DB変更操作１、２
+    // ワードセットはランダムで選んでる
+    const hasWordWolfSetting = await wordWolf.hasWordWolfSetting(); // 設定テーブルを持っているかどうか
+    if (!hasWordWolfSetting) {
+        await wordWolf.createWordWolfSetting(); // 設定テーブル作成
+    }
+    await wordWolf.updateWordSetIdMatchDepth(text).then(wordWolf.updateGenreStatusTrue());
+
+    const wolfNumberOptions = await wordWolf.getWolfNumberOptions()
+
+    return client.replyMessage(replyToken, await replyMessage.main(text, wolfNumberOptions));
 }
 
 
@@ -262,10 +294,16 @@ const replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
     //ウルフ番号データを挿入できたらステータスをtrueにする
     await wordWolf.updateWolfIndexes(wolfNumber).then(wordWolf.updateWolfNumberStatusTrue());
 
+    /* ジャンル
     const genreId = await wordWolf.getGenreId();
     const genreName = await wordWolf.getGenreName(genreId);
 
     return client.replyMessage(replyToken, await replyMessage.main(wolfNumber, genreName));
+    */
+
+    // depth
+    const depth = await wordWolf.getDepth();
+    return client.replyMessage(replyToken, await replyMessage.main(wolfNumber, depth));
 }
 
 /**
@@ -330,9 +368,14 @@ const replyConfirmNo = async (plId, replyToken) => {
     // DB変更操作２
     await wordWolf.updateWolfNumberStatusFalse();
 
+    /* ジャンル
     const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
 
     return client.replyMessage(replyToken, await replyMessage.main(genres));
+    */
+
+    const depths = ["1","2","3","4"];
+    return client.replyMessage(replyToken, await replyMessage.main(depths));
 }
 
 /**
@@ -495,6 +538,6 @@ const replyAnnounceResult = async (plId, replyToken) => {
     await wordWolf.updateResultStatusTrue();
     await pl.finishParticipantList(plId);
 
-    return client.replyMessage(replyToken, await replyMessage.main(displayNames,wolfIndexes,citizenWord,wolfWord));
+    return client.replyMessage(replyToken, await replyMessage.main(displayNames, wolfIndexes, citizenWord, wolfWord));
 }
 
