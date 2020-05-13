@@ -1,3 +1,5 @@
+const parts = require("../../constants/messageParts");
+
 exports.main = async (displayNames,userIds) => {
     
     let voteMessages = [];
@@ -11,7 +13,7 @@ exports.main = async (displayNames,userIds) => {
                 "label": displayNames[i],
                 "data": userIds[i]
             },
-            "color": "#E83b10"
+            "color": parts.mainColor
         }
         voteMessages.push(voteMessage);
     }

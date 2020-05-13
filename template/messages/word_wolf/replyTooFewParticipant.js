@@ -1,3 +1,5 @@
+const parts = require("../../constants/messageParts");
+
 exports.main = async (displayNames, userNumber, recruitingGameName) => {
     const displayNamesSan = displayNames.join("さん、\n");
 
@@ -29,7 +31,7 @@ exports.main = async (displayNames, userNumber, recruitingGameName) => {
                                 "label": "参加",
                                 "text": "参加"
                             },
-                            "color": "#E83b10",
+                            "color": parts.mainColor,
                             "style": "primary"
                         },
                         {
@@ -44,7 +46,7 @@ exports.main = async (displayNames, userNumber, recruitingGameName) => {
                                 "label": "受付終了",
                                 "text": "受付終了"
                             },
-                            "color": "#E83b10",
+                            "color": parts.mainColor,
                             "style": "primary"
                         },
                         {

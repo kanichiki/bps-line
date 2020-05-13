@@ -1,3 +1,5 @@
+const parts = require("../../constants/messageParts");
+
 exports.main = async (wolfNumber, genreName) => {
     return [
         {
@@ -62,7 +64,7 @@ exports.main = async (wolfNumber, genreName) => {
                         "label": "はい",
                         "text": "はい"
                       },
-                      "color": "#E83b10",
+                      "color": parts.mainColor,
                       "style": "primary"
                     },
                     {
@@ -77,7 +79,7 @@ exports.main = async (wolfNumber, genreName) => {
                         "label": "いいえ",
                         "text": "いいえ"
                       },
-                      "color": "#E83b10"
+                      "color": parts.mainColor
                     }
                   ]
                 }

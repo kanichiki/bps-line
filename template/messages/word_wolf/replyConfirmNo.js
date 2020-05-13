@@ -1,3 +1,5 @@
+const parts = require("../../constants/messageParts");
+
 exports.main = async (genres) => {
 
     let genreMessages = [];
@@ -15,7 +17,7 @@ exports.main = async (genres) => {
                             "label": genres[id],
                             "text": genres[id]
                         },
-                        "color": "#E83b10",
+                        "color": parts.mainColor,
                         "style": "link"
                     }
                 ]

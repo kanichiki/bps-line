@@ -20,7 +20,7 @@ exports.main = async (shuffleUserIndexes, displayNames, userIndex) => {
     return [
         {
             "type": "flex",
-            "altText": "This is a Flex Message",
+            "altText": "投票",
             "contents": {
                 "type": "bubble",
                 "body": {

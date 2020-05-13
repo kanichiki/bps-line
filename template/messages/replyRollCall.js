@@ -1,3 +1,5 @@
+const parts = require("../constants/messageParts");
+
 exports.main = async (gameName) => {
     return [
         {
@@ -23,7 +25,7 @@ exports.main = async (gameName) => {
                                 "label": "参加",
                                 "text": "参加"
                             },
-                            "color": "#E83b10",
+                            "color": parts.mainColor,
                             "style": "primary"
                         },
                         {

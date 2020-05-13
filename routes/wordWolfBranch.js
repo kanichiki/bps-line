@@ -373,8 +373,8 @@ const replyFinish = async (plId, usePostback, replyToken) => {
         return client.replyMessage(replyToken, await replyMessage.main(displayNames, userIds));
 
     } else { // postbackを使わない設定の場合
-        const replyMessage = require("../template/messages/word_wolf/replyFinishWithoutPostback");
-        const pushMessage = require("../template/messages/word_wolf/pushFinishWithoutPostback");
+        const replyMessage = require("../template/messages/word_wolf/withoutPostback/replyFinishWithoutPostback");
+        const pushMessage = require("../template/messages/word_wolf/withoutPostback/pushFinishWithoutPostback");
 
         const userIds = await wordWolf.getUserIds();
 

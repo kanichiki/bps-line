@@ -1,3 +1,5 @@
+const parts = require("../constants/messageParts");
+
 exports.main = async (recruitingGameName,displayName,isUserParticipant,displayNames) => {
     let messageText = "";
     
@@ -36,7 +38,7 @@ exports.main = async (recruitingGameName,displayName,isUserParticipant,displayNa
                         "label": "参加",
                         "text": "参加"
                       },
-                      "color": "#E83b10",
+                      "color": parts.mainColor,
                       "style": "primary"
                     },
                     {
@@ -50,7 +52,7 @@ exports.main = async (recruitingGameName,displayName,isUserParticipant,displayNa
                         "label": "受付終了",
                         "text": "受付終了"
                       },
-                      "color": "#E83b10",
+                      "color": parts.mainColor,
                       "style": "primary"
                     },
                     {

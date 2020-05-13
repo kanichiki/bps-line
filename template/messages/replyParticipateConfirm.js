@@ -1,3 +1,5 @@
+const parts = require("../constants/messageParts");
+
 exports.main = async (displayName) => {
     return [
         {

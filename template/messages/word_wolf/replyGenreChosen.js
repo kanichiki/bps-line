@@ -1,3 +1,5 @@
+const parts = require("../../constants/messageParts");
+
 exports.main = async (genreName,wolfNumberOptions) => {
     let wolfNumberMessages = [];
     for (let wolfNumberOption of wolfNumberOptions) {
@@ -10,7 +12,7 @@ exports.main = async (genreName,wolfNumberOptions) => {
               "label": `${wolfNumberOption}人`,
               "text": `${wolfNumberOption}人`
             },
-            "color": "#E83b10"
+            "color": parts.mainColor
           }
         wolfNumberMessages.push(wolfNumberMessage);
     }

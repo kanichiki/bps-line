@@ -1,3 +1,5 @@
+const parts = require("../../constants/messageParts");
+
 exports.main = async (voterDisplayName, displayNames,userIds, mostVotedUserIndexes) => {
     let revoteMessages = [];
 
@@ -9,7 +11,7 @@ exports.main = async (voterDisplayName, displayNames,userIds, mostVotedUserIndex
                 "label": displayNames[mostVotedUserIndex],
                 "data": userIds[mostVotedUserIndex]
             },
-            "color": "#E83b10"
+            "color": parts.mainColor
         }
         revoteMessages.push(revoteMessage);
     }

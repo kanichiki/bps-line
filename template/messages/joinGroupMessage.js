@@ -1,3 +1,5 @@
+const parts = require("../constants/messageParts");
+
 exports.main = async () => {
     return [
         {
@@ -44,7 +46,7 @@ exports.main = async () => {
                         "label": "ワードウルフ",
                         "text": "ワードウルフ"
                       },
-                      "color": "#E83b10",
+                      "color": parts.mainColor,
                       "style": "primary"
                     }
                   ]
