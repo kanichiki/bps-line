@@ -31,14 +31,14 @@ exports.rollCallBranch = async (plId, replyToken, promises) => {
 }
 
 /**
- * ワードウルフがプレイ中の場合の分岐
+ * eventがメッセージかつワードウルフがプレイ中で参加者の発言だった場合の分岐
  *
  * @param {*} plId
  * @param {*} text
  * @param {*} replyToken
  * @param {*} promises
  */
-exports.playingBranch = async (plId, text, replyToken, promises) => {
+exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promises) => {
     const wordWolf = new WordWolf(plId);
     const genreStatus = await wordWolf.getGenreStatus();
     if (!genreStatus) { // ジャンルがまだ指定されてない場合
@@ -67,16 +67,77 @@ exports.playingBranch = async (plId, text, replyToken, promises) => {
             if (!settingConfirmStatus) {
                 if (text == "はい") {
                     promises.push(replyConfirmYes(plId, replyToken));
-                }else if(text == "いいえ"){
+                } else if (text == "いいえ") {
                     promises.push(replyConfirmNo(plId, replyToken));
                 }
             } else {
                 const finishedStatus = await wordWolf.getFinishedStatus();
                 if (!finishedStatus) {
                     if (text == "終了") { //TODO 参加者が言わないと無効
-                        promises.push(replyFinish(plId, replyToken));
+                        promises.push(replyFinish(plId, usePostback, replyToken));
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * eventがpostbackかつワードウルフがプレイ中で参加者のポストバックイベントだった場合の分岐
+ *
+ * @param {*} plId
+ * @param {*} userId
+ * @param {*} postbackData
+ * @param {*} replyToken
+ * @param {*} promises
+ */
+exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, promises) => {
+    const pl = new ParticipantList();
+    const wordWolf = new WordWolf(plId);
+
+    const finishedStatus = await wordWolf.getFinishedStatus();
+    if (finishedStatus) {
+
+        const resultStatus = await wordWolf.getResultStatus();
+        if (!resultStatus) {
+
+            const userIndex = await pl.getUserIndexFromUserId(plId, userId);
+            const voteState = await wordWolf.getVoteState(userIndex);
+            if (!voteState) { // postbackした参加者の投票がまだの場合
+
+                const isRevoting = await wordWolf.isRevoting();
+                if (!isRevoting) { // １回目の投票中だった場合
+
+                    const isUserIndex = await wordWolf.isUserIndex(postbackData);
+                    if (isUserIndex) { // postbackのデータが参加者のインデックスだった場合
+
+                        // この中は下の※と同じになるように
+                        if (userIndex != postbackData) { // 自分以外に投票していた場合
+                            promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
+
+                        } else { // 自分に投票していた場合
+                            promises.push(replySelfVote(plId, replyToken, userIndex));
+                        }
+                    }
+
+                } else { // 再投票中だった場合 
+
+                    const isRevoteCandidateIndex = await wordWolf.isRevoteCandidateIndex(postbackData);
+                    if (isRevoteCandidateIndex) { // postbackのデータが再投票の候補者のインデックスだった場合
+
+                        // ※
+                        if (userIndex != postbackData) { // 自分以外に投票していた場合
+                            promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
+
+                        } else { // 自分に投票していた場合
+                            promises.push(replySelfVote(plId, replyToken, userIndex));
+                        }
+                    }
+                }
+
+
+            } else {
+                promises.push(replyDuplicateVote(plId, replyToken, userIndex));
             }
         }
     }
@@ -107,7 +168,7 @@ const replyRollCallEnd = async (plId, replyToken) => {
     const wordWolf = new WordWolf(plId);
     const hasWordWolfStatus = await wordWolf.hasWordWolfStatus(); // ステータスデータがあるかどうか
 
-    if(!hasWordWolfStatus){
+    if (!hasWordWolfStatus) {
         await wordWolf.createWordWolfStatus(); // ワードウルフのゲーム進行状況データを作成
     }
 
@@ -159,7 +220,7 @@ const replyGenreChosen = async (plId, genreId, replyToken) => {
     // DB変更操作１、２
     // ワードセットはランダムで選んでる
     const hasWordWolfSetting = await wordWolf.hasWordWolfSetting(); // 設定テーブルを持っているかどうか
-    if(!hasWordWolfSetting){
+    if (!hasWordWolfSetting) {
         await wordWolf.createWordWolfSetting(); // 設定テーブル作成
     }
     await wordWolf.updateWordSetId(genreId).then(wordWolf.updateGenreStatusTrue());
@@ -248,7 +309,7 @@ const replyConfirmYes = async (plId, replyToken) => {
  * @param {*} plId
  * @param {*} replyToken
  */
-const replyConfirmNo = async (plId,replyToken) => {
+const replyConfirmNo = async (plId, replyToken) => {
     const replyMessage = require("../template/messages/word_wolf/replyConfirmNo");
 
     const wordWolf = new WordWolf(plId);
@@ -263,39 +324,128 @@ const replyConfirmNo = async (plId,replyToken) => {
     return client.replyMessage(replyToken, await replyMessage.main(genres));
 }
 
-const replyFinish = async (plId, replyToken) => {
-    const replyMessage = require("../template/messages/word_wolf/replyFinish");
+/**
+ * 話し合いが終了されたときのリプライ
+ * 
+ * DB変更操作は以下の通り
+ * １．投票データを作成
+ * ２．話し合い終了ステータスをtrueに更新
+ *
+ * @param {*} plId
+ * @param {*} usePostback
+ * @param {*} replyToken
+ * @returns
+ */
+const replyFinish = async (plId, usePostback, replyToken) => {
     const wordWolf = new WordWolf(plId);
 
+    // DB変更操作１，２
     // 投票データを挿入出来たら話し合い終了ステータスをtrueにする同期処理
     await wordWolf.createWordWolfVote().then(wordWolf.updateFinishedStatusTrue());
 
     const userNumber = await wordWolf.getUserNumber();
-    const userIndexes = await commonFunction.makeShuffuleNumberArray(userNumber);
+    const shuffleUserIndexes = await commonFunction.makeShuffuleNumberArray(userNumber);
 
     let userIds = [];
-    let profiles = [];
+    let displayNames = [];
 
     // 公平にするため投票用の順番はランダムにする
     for (let i = 0; i < userNumber; i++) {
-        userIds[i] = await wordWolf.getUserId(userIndexes[i]);
+        userIds[i] = await wordWolf.getUserId(shuffleUserIndexes[i]);
         const profile = await client.getProfile(userIds[i]);
-        profiles[i] = profile.displayName;
+        displayNames[i] = profile.displayName;
     }
 
-    return client.replyMessage(replyToken, await replyMessage.main(userIndexes, profiles));
+    if (usePostback) { // postbackを使う設定の場合
+        const replyMessage = require("../template/messages/word_wolf/replyFinish");
+        return client.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames));
+    }else{ // postbackを使わない設定の場合
+        const replyMessage = require("../template/messages/word_wolf/replyFinishWithoutPostback");
+        const pushMessage = require("../template/messages/word_wolf/pushFinishWithoutPostback");
+
+        const userIds = await wordWolf.getUserIds();
+
+        await client.replyMessage(replyToken, await replyMessage.main()); // 話し合い終了のグループリプライ
+
+        for(let userIndex=0;userIndex<userIds.length;userIndex++){
+            // 個人チャットで投票を送る
+            client.pushMessage(userIds[i], await pushMessage.main(shuffleUserIndexes,displayNames,userIndex));
+        }
+
+    }
 
 }
 
-exports.replyVoteSuccess = async (plId, replyToken, userIndex) => {
-    const replyMessage = require("../template/messages/word_wolf/replyVoteSuccess");
+/**
+ * Postbackで適切な投票が行われたときのリプライ
+ * 
+ * DB変更操作は以下の通り
+ * １．投票ユーザーの投票状況をtrueにする
+ * ２．得票ユーザーの得票数を+1する
+ * ３．この投票により全員の投票が確認され最多得票者が1人の場合、勝者を表示する
+ * ３’．この投票により全員の投票が確認され最多得票者が2人以上の場合、再投票データを作成する
+ * ４’．投票データを初期化する
+ *
+ * @param {*} plId
+ * @param {*} postbackData
+ * @param {*} replyToken
+ * @param {*} userIndex
+ * @returns
+ */
+const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
+
     const wordWolf = new WordWolf(plId);
-    const displayNames = await wordWolf.getDisplayNames();
-    const displayName = displayNames[userIndex];
-    return client.replyMessage(replyToken, await replyMessage.main(displayName));
+    const voterDisplayName = await wordWolf.getDisplayName(userIndex);
+
+    // DB変更操作１，２
+    // 投票ユーザーの投票状況をtrueにできたら得票ユーザーの得票数を+1する同期処理
+    await wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(postbackData))
+
+    const isVoteCompleted = await wordWolf.isVoteCompleted();
+    if (isVoteCompleted) {
+
+        const multipleMostVotedUserExists = await wordWolf.multipleMostVotedUserExists();
+        if (!multipleMostVotedUserExists) { // 最多得票者が一人だった場合
+
+            const replyMessage = require("../template/messages/word_wolf/replyAnnounceWinner");
+            const mostVotedUserIndex = await wordWolf.getMostVotedUserIndex(); // 最多得票者＝処刑者
+            const executorDisplayName = await wordWolf.getDisplayName(mostVotedUserIndex);
+            const isExecutorWolf = await wordWolf.isUserWolf(mostVotedUserIndex); // 処刑者がウルフかどうか
+
+            return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf));
+
+        } else { // 最多得票者が複数いた場合
+            const mostVotedUserIndexes = await wordWolf.getMostVotedUserIndexes(); // 最多得票者の配列
+            const isRevoting = await wordWolf.isRevoting();
+            if (!isRevoting) { // 一回目の投票の場合
+
+                const replyMessage = require("../template/messages/word_wolf/replyRevote");
+
+                // DB変更操作３’，４’
+                // 再投票データを作成したら、投票データを初期化する同期処理
+                await wordWolf.createWordWolfRevote(mostVotedUserIndexes).then(await wordWolf.initializeWordWolfVote());
+
+                const displayNames = await wordWolf.getDisplayNames();
+                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, displayNames, mostVotedUserIndexes));
+            } else {
+                const replyMessage = require("../template/messages/word_wolf/replyAnnounceWinnerInRevote");
+                const executorIndex = await wordWolf.chooseExecutorIndex(mostVotedUserIndexes); // 処刑者をランダムで決定
+                const executorDisplayName = await wordWolf.getDisplayName(executorIndex);
+                const isExecutorWolf = await wordWolf.isUserWolf(executorIndex); // 処刑者がウルフかどうか
+
+                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf));
+            }
+
+        }
+
+
+    } else {
+        const replyMessage = require("../template/messages/word_wolf/replyVoteSuccess");
+        return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName));
+    }
 }
 
-exports.replySelfVote = async (plId, replyToken, userIndex) => {
+const replySelfVote = async (plId, replyToken, userIndex) => {
     const replyMessage = require("../template/messages/word_wolf/replySelfVote");
     const wordWolf = new WordWolf(plId);
     const displayNames = await wordWolf.getDisplayNames();
@@ -303,10 +453,11 @@ exports.replySelfVote = async (plId, replyToken, userIndex) => {
     return client.replyMessage(replyToken, await replyMessage.main(displayName));
 }
 
-exports.replyDuplicateVote = async (plId, replyToken, userIndex) => {
+const replyDuplicateVote = async (plId, replyToken, userIndex) => {
     const replyMessage = require("../template/messages/word_wolf/replyDuplicateVote");
     const wordWolf = new WordWolf(plId);
     const displayNames = await wordWolf.getDisplayNames();
     const displayName = displayNames[userIndex];
     return client.replyMessage(replyToken, await replyMessage.main(displayName));
 }
+

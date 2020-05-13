@@ -102,7 +102,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async hasWordWolfSetting(){
+    async hasWordWolfSetting() {
         const query = {
             text: 'SELECT pl_id from word_wolf_setting where pl_id = $1',
             values: [this.plId]
@@ -128,7 +128,7 @@ module.exports = class WordWolf {
      *
      * @param {*} genreId
      */
-    async updateWordSetId(genreId){
+    async updateWordSetId(genreId) {
         const wordSetId = await this.chooseWordSetId(genreId);
 
         const query = {
@@ -321,6 +321,17 @@ module.exports = class WordWolf {
     }
 
     /**
+     * ParticipantListの転用メソッド
+     * 参加者のインデックスの配列を返す
+     *
+     * @returns
+     */
+    async getUserIndexes(){
+        const participantList = new ParticipantList();
+        return participantList.getUserIndexes(this.plId);
+    }
+
+    /**
      * 与えられたwolfNumberの数だけウルフのインデックスを重複のないように選んで返す
      * このインデックスは0から「参加者リストのuserの数-1」まで
      *
@@ -348,7 +359,6 @@ module.exports = class WordWolf {
                     }
                 }
             }
-            console.log(wolfIndexes);
             return wolfIndexes;
         } catch (err) {
             console.log(err);
@@ -421,7 +431,7 @@ module.exports = class WordWolf {
      *
      * @returns
      */
-    async hasWordWolfStatus(){
+    async hasWordWolfStatus() {
         const query = {
             text: 'SELECT pl_id from word_wolf_status where pl_id = $1',
             values: [this.plId]
@@ -681,6 +691,17 @@ module.exports = class WordWolf {
     }
 
     /**
+     * ParticipantListクラスのメソッド転用
+     * インデックス番号の参加者の表示名を返す
+     *
+     * @param {*} userIndex
+     */
+    async getDisplayName(userIndex) {
+        const participantList = new ParticipantList();
+        return participantList.getDisplayName(userIndex, this.plId);
+    }
+
+    /**
      * すべてのジャンルのidと名前を連想配列にして返す
      * 配列にするとidふりなおしたときだるいけん辞書にしとく
      *
@@ -757,6 +778,17 @@ module.exports = class WordWolf {
     async getUserId(index) {
         const participantList = new ParticipantList();
         return participantList.getUserId(this.plId, index);
+    }
+
+    /**
+     * ParticipantListクラスの転用メソッド
+     * 参加者のuserIdの配列を返す
+     *
+     * @returns
+     */
+    async getUserIds(){
+        const participantList = new ParticipantList();
+        return participantList.getUserIds(this.plId);
     }
 
 
@@ -840,6 +872,22 @@ module.exports = class WordWolf {
     }
 
     /**
+     * 投票が全員完了しているか否かを返す
+     *
+     * @returns
+     */
+    async isVoteCompleted() {
+        const status = await this.getVoteStatus();
+        let res = true;
+        for (let state of status) {
+            if (!state) {
+                res = false
+            }
+        }
+        return res;
+    }
+
+    /**
      * 与えられたuserIndexのユーザーの得票数を1増やす
      *
      * @param {*} userIndex
@@ -881,6 +929,216 @@ module.exports = class WordWolf {
         } catch (err) {
             console.log(err);
         }
+    }
+
+    /**
+     * 最多得票者が複数いるかどうかを返す
+     *
+     * @returns
+     */
+    async multipleMostVotedUserExists() {
+        const voteNumbers = await this.getVoteNumbers();
+        let res = false;
+        let max = -1;
+        for (let voteNumber of voteNumbers) {
+            if (voteNumber > max) {
+                max = voteNumber;
+                res = false;
+            } else if (voteNumber == max) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 最多得票数を返す
+     *
+     * @returns
+     */
+    async getMostVotedNumber() {
+        const voteNumbers = await this.getVoteNumbers();
+        const number = Math.max.apply(null, voteNumbers);
+        return number;
+    }
+
+    /**
+     * 最も得票数の多いユーザーのインデックスの配列を返す
+     * ※注意：最多得票者が1人のときは使わない！！
+     *
+     * @returns
+     */
+    async getMostVotedUserIndexes() {
+        const voteNumbers = await this.getVoteNumbers();
+        const mostVotedNumber = await this.getMostVotedNumber();
+        let indexes = [];
+        for (let i = 0; i < voteNumbers.length; i++) {
+            if (voteNumbers[i] == mostVotedNumber) {
+                indexes.push(i);
+            }
+        }
+        return indexes;
+    }
+
+    /**
+     * 再投票の候補者の配列を取得する
+     * 上の関数の結果と同じになるはず
+     * 冗長かな...？そのうち消すかも
+     *
+     * @returns
+     */
+    async getRevoteCandidateIndexes() {
+        const query = {
+            text: 'SELECT indexes FROM word_wolf_revote WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].indexes;
+        } catch (err) {
+            console.log(err);
+            console.log("再投票の候補者取得できんかった");
+        }
+    }
+
+    /**
+     * 与えられたテキストがユーザーインデックスかどうかを返す
+     * 不正なpostback対策
+     *
+     * @param {*} text
+     * @returns
+     */
+    async isUserIndex(text) {
+        const userIndexes = await this.getUserIndexes();
+        let res = false;
+        for (let userIndex of userIndexes) {
+            if (userIndex == text) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 与えられたテキストが再投票の候補者かどうかを返す
+     * 基本的に表示するのは候補者の名前だけだが前のゲームの投票Flex Messageなどでpostbackを送ってくることも想定されるため
+     *
+     * @param {*} text
+     * @returns
+     */
+    async isRevoteCandidateIndex(text) {
+        const candidateIndexes = await this.getRevoteCandidateIndexes();
+        let res = false;
+        for (let candidateIndex of candidateIndexes) {
+            if (text == candidateIndex) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 与えられたindexesで再投票データを作る
+     * indexesには再投票の候補者のインデックスの配列が入る
+     *
+     * @returns
+     */
+    async createWordWolfRevote(candidateIndexes) {
+        const query = {
+            text: 'INSERT INTO word_wolf_revote (pl_id,indexes) VALUES ($1,$2);',
+            values: [this.plId, candidateIndexes]
+        }
+        try {
+            await pg.query(query);
+            console.log("Word-Wolf Revote Inserted");
+            return true;
+        } catch (err) {
+            console.log(err);
+            console.log("新しいワードウルフの再投票データ作れんかったよ");
+            return false;
+        }
+    }
+
+    /**
+     * 投票データを初期化する
+     *
+     */
+    async initializeWordWolfVote() {
+        const userNumber = await this.getUserNumber();
+        let votes = [];
+        let status = [];
+        for (let i = 0; i < userNumber; i++) {
+            votes.push(0);
+            status.push(false);
+        }
+        const query = {
+            text: 'UPDATE word_wolf_vote set numbers = $1, status = $2 where pl_id = $3',
+            values: [votes, status, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Initialized Word-Wolf Vote");
+        } catch (err) {
+            console.log(err);
+            console.log("投票データ初期化できんかった");
+        }
+    }
+
+    /**
+     * 再投票データが存在するかを返す
+     *
+     * @returns
+     */
+    async isRevoting() {
+        const query = {
+            text: 'SELECT pl_id FROM word_wolf_revote WHERE pl_id = $1',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                return true;
+            } else if (res.rowCount > 1) {
+                throw "同じpl_idの再投票データが二個以上あるよ"
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+
+    /**
+     * 最も得票数の多いユーザーのインデックスを返す
+     * ※注意：最多得票数が並んでいるときは使わない！
+     *
+     * @returns
+     */
+    async getMostVotedUserIndex() {
+        const voteNumbers = await this.getVoteNumbers();
+        let res = -1;
+        let max = -1;
+        for (let i = 0; i < voteNumbers.length; i++) {
+            if (voteNumbers[i] > max) {
+                max = voteNumbers[i];
+                res = i;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 再投票で最多得票者が複数出た場合に最多得票者の中から処刑者をランダムで選ぶ
+     * そのユーザーのインデックスを返す
+     *
+     * @param {*} userIndexes
+     * @returns
+     */
+    async chooseExecutorIndex(userIndexes){
+        const index = Math.floor(Math.random() * userIndexes.length); // これは返さない
+        return userIndexes[index];
     }
 
     /**
@@ -955,6 +1213,26 @@ module.exports = class WordWolf {
         }
 
     }
+
+    /**
+     * 与えられたuserIndexのユーザーがウルフかどうかを返す
+     *
+     * @param {*} userIndex
+     * @returns
+     */
+    async isUserWolf(userIndex) {
+        const wolfIndexes = await this.getWolfIndexes();
+        let res = false;
+        for (let wolfIndex of wolfIndexes) {
+            if (userIndex == wolfIndex) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+
+
 
 
 }

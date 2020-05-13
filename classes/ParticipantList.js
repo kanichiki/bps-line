@@ -13,6 +13,8 @@ const config = {
 
 const client = new line.Client(config);
 
+const User = require("./User");
+
 module.exports = class ParticipantList {
 
 
@@ -45,6 +47,25 @@ module.exports = class ParticipantList {
         } catch (err) {
             console.log(err);
             console.log("新しい参加者リスト作れんかったよ");
+        }
+    }
+
+    /**
+     * グループidを返す
+     *
+     * @param {*} plId
+     * @returns
+     */
+    async getGroupId(plId){
+        const query = {
+            text: 'SELECT group_id FROM participant_list WHERE id = $1',
+            values: [plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].group_id;
+        } catch (err) {
+            console.log(err);
         }
     }
 
@@ -418,7 +439,7 @@ module.exports = class ParticipantList {
 
     /**
      * 発言グループのリスタート待ちの参加者リストのidを返す
-     * これ絶対使わんくない？
+     * これ絶対使わんくない？→使いました
      *
      * @param {*} groupId
      * @returns
@@ -437,6 +458,129 @@ module.exports = class ParticipantList {
     }
 
     // ここまでリスタート待ち状況
+
+    // ここから終了待ち状況
+
+    /**
+    * 発言グループが終了待ちの参加者リストを有するかどうかを返す
+    *
+    * @param
+    * @returns
+    */
+    async hasGroupFinishingParticipantList(groupId) {
+        const query = {
+            text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_finishing = true;',
+            values: [groupId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                console.log("true");
+                return true;
+            } else if (res.rowCount > 1) {
+                throw "終了待ちの参加者リストが１グループに２つ以上ある";
+            } else {
+                console.log("false");
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 参加者リストを終了待ちにする
+     * is_finishingをtrueにする
+     *
+     * @param {*} plId
+     */
+
+    async updateIsFinishingTrue(plId) {
+        const query = {
+            text: 'UPDATE participant_list set is_finishing = true where id = $1',
+            values: [plId]
+        };
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_finishingをtrueにできんやった");
+        }
+    }
+
+    /**
+     * 参加者リストのリスタート待ちを解除する
+     * is_finishingをfalseにする
+     *
+     * @param {*} plId
+     */
+
+    async updateIsFinishingFalse(plId) {
+        const query = {
+            text: 'UPDATE participant_list set is_finishing = false where id = $1',
+            values: [plId]
+        };
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_finishingをfalseにできんやった");
+        }
+    }
+
+    /**
+     * groupIdのグループの参加者リストのリスタート待ちをすべて解除する
+     * is_finishingをfalseにする
+     *
+     * @param {*} groupId
+     */
+
+    async updateIsFinishingOfGroupFalse(groupId) {
+        const query = {
+            text: 'UPDATE participant_list set is_finishing = false where group_id = $1',
+            values: [groupId]
+        }
+        try {
+            await pg.query(query);
+        } catch (err) {
+            console.log(err);
+            console.log("is_finishingを全部falseにできんやった");
+        }
+    }
+
+    // ここまで終了待ち状況
+
+    /**
+     * 終了時、参加者たちのplIdを消してあげる（該当plIdの場合）
+     *
+     * @param {*} plId
+     */
+    async deleteUsersPlId(plId){
+        const userIds = await this.getUserIds(plId);
+        for(let userId of userIds){
+            const user = new User(userId);
+            const userPlId = await user.getPlid();
+            if(userPlId==plId){
+                await user.deletePlId();
+            }
+        }
+    }
+
+    /**
+     * 全部終わらせる
+     * 全部falseにする
+     * ただし、ユーザーに関してはまだ参加中が該当のplIdのときのみ
+     *
+     * @param {*} plId
+     */
+    async finishParticipantList(plId){
+        await this.updateIsRecruitingFalse(plId);
+        await this.updateIsPlayingFalse(plId);
+        await this.updateIsRestartingFalse(plId);
+        await this.updateIsFinishingFalse(plId);
+
+        await this.deleteUsersPlId(plId);
+    }
 
     /**
      * 参加者の表示名の配列を返す
@@ -460,6 +604,18 @@ module.exports = class ParticipantList {
         }
     }
 
+    /**
+     * インデックス番号のユーザーの表示名を返す
+     *
+     * @param {*} userIndex
+     * @param {*} plId
+     */
+    async getDisplayName(userIndex, plId) {
+        const displayNames = await this.getDisplayNames(plId);
+        const displayName = displayNames[userIndex];
+        return displayName;
+    }
+
 
 
 
@@ -481,6 +637,22 @@ module.exports = class ParticipantList {
         } catch (err) {
             console.log(err);
         }
+    }
+
+    /**
+     * ユーザーのインデックスの配列を返す
+     * つまり、ユーザー数-1までの連続整数配列返すだけ
+     *
+     * @param {*} plId
+     * @returns
+     */
+    async getUserIndexes(plId) {
+        const userNumber = await this.getUserNumber(plId);
+        let res = [];
+        for (let i = 0; i < userNumber; i++) {
+            res[i] = i;
+        }
+        return res;
     }
 
     /**

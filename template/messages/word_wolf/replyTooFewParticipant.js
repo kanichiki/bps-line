@@ -25,25 +25,28 @@ exports.main = async (displayNames,userNumber,recruitingGameName) => {
                             "style": "link",
                             "height": "sm",
                             "action": {
-                                "type": "message",
-                                "label": "参加",
-                                "text": "参加"
+                              "type": "message",
+                              "label": "参加",
+                              "text": "参加"
                             }
-                        },
-                        {
+                          },
+                          {
+                            "type": "separator"
+                          },
+                          {
                             "type": "button",
                             "style": "link",
                             "height": "sm",
                             "action": {
-                                "type": "message",
-                                "label": "参加受付終了",
-                                "text": "参加受付終了"
+                              "type": "message",
+                              "label": "受付終了",
+                              "text": "受付終了"
                             }
-                        },
-                        {
+                          },
+                          {
                             "type": "spacer",
                             "size": "sm"
-                        }
+                          }
                     ],
                     "flex": 0
                 }

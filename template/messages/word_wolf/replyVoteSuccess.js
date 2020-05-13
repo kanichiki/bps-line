@@ -1,8 +1,8 @@
-exports.main = async (displayName) => {
+exports.main = async (voterDisplayName) => {
     return [
         {
             type: "text",
-            text: `${displayName}さん、投票完了しました！`
+            text: `${voterDisplayName}さん、投票完了しました！`
         }
     ]
 }

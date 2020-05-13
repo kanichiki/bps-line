@@ -4,8 +4,8 @@ const line = require("@line/bot-sdk");
 
 const ParticipantList = require("../classes/ParticipantList");
 const PlayingGame = require("../classes/PlayingGame");
-const WordWolf = require("../classes/WordWolf");
-const Game = require("../classes/Game")
+const User = require("../classes/User");
+const Game = require("../classes/Game");
 
 const wordWolfBranch = require("./wordWolfBranch");
 
@@ -47,7 +47,10 @@ const main = async (req, res) => {
     const eventType = event.type;
     const pl = new ParticipantList();
     const userId = event.source.userId;
+    const user = new User(userId);
     const replyToken = event.replyToken;
+
+    const usePostback = true;
 
     if (eventType == "message") {
 
@@ -56,6 +59,14 @@ const main = async (req, res) => {
 
       if (toType == "group") {
         // TODO 友達追加されていないユーザーの場合の分岐
+        // 初めの処理
+        const isUser = await user.isUser();
+        if (isUser) {
+          if (text != "参加") {
+            await user.updateIsRestartingFalse(); // もし「参加」以外の言葉がユーザーから発言されたら確認状況をリセットする
+          }
+        }
+
 
         const groupId = event.source.groupId;
 
@@ -68,10 +79,10 @@ const main = async (req, res) => {
           const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
           const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
           if (isRestarting) {
-            // ここの内容は※マークのところと同じになるように
+            // ここの内容は※1マークのところと同じになるように
             // 本当は統合したいが条件分岐がぐちゃぐちゃになる
 
-            promises.push(replyRollCall(groupId, gameId, replyToken));
+            promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
             continue;
           } else if (isRecruiting) {
 
@@ -92,9 +103,9 @@ const main = async (req, res) => {
             }
 
           } else {
-            // ※
+            // ※1
             // 参加を募集する旨のリプライを返す
-            promises.push(replyRollCall(groupId, gameId, replyToken));
+            promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
             continue;
           }
         } else { // 発言の内容がゲーム名じゃないなら
@@ -104,23 +115,64 @@ const main = async (req, res) => {
           const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
           if (isRecruiting) { // 参加者募集中の場合
             const plId = await pl.getRecruitingParticipantListId(groupId); // 発言グループの募集中の参加者リストを返す
+            console.log("募集中の参加者リストidは" + plId);
 
             if (text == "参加") {
-              // 参加意思表明に対するリプライ
-              // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-              promises.push(replyRollCallReaction(plId, userId, replyToken));
-              continue;
+              if (isUser) { // ユーザーテーブルにデータがあるか
+                const hasPlId = await user.hasPlId();
+                const isUserRestarting = await user.isRestarting();
+                if (hasPlId) { // ユーザーに参加中の参加者リストがある場合
+
+                  const isUserParticipant = await pl.isUserParticipant(plId, userId)
+                  if (!isUserParticipant) { // そのplIdがグループで募集中のものと違うなら（つまり参加中じゃないなら）
+
+                    if (isUserRestarting) { // 確認した上で参加と言ってるなら
+
+                      // この内容は※2と一致
+                      // 参加意思表明に対するリプライ
+                      // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
+                      promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                      continue;
+                    } else { // まだ確認してなかったら
+
+                      promises.push(replyParticipateConfirm(userId, replyToken));
+                      continue;
+                    }
+                  } else {
+                    // ※2
+                    // 参加意思表明に対するリプライ
+                    // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
+                    promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                    continue;
+                  }
+                } else { // 参加中参加者リストがない場合
+                  const isUserParticipant = false; // 便宜的に
+                  // ※2
+                  // 参加意思表明に対するリプライ
+                  // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
+                  promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                  continue;
+                }
+              } else { // ユーザーテーブルにデータがない場合
+                const isUserRestarting = false; // 便宜的に
+                const isUserParticipant = false;
+                // ※2
+                // 参加意思表明に対するリプライ
+                // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
+                promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                continue;
+              }
             }
 
             const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
             if (isUserParticipant) { // 参加受付を終了できるのは参加済みの者のみ
 
-              if (text == "参加受付終了") {
+              if (text == "受付終了") {
                 const playingGame = new PlayingGame(plId);
                 const gameId = await playingGame.getGameId();
                 if (gameId == 1) { // ワードウルフの場合
 
-                  await wordWolfBranch.rollCallBranch(plId,replyToken,promises);
+                  await wordWolfBranch.rollCallBranch(plId, replyToken, promises);
                   continue;
                 }
               }
@@ -139,7 +191,7 @@ const main = async (req, res) => {
               const gameId = await playingGame.getGameId();
               if (gameId == 1) { // プレイするゲームがワードウルフの場合
 
-                await wordWolfBranch.playingBranch(plId,text,replyToken,promises);
+                await wordWolfBranch.playingMessageBranch(plId, text, replyToken, usePostback, promises);
                 continue;
               }
             }
@@ -149,7 +201,7 @@ const main = async (req, res) => {
         // promises.push(replyDefaultGroupMessage(event));
 
       } else if (toType == "user") {
-        promises.push(replyDefaultPersonalMessage(event));
+        // promises.push(replyDefaultPersonalMessage(event));
       }
 
 
@@ -167,6 +219,9 @@ const main = async (req, res) => {
             const playingGame = new PlayingGame(plId);
             const gameId = await playingGame.getGameId();
             if (gameId == 1) {
+              await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
+              continue;
+              /*
               const wordWolf = new WordWolf(plId);
               const finishedStatus = await wordWolf.getFinishedStatus();
               if (finishedStatus) {
@@ -188,6 +243,7 @@ const main = async (req, res) => {
                   }
                 }
               }
+              */
             }
           }
         }
@@ -195,7 +251,7 @@ const main = async (req, res) => {
     }
   };
 
-  Promise.all(promises).then(console.log("pass")).catch(err => console.log(err));
+  Promise.all(promises).then(console.log("成功")).catch(err => console.log(err));
 }
 
 
@@ -207,25 +263,27 @@ const main = async (req, res) => {
  * @returns
  */
 
+/*
 const replyDefaultPersonalMessage = async (event) => {
-  const pro = await client.getProfile(event.source.userId);
-  // await viewSource(event);
+ const pro = await client.getProfile(event.source.userId);
+ // await viewSource(event);
 
-  return client.replyMessage(event.replyToken, [
-    {
-      type: "text",
-      text: `${pro.displayName}さん、今「${event.message.text}」って言いました？`
-    }
-  ])
+ return client.replyMessage(event.replyToken, [
+   {
+     type: "text",
+     text: `${pro.displayName}さん、今「${event.message.text}」って言いました？`
+   }
+ ])
 }
 
+*/
 
 
 /**
  * 参加受付用リプライ
  * 
  * DB変更操作は以下の通り
- * １．発言グループの参加者リストの募集中、プレイ中を解除
+ * １．発言グループの参加者リストの募集中、プレイ中、その他ステータス、ユーザーの参加中を解除
  * ２．participant_listテーブルにデータを挿入
  * ３．遊ぶゲームをgameテーブルに追加
  * 
@@ -233,15 +291,20 @@ const replyDefaultPersonalMessage = async (event) => {
  *
  * @param {*} groupId
  * @param {*} gameId
+ * @param {*} isRestarting
  * @param {*} replyToken
  */
-const replyRollCall = async (groupId, gameId, replyToken) => {
+const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
   const replyMessage = require("../template/messages/replyRollCall");
   const pl = new ParticipantList();
 
+
   // DB変更操作１
-  await pl.updateIsPlayingOfGroupFalse(groupId); // 参加者募集の前に以前の発言グループのプレイ中を解除
-  await pl.updateIsRecruitingOfGroupFalse(groupId); // 募集中も解除
+  if (isRestarting) {
+    const oldPlId = await pl.getRestartingParticipantListId(groupId); // リスタート待ちの参加者リストとってくる
+    await pl.finishParticipantList(oldPlId);
+    console.log("plIdは" + oldPlId);
+  }
 
   // DB変更操作２
   await pl.createPaticipantList(groupId);
@@ -263,15 +326,22 @@ const replyRollCall = async (groupId, gameId, replyToken) => {
  * 
  * DB変更操作は以下の通り
  * １．ユーザーが参加済みでない場合、参加者リストに追加
+ * ２．ユーザーのpl_idを入れてあげる
+ * ３．リスタート待ちだった場合、前の参加者リストを全部終わらせる
+ * ２’．　ユーザーのデータがなかったら作る
  *
  * @param {*} plId
  * @param {*} userId
+ * @param {*} isUser
+ * @param {*} isUserParticipant
+ * @param {*} isUserRestarting
  * @param {*} replyToken
  * @returns
  */
-const replyRollCallReaction = async (plId, userId, replyToken) => {
+const replyRollCallReaction = async (plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken) => {
   const replyMessage = require("../template/messages/replyRollCallReaction");
   const pl = new ParticipantList();
+  const user = new User(userId);
 
   const recruitingGame = new PlayingGame(plId);
   const recruitingGameName = await recruitingGame.getGameName();
@@ -279,18 +349,58 @@ const replyRollCallReaction = async (plId, userId, replyToken) => {
   const profile = await client.getProfile(userId);
   const displayName = profile.displayName;
 
-  const isUserParticipant = await pl.isUserParticipant(plId, userId); // ユーザーが参加者リストにいるかどうか
-
   // DB変更操作１
-  if (!isUserParticipant) {
-    await pl.addUserToPaticipantList(plId, userId)
+  if (!isUserParticipant) { // ユーザーがまだ参加してない場合
+    await pl.addUserToPaticipantList(plId, userId);
+    if (isUser) { // ユーザーデータがある場合
+      if (isUserRestarting) { // ユーザーがリスタート待ちの場合
+        const pushMessage = require("../template/messages/pushGameFinish");
+
+        await user.updateIsRestartingFalse(); // is_restartingをfalseにしてあげる
+
+        const oldPlId = await user.getPlid();
+        await pl.finishParticipantList(oldPlId); // ここで前の参加者リストを全部終わらせる
+        const oldGroupId = await pl.getGroupId(oldPlId);
+
+        // 終了したゲームのグループにその旨を送る
+        await client.pushMessage(oldGroupId, await pushMessage.main());
+      }
+
+      await user.updatePlId(plId); // これはあとに実行しないとこのplIdが消えちゃう
+
+    } else { // ユーザーデータがない場合
+      await user.createUser(plId);
+    }
+
   }
+
+
 
   const displayNames = await pl.getDisplayNames(plId); // 参加者リストのユーザー全員の表示名の配列
 
-  console.log("displayNames: " + displayNames)
 
   return client.replyMessage(replyToken, await replyMessage.main(recruitingGameName, displayName, isUserParticipant, displayNames));
+}
+
+/**
+ * ユーザーに他に参加中のゲームがある場合に「参加」と送られてきたときのリプライ
+ * 
+ * DB変更操作は以下の通り
+ * １．is_restartingをtrueにする
+ *
+ * @param {*} userId
+ * @param {*} replyToken
+ * @returns
+ */
+const replyParticipateConfirm = async (userId, replyToken) => {
+  const replyMessage = require("../template/messages/replyParticipateConfirm");
+  const user = new User(userId);
+
+  // DB変更操作１．
+  await user.updateIsRestartingTrue(); // 確認状況をtrueにする
+  const displayName = await user.getDisplayName();
+
+  return client.replyMessage(replyToken, await replyMessage.main(displayName));
 }
 
 
@@ -347,6 +457,7 @@ const replyRestartConfirmIfPlaying = async (plId, gameId, replyToken) => {
   // 一応newGameNameも渡すがまだ使ってない
   return client.replyMessage(replyToken, await replyMessage.main(playingGameName, newGameName));
 }
+
 
 
 module.exports = router;
