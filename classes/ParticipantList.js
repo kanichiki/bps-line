@@ -116,7 +116,7 @@ module.exports = class ParticipantList {
 
 
     /**
-     * userIdの発言者がplIdの参加者リストに含まれるかどうか
+     * userIdがplIdの参加者リストに含まれるかどうか
      *
      * @param 
      * @param

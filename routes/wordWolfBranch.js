@@ -36,6 +36,7 @@ exports.rollCallBranch = async (plId, replyToken, promises) => {
  * @param {*} plId
  * @param {*} text
  * @param {*} replyToken
+ * @param {*} usePostBack
  * @param {*} promises
  */
 exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promises) => {
@@ -76,6 +77,15 @@ exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promi
                     if (text == "終了") { //TODO 参加者が言わないと無効
                         promises.push(replyFinish(plId, usePostback, replyToken));
                     }
+                } else { // 話し合いが終了していた場合
+
+                    const resultStatus = await wordWolf.getResultStatus();
+                    if (!resultStatus) { // すべての結果発表がまだなら
+                        if (text == "ワードを見る") {
+                            promises.push(replyAnnounceResult(plId, replyToken));
+                        }
+                    }
+
                 }
             }
         }
@@ -98,8 +108,8 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
     const finishedStatus = await wordWolf.getFinishedStatus();
     if (finishedStatus) {
 
-        const resultStatus = await wordWolf.getResultStatus();
-        if (!resultStatus) {
+        const winnerStatus = await wordWolf.getWinnerStatus();
+        if (!winnerStatus) { // 勝者の発表がまだの場合
 
             const userIndex = await pl.getUserIndexFromUserId(plId, userId);
             const voteState = await wordWolf.getVoteState(userIndex);
@@ -108,11 +118,12 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
                 const isRevoting = await wordWolf.isRevoting();
                 if (!isRevoting) { // １回目の投票中だった場合
 
-                    const isUserIndex = await wordWolf.isUserIndex(postbackData);
-                    if (isUserIndex) { // postbackのデータが参加者のインデックスだった場合
+                    // const isUserIndex = await wordWolf.isUser(postbackData); 投票をユーザーインデックスからユーザーidに変更したので使わない
+                    const isPostbackParticipant = await pl.isUserParticipant(plId, postbackData);
+                    if (isPostbackParticipant) { // postbackのデータが参加者のインデックスだった場合
 
                         // この中は下の※と同じになるように
-                        if (userIndex != postbackData) { // 自分以外に投票していた場合
+                        if (userId != postbackData) { // 自分以外に投票していた場合
                             promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
 
                         } else { // 自分に投票していた場合
@@ -121,12 +132,12 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
                     }
 
                 } else { // 再投票中だった場合 
-
-                    const isRevoteCandidateIndex = await wordWolf.isRevoteCandidateIndex(postbackData);
+                    const votedUserIndex = await pl.getUserIndexFromUserId(plId, postbackData);
+                    const isRevoteCandidateIndex = await wordWolf.isRevoteCandidateIndex(votedUserIndex);
                     if (isRevoteCandidateIndex) { // postbackのデータが再投票の候補者のインデックスだった場合
 
                         // ※
-                        if (userIndex != postbackData) { // 自分以外に投票していた場合
+                        if (userId != postbackData) { // 自分以外に投票していた場合
                             promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
 
                         } else { // 自分に投票していた場合
@@ -358,8 +369,10 @@ const replyFinish = async (plId, usePostback, replyToken) => {
 
     if (usePostback) { // postbackを使う設定の場合
         const replyMessage = require("../template/messages/word_wolf/replyFinish");
-        return client.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames));
-    }else{ // postbackを使わない設定の場合
+
+        return client.replyMessage(replyToken, await replyMessage.main(displayNames, userIds));
+
+    } else { // postbackを使わない設定の場合
         const replyMessage = require("../template/messages/word_wolf/replyFinishWithoutPostback");
         const pushMessage = require("../template/messages/word_wolf/pushFinishWithoutPostback");
 
@@ -367,9 +380,9 @@ const replyFinish = async (plId, usePostback, replyToken) => {
 
         await client.replyMessage(replyToken, await replyMessage.main()); // 話し合い終了のグループリプライ
 
-        for(let userIndex=0;userIndex<userIds.length;userIndex++){
+        for (let userIndex = 0; userIndex < userIds.length; userIndex++) {
             // 個人チャットで投票を送る
-            client.pushMessage(userIds[i], await pushMessage.main(shuffleUserIndexes,displayNames,userIndex));
+            client.pushMessage(userIds[userIndex], await pushMessage.main(shuffleUserIndexes, displayNames, userIndex));
         }
 
     }
@@ -387,19 +400,21 @@ const replyFinish = async (plId, usePostback, replyToken) => {
  * ４’．投票データを初期化する
  *
  * @param {*} plId
- * @param {*} postbackData
+ * @param {*} postbackData : 得票者のuserId
  * @param {*} replyToken
- * @param {*} userIndex
+ * @param {*} userIndex : 投票者のインデックス
  * @returns
  */
 const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
 
     const wordWolf = new WordWolf(plId);
+    const pl = new ParticipantList();
     const voterDisplayName = await wordWolf.getDisplayName(userIndex);
 
     // DB変更操作１，２
     // 投票ユーザーの投票状況をtrueにできたら得票ユーザーの得票数を+1する同期処理
-    await wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(postbackData))
+    const votedUserIndex = await pl.getUserIndexFromUserId(plId, postbackData);
+    await wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(votedUserIndex));
 
     const isVoteCompleted = await wordWolf.isVoteCompleted();
     if (isVoteCompleted) {
@@ -411,6 +426,8 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
             const mostVotedUserIndex = await wordWolf.getMostVotedUserIndex(); // 最多得票者＝処刑者
             const executorDisplayName = await wordWolf.getDisplayName(mostVotedUserIndex);
             const isExecutorWolf = await wordWolf.isUserWolf(mostVotedUserIndex); // 処刑者がウルフかどうか
+
+            await wordWolf.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
 
             return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf));
 
@@ -426,12 +443,15 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
                 await wordWolf.createWordWolfRevote(mostVotedUserIndexes).then(await wordWolf.initializeWordWolfVote());
 
                 const displayNames = await wordWolf.getDisplayNames();
-                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, displayNames, mostVotedUserIndexes));
+                const userIds = await pl.getUserIds(plId);
+                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, displayNames, userIds, mostVotedUserIndexes));
             } else {
                 const replyMessage = require("../template/messages/word_wolf/replyAnnounceWinnerInRevote");
                 const executorIndex = await wordWolf.chooseExecutorIndex(mostVotedUserIndexes); // 処刑者をランダムで決定
                 const executorDisplayName = await wordWolf.getDisplayName(executorIndex);
                 const isExecutorWolf = await wordWolf.isUserWolf(executorIndex); // 処刑者がウルフかどうか
+
+                await wordWolf.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
 
                 return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf));
             }
@@ -459,5 +479,22 @@ const replyDuplicateVote = async (plId, replyToken, userIndex) => {
     const displayNames = await wordWolf.getDisplayNames();
     const displayName = displayNames[userIndex];
     return client.replyMessage(replyToken, await replyMessage.main(displayName));
+}
+
+const replyAnnounceResult = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyAnnounceResult");
+    const wordWolf = new WordWolf(plId);
+    const pl = new ParticipantList();
+
+    const displayNames = await pl.getDisplayNames(plId);
+    const wolfIndexes = await wordWolf.getWolfIndexes();
+
+    const citizenWord = await wordWolf.getCitizenWord();
+    const wolfWord = await wordWolf.getWolfWord();
+
+    await wordWolf.updateResultStatusTrue();
+    await pl.finishParticipantList(plId);
+
+    return client.replyMessage(replyToken, await replyMessage.main(displayNames,wolfIndexes,citizenWord,wolfWord));
 }
 

@@ -1,19 +1,54 @@
-exports.main = async (userIndexes, profiles) => {
+exports.main = async (displayNames,userIds) => {
+    
     let voteMessages = [];
 
-    for (let i = 0; i < userIndexes.length; i++) {
+    // どうやら整数は送れないらしい
+    for (let i = 0; i < userIds.length; i++) {
         const voteMessage = {
             "type": "button",
             "action": {
                 "type": "postback",
-                "label": profiles[i],
-                "data": userIndexes[i]
+                "label": displayNames[i],
+                "data": userIds[i]
             }
         }
         voteMessages.push(voteMessage);
     }
+    
+
+    return [
+        {
+            type: "text",
+            text: `話し合いを終了します`
+        },
+        {
+            "type": "flex",
+            "altText": "This is a Flex Message",
+            "contents": {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "ウルフだと思う人に投票してください",
+                            "wrap": true,
+                            "size": "md"
+                        }
+                    ]
+                },
+                "footer": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": voteMessages
+                }
+            }
+        }
+    ]
 
 
+    /*  iPhoneとiPadのみ動かない
     return [
         {
             type: "text",
@@ -50,7 +85,8 @@ exports.main = async (userIndexes, profiles) => {
             }
         }
     ]
-    
+    */
+
     /* let voteMessages = [];
 
     for (let i = 0; i < userIndexes.length; i++) {

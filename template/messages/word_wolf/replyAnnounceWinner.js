@@ -16,8 +16,38 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf) => {
             text: `${executorDisplayName}さんが処刑されました`
         },
         {
-            type: "text",
-            text: message
+            "type": "flex",
+            "altText": "再投票",
+            "contents": {
+                "type": "bubble",
+                "body": {
+                  "type": "box",
+                  "layout": "vertical",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": message,
+                      "size": "lg",
+                      "wrap": true,
+                      "align": "center"
+                    }
+                  ]
+                },
+                "footer": {
+                  "type": "box",
+                  "layout": "vertical",
+                  "contents": [
+                    {
+                      "type": "button",
+                      "action": {
+                        "type": "message",
+                        "label": "ワードを見る",
+                        "text": "ワードを見る"
+                      }
+                    }
+                  ]
+                }
+              }
         }
     ]
 }

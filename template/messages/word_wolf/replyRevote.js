@@ -1,4 +1,4 @@
-exports.main = async (voterDisplayName, displayNames, mostVotedUserIndexes) => {
+exports.main = async (voterDisplayName, displayNames,userIds, mostVotedUserIndexes) => {
     let revoteMessages = [];
 
     for (let mostVotedUserIndex of mostVotedUserIndexes) {
@@ -7,7 +7,7 @@ exports.main = async (voterDisplayName, displayNames, mostVotedUserIndexes) => {
             "action": {
                 "type": "postback",
                 "label": displayNames[mostVotedUserIndex],
-                "data": mostVotedUserIndex
+                "data": userIds[mostVotedUserIndex]
             }
         }
         revoteMessages.push(revoteMessage);
@@ -24,7 +24,7 @@ exports.main = async (voterDisplayName, displayNames, mostVotedUserIndexes) => {
         },
         {
             "type": "flex",
-            "altText": "This is a Flex Message",
+            "altText": "再投票",
             "contents": {
                 "type": "bubble",
                 "body": {

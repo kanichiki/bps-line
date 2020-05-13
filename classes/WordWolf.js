@@ -590,7 +590,7 @@ module.exports = class WordWolf {
     }
 
     /**
-     * プレイ終了ステータスをtrueにする
+     * 話し合い終了ステータスをtrueにする
      *
      */
     async updateFinishedStatusTrue() {
@@ -607,7 +607,7 @@ module.exports = class WordWolf {
     }
 
     /**
-     * プレイが終了しているどうかを返す
+     * 話し合いが終了しているどうかを返す
      *
      * @returns
      */
@@ -619,6 +619,41 @@ module.exports = class WordWolf {
         try {
             const res = await pg.query(query);
             return res.rows[0].finished;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 勝者の発表状況をtrueにする
+     *
+     */
+    async updateWinnerStatusTrue() {
+        const query = {
+            text: 'UPDATE word_wolf_status set winner = true where pl_id = $1',
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated winner status");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 勝者発表済みかどうかを返す
+     *
+     * @returns
+     */
+    async getWinnerStatus() {
+        const query = {
+            text: 'SELECT winner FROM word_wolf_status WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].winner;
         } catch (err) {
             console.log(err);
         }
