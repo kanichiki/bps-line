@@ -1,13 +1,13 @@
-exports.main = async (displayNames,wolfIndexes,citizenWord,wolfWord) => {
+exports.main = async (displayNames, wolfIndexes, citizenWord, wolfWord) => {
     let resultMessage = "それぞれの単語は以下の通りです\n\n";
 
     let result = [];
     for (let i = 0; i < displayNames.length; i++) {
-        let word =""
+        let word = ""
         if (wolfIndexes.indexOf(i) == -1) {
-            word = "・"+displayNames[i]+" : "+citizenWord;
+            word = "・" + displayNames[i] + " : " + citizenWord;
         } else {
-            word = "・"+displayNames[i]+" : "+wolfWord+" ←ウルフ";
+            word = "・" + displayNames[i] + " : " + wolfWord + " ←ウルフ";
         }
         result.push(word);
     }
