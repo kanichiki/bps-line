@@ -50,23 +50,34 @@ exports.main = async (wolfNumber, genreName) => {
                 },
                 "footer": {
                   "type": "box",
-                  "layout": "vertical",
+                  "layout": "horizontal",
+                  "spacing":"sm",
                   "contents": [
                     {
                       "type": "button",
+                      "style": "link",
+                      "height": "sm",
                       "action": {
                         "type": "message",
                         "label": "はい",
                         "text": "はい"
-                      }
+                      },
+                      "color": "#E83b10",
+                      "style": "primary"
+                    },
+                    {
+                      "type": "separator"
                     },
                     {
                       "type": "button",
+                      "style": "link",
+                      "height": "sm",
                       "action": {
                         "type": "message",
                         "label": "いいえ",
                         "text": "いいえ"
-                      }
+                      },
+                      "color": "#E83b10"
                     }
                   ]
                 }

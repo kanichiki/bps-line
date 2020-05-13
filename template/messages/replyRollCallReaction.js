@@ -30,26 +30,28 @@ exports.main = async (recruitingGameName,displayName,isUserParticipant,displayNa
                   "contents": [
                     {
                       "type": "button",
-                      "style": "link",
                       "height": "sm",
                       "action": {
                         "type": "message",
                         "label": "参加",
                         "text": "参加"
-                      }
+                      },
+                      "color": "#E83b10",
+                      "style": "primary"
                     },
                     {
                       "type": "separator"
                     },
                     {
                       "type": "button",
-                      "style": "link",
                       "height": "sm",
                       "action": {
                         "type": "message",
                         "label": "受付終了",
                         "text": "受付終了"
-                      }
+                      },
+                      "color": "#E83b10",
+                      "style": "primary"
                     },
                     {
                       "type": "spacer",

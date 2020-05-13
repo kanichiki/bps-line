@@ -10,7 +10,8 @@ exports.main = async (displayNames,userIds) => {
                 "type": "postback",
                 "label": displayNames[i],
                 "data": userIds[i]
-            }
+            },
+            "color": "#E83b10"
         }
         voteMessages.push(voteMessage);
     }

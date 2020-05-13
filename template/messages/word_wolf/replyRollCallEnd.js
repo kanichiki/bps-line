@@ -14,7 +14,9 @@ exports.main = async (displayNames, genres) => {
                             "type": "message",
                             "label": genres[id],
                             "text": genres[id]
-                        }
+                        },
+                        "color": "#E83b10",
+                        "style": "link"
                     }
                 ]
             }

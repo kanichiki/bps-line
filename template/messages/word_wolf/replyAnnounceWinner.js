@@ -43,7 +43,8 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf) => {
                         "type": "message",
                         "label": "ワードを見る",
                         "text": "ワードを見る"
-                      }
+                      },
+                      "color": "#E83b10"
                     }
                   ]
                 }

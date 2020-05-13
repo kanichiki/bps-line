@@ -1,4 +1,4 @@
-exports.main = async (displayNames,userNumber,recruitingGameName) => {
+exports.main = async (displayNames, userNumber, recruitingGameName) => {
     const displayNamesSan = displayNames.join("さん、\n");
 
     return [
@@ -25,28 +25,32 @@ exports.main = async (displayNames,userNumber,recruitingGameName) => {
                             "style": "link",
                             "height": "sm",
                             "action": {
-                              "type": "message",
-                              "label": "参加",
-                              "text": "参加"
-                            }
-                          },
-                          {
+                                "type": "message",
+                                "label": "参加",
+                                "text": "参加"
+                            },
+                            "color": "#E83b10",
+                            "style": "primary"
+                        },
+                        {
                             "type": "separator"
-                          },
-                          {
+                        },
+                        {
                             "type": "button",
                             "style": "link",
                             "height": "sm",
                             "action": {
-                              "type": "message",
-                              "label": "受付終了",
-                              "text": "受付終了"
-                            }
-                          },
-                          {
+                                "type": "message",
+                                "label": "受付終了",
+                                "text": "受付終了"
+                            },
+                            "color": "#E83b10",
+                            "style": "primary"
+                        },
+                        {
                             "type": "spacer",
                             "size": "sm"
-                          }
+                        }
                     ],
                     "flex": 0
                 }

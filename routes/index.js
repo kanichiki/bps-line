@@ -221,32 +221,13 @@ const main = async (req, res) => {
             if (gameId == 1) {
               await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
               continue;
-              /*
-              const wordWolf = new WordWolf(plId);
-              const finishedStatus = await wordWolf.getFinishedStatus();
-              if (finishedStatus) {
-                const resultStatus = await wordWolf.getResultStatus();
-                if (!resultStatus) {
-
-                  const userIndex = await pl.getUserIndexFromUserId(plId, userId);
-                  const voteState = await wordWolf.getVoteState(userIndex);
-
-                  if (!voteState) {
-                    if (userIndex != postbackData) {
-                      wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(postbackData).then(promises.push(wordWolfBranch.replyVoteSuccess(plId, replyToken, userIndex))));
-                      continue;
-                    } else {
-                      promises.push(wordWolfBranch.replySelfVote(plId, replyToken, userIndex));
-                    }
-                  } else {
-                    promises.push(wordWolfBranch.replyDuplicateVote(plId, replyToken, userIndex));
-                  }
-                }
-              }
-              */
             }
           }
         }
+      }
+    }else if(eventType == "join"){
+      if(event.source.type=="group"){
+        promises.push(joinGroupMessage(event.replyToken));
       }
     }
   };
@@ -254,6 +235,10 @@ const main = async (req, res) => {
   Promise.all(promises).then(console.log("成功")).catch(err => console.log(err));
 }
 
+const joinGroupMessage = async (replyToken) => {
+  const replyMessage = require("../template/messages/joinGroupMessage");
+  client.replyMessage(replyToken, await replyMessage.main());
+}
 
 
 /**

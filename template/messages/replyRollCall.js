@@ -22,7 +22,9 @@ exports.main = async (gameName) => {
                                 "type": "message",
                                 "label": "参加",
                                 "text": "参加"
-                            }
+                            },
+                            "color": "#E83b10",
+                            "style": "primary"
                         },
                         {
                             "type": "spacer",

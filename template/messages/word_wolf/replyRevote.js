@@ -8,7 +8,8 @@ exports.main = async (voterDisplayName, displayNames,userIds, mostVotedUserIndex
                 "type": "postback",
                 "label": displayNames[mostVotedUserIndex],
                 "data": userIds[mostVotedUserIndex]
-            }
+            },
+            "color": "#E83b10"
         }
         revoteMessages.push(revoteMessage);
     }

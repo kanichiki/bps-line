@@ -9,7 +9,8 @@ exports.main = async (genreName,wolfNumberOptions) => {
               "type": "message",
               "label": `${wolfNumberOption}人`,
               "text": `${wolfNumberOption}人`
-            }
+            },
+            "color": "#E83b10"
           }
         wolfNumberMessages.push(wolfNumberMessage);
     }
