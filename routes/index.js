@@ -57,7 +57,15 @@ const main = async (req, res) => {
       const text = event.message.text;
       const toType = event.source.type;
 
-      if (toType == "group") {
+      if (toType == "group" || toType == "room") {
+        let groupId = ""
+        if (toType == "group") {
+          groupId = event.source.groupId;
+        } else if (toType == "room") {
+          groupId = event.source.roomId; // roomIdもgroupId扱いしよう
+        }
+
+
         // TODO 友達追加されていないユーザーの場合の分岐
         // 初めの処理
         const isUser = await user.isUser();
@@ -66,9 +74,6 @@ const main = async (req, res) => {
             await user.updateIsRestartingFalse(); // もし「参加」以外の言葉がユーザーから発言されたら確認状況をリセットする
           }
         }
-
-
-        const groupId = event.source.groupId;
 
         const game = new Game();
         const gameNameExists = await game.gameNameExists(text);
@@ -208,8 +213,13 @@ const main = async (req, res) => {
     } else if (eventType == "postback") {
       const toType = event.source.type;
 
-      if (toType == "group") {
-        const groupId = event.source.groupId;
+      if (toType == "group" || toType == "room") {
+        let groupId = ""
+        if (toType == "group") {
+          groupId = event.source.groupId;
+        } else if (toType == "room") {
+          groupId = event.source.roomId; // roomIdもgroupId扱いしよう
+        }
         const isPlaying = pl.hasGroupPlayingParticipantList(groupId);
         const postbackData = event.postback.data;
         if (isPlaying) {
@@ -226,7 +236,7 @@ const main = async (req, res) => {
         }
       }
     } else if (eventType == "join") {
-      if (event.source.type == "group") {
+      if (event.source.type == "group" || event.source.type == "room") {
         promises.push(joinGroupMessage(event.replyToken));
       }
     }
