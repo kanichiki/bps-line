@@ -14,11 +14,7 @@ exports.main = async (recruitingGameName,displayName,isUserParticipant,displayNa
     return [
         {
             type: "text",
-            text: messageText
-        },
-        {
-            type: "text",
-            text: `現在の参加者は\n\n${displayNamesSan}さん\n\nです！\n引き続き${recruitingGameName}の参加者を募集します！`
+            text: messageText + `現在の参加者は\n\n${displayNamesSan}さん\n\nです！\n引き続き${recruitingGameName}の参加者を募集します！`
         },
         {
             "type": "flex",
