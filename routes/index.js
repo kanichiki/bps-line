@@ -131,7 +131,7 @@ const main = async (req, res) => {
                       // この内容は※2と一致
                       // 参加意思表明に対するリプライ
                       // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                      promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                      promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                       continue;
                     } else { // まだ確認してなかったら
 
@@ -142,7 +142,7 @@ const main = async (req, res) => {
                     // ※2
                     // 参加意思表明に対するリプライ
                     // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                    promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                    promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                     continue;
                   }
                 } else { // 参加中参加者リストがない場合
@@ -150,7 +150,7 @@ const main = async (req, res) => {
                   // ※2
                   // 参加意思表明に対するリプライ
                   // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                  promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                  promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                   continue;
                 }
               } else { // ユーザーテーブルにデータがない場合
@@ -159,7 +159,7 @@ const main = async (req, res) => {
                 // ※2
                 // 参加意思表明に対するリプライ
                 // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                promises.push(replyRollCallReaction(plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken));
+                promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                 continue;
               }
             }
@@ -225,8 +225,8 @@ const main = async (req, res) => {
           }
         }
       }
-    }else if(eventType == "join"){
-      if(event.source.type=="group"){
+    } else if (eventType == "join") {
+      if (event.source.type == "group") {
         promises.push(joinGroupMessage(event.replyToken));
       }
     }
@@ -323,7 +323,7 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
  * @param {*} replyToken
  * @returns
  */
-const replyRollCallReaction = async (plId, userId, isUser,isUserParticipant, isUserRestarting, replyToken) => {
+const replyRollCallReaction = async (plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken) => {
   const replyMessage = require("../template/messages/replyRollCallReaction");
   const pl = new ParticipantList();
   const user = new User(userId);
@@ -336,7 +336,8 @@ const replyRollCallReaction = async (plId, userId, isUser,isUserParticipant, isU
 
   // DB変更操作１
   if (!isUserParticipant) { // ユーザーがまだ参加してない場合
-    await pl.addUserToPaticipantList(plId, userId);
+    await pl.addUserIdToUserIds(plId, userId);
+    await pl.addDisplayNameToDisplayNames(plId, userId);
     if (isUser) { // ユーザーデータがある場合
       if (isUserRestarting) { // ユーザーがリスタート待ちの場合
         const pushMessage = require("../template/messages/pushGameFinish");
@@ -359,11 +360,7 @@ const replyRollCallReaction = async (plId, userId, isUser,isUserParticipant, isU
 
   }
 
-
-
   const displayNames = await pl.getDisplayNames(plId); // 参加者リストのユーザー全員の表示名の配列
-
-
   return client.replyMessage(replyToken, await replyMessage.main(recruitingGameName, displayName, isUserParticipant, displayNames));
 }
 

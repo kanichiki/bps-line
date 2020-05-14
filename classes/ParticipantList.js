@@ -56,7 +56,7 @@ module.exports = class ParticipantList {
      * @param {*} plId
      * @returns
      */
-    async getGroupId(plId){
+    async getGroupId(plId) {
         const query = {
             text: 'SELECT group_id FROM participant_list WHERE id = $1',
             values: [plId]
@@ -100,7 +100,7 @@ module.exports = class ParticipantList {
      * @returns
      */
 
-    async addUserToPaticipantList(plId, userId) {
+    async addUserIdToUserIds(plId, userId) {
         const query = {
             text: 'UPDATE participant_list SET user_ids = array_append(user_ids, $1) WHERE id = $2;',
             values: [userId, plId]
@@ -555,12 +555,12 @@ module.exports = class ParticipantList {
      *
      * @param {*} plId
      */
-    async deleteUsersPlId(plId){
+    async deleteUsersPlId(plId) {
         const userIds = await this.getUserIds(plId);
-        for(let userId of userIds){
+        for (let userId of userIds) {
             const user = new User(userId);
             const userPlId = await user.getPlid();
-            if(userPlId==plId){
+            if (userPlId == plId) {
                 await user.deletePlId();
             }
         }
@@ -573,7 +573,7 @@ module.exports = class ParticipantList {
      *
      * @param {*} plId
      */
-    async finishParticipantList(plId){
+    async finishParticipantList(plId) {
         await this.updateIsRecruitingFalse(plId);
         await this.updateIsPlayingFalse(plId);
         await this.updateIsRestartingFalse(plId);
@@ -583,6 +583,31 @@ module.exports = class ParticipantList {
     }
 
     /**
+     * 発言者をplIdの参加者リストに追加
+     *
+     * @param {*} plId
+     * @param {*} userId
+     * @returns
+     */
+
+    async addDisplayNameToDisplayNames(plId, userId) {
+        const profile = await client.getProfile(userId);
+        const displayName = profile.displayName;
+        const query = {
+            text: 'UPDATE participant_list SET display_names = array_append(display_names, $1) WHERE id = $2;',
+            values: [displayName, plId]
+        }
+        try {
+            await pg.query(query);
+            console.log("Added display-name");
+        } catch (err) {
+            console.log(err);
+            console.log("display-name追加できんかった")
+        }
+    }
+
+
+    /**
      * 参加者の表示名の配列を返す
      *
      * @param plId
@@ -590,15 +615,13 @@ module.exports = class ParticipantList {
      */
 
     async getDisplayNames(plId) {
-        const profiles = [];
-        const userIds = await this.getUserIds(plId);
+        const query = {
+            text: 'SELECT display_names FROM participant_list WHERE id = $1',
+            values: [plId]
+        }
         try {
-            for (const userId of userIds) {
-                const profile = await client.getProfile(userId).then(profile =>
-                    profiles.push(profile.displayName)
-                );
-            }
-            return profiles;
+            const res = await pg.query(query);
+            return res.rows[0].display_names;
         } catch (err) {
             console.log(err);
         }
@@ -614,6 +637,28 @@ module.exports = class ParticipantList {
         const displayNames = await this.getDisplayNames(plId);
         const displayName = displayNames[userIndex];
         return displayName;
+    }
+
+    /**
+     * 与えられた表示名に一致するインデックスを取得する
+     *
+     * @param {*} plId
+     * @param {*} name
+     * @returns
+     */
+    async getUserIndexFromName(plId, name) {
+        try {
+            const displayNames = await this.getDisplayNames(plId);
+            let index = -1;
+            for (let i = 0; i < displayNames.length; i++) {
+                if (displayNames[i] == name) {
+                    index = i;
+                }
+            }
+            return index;
+        } catch (err) {
+            console.log(err);
+        }
     }
 
 
@@ -671,27 +716,7 @@ module.exports = class ParticipantList {
         }
     }
 
-    /**
-     * 与えられた表示名に一致するインデックスを取得する
-     *
-     * @param {*} plId
-     * @param {*} name
-     * @returns
-     */
-    async getUserIndexFromName(plId, name) {
-        try {
-            const displayNames = await this.getDisplayNames(plId);
-            let index = -1;
-            for (let i = 0; i < displayNames.length; i++) {
-                if (displayNames[i] == name) {
-                    index = i;
-                }
-            }
-            return index;
-        } catch (err) {
-            console.log(err);
-        }
-    }
+
 
     /**
      * 与えられたuserIdのユーザーのインデックスを取得する
