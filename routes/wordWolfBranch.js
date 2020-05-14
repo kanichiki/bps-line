@@ -54,7 +54,7 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
         */
 
         // depth
-        if ((text == 1 || text == 2) || (text == 3 || text == 4)) {
+        if (((text == 1 || text == 2) || (text == 3 || text == 4)) || text == 5) {
             await promises.push(replyDepthChosen(plId, text, replyToken));
         }
     } else { // ジャンルが選択済みの場合
