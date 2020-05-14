@@ -28,3 +28,33 @@ exports.calculateMaxNumberLessThanHalf = async (number) =>{
     }
     return res;
 }
+
+exports.getCurrentTime = async () => {
+    require('date-utils');
+
+    const currentTime = new Date();
+    let year = currentTime.getUTCFullYear();
+    let month = currentTime.getUTCMonth();
+    if(month<10){
+        month = "0"+month;
+    }
+    let day = currentTime.getUTCDay();
+    if(day<10){
+        day = "0"+day;
+    }
+    let hours = currentTime.getUTCHours();
+    if(hours<10){
+        hours = "0"+hours;
+    }
+    let minutes = currentTime.getUTCMinutes();
+    if(minutes<10){
+        minutes = "0"+minutes;
+    }
+    let second = currentTime.getUTCSeconds();
+    if(second<10){
+        second = "0"+second;
+    }
+
+
+    return year+"-"+month+"-"+day+" "+hours+":"+minutes+":"+second;
+}

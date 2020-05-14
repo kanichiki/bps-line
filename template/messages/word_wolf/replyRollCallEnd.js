@@ -95,7 +95,7 @@ exports.main = async (displayNames, depths) => {
         },
         {
             "type": "flex",
-            "altText": "ワードのジャンル候補",
+            "altText": "ワードの難易度",
             "contents": {
                 "type": "bubble",
                 "body": {

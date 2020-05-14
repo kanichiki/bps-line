@@ -5,6 +5,8 @@ pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
 
+require('date-utils');
+
 const ParticipantList = require("./ParticipantList");
 const commonFunction = require("../template/functions/commonFunction");
 
@@ -15,6 +17,7 @@ const commonFunction = require("../template/functions/commonFunction");
  *  pl_id(int) : 参加者リストid
  *  genre(boolean) : ジャンルを選んだかどうか
  *  wolf_number(boolean) : ウルフ数を選んだかどうか
+ *  timer(boolean) : タイマー時間を選んだかどうか(未設定)
  *  confirm(boolean) : 設定を確認したかどうか
  *  finished(boolean) : 話し合いが終了したかどうか
  *  winner(boolean) : 勝者を発表したかどうか
@@ -26,6 +29,8 @@ const commonFunction = require("../template/functions/commonFunction");
  *  is_reverse(boolean) : trueなら市民用はword1、falseならword2
  *  wolf_indexes(int[]) : ウルフのインデックス（参加者リストのuser_idsに対応）
  *  wolf_number(int[]) : ウルフの数
+ *  timer(int) : 話し合い時間
+ *  start_time(timestamp) : 話し合いスタート時刻
  * 
  * word_wolf_vote
  *  pl_id(int) : 参加者リストid
@@ -807,6 +812,41 @@ class WordWolf {
     }
 
     /**
+     * 通知ステータスをtrueにする
+     *
+     */
+    async updateNotifyStatusTrue() {
+        const query = {
+            text: 'UPDATE word_wolf_status set notify = true where pl_id = $1',
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated notify status");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 残り1分を通知済みかどうかを返す
+     *
+     * @returns
+     */
+    async getNotifyStatus() {
+        const query = {
+            text: 'SELECT notify FROM word_wolf_status WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].notify;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
      * 話し合い終了ステータスをtrueにする
      *
      */
@@ -1398,6 +1438,190 @@ class WordWolf {
             }
         }
         return res;
+    }
+
+    /**
+     * 話し合いスタート時間を取得
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async getStartTime(){
+        const query = {
+            text: 'SELECT start_time FROM word_wolf_setting WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].start_time;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * start_timeを現在の標準時刻で設定
+     *
+     * @memberof WordWolf
+     */
+    async updateStartTime(){
+        const startTime = await commonFunction.getCurrentTime();
+        const query = {
+            text: 'UPDATE word_wolf_setting set start_time = $1 where pl_id = $2',
+            values: [startTime,this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated start-time");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
+    /**
+     * timerの値を取得(単位は分)
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async getTimer(){
+        const query = {
+            text: 'SELECT timer FROM word_wolf_setting WHERE pl_id = $1',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].timer;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * タイマーの値を設定
+     *
+     * @param {*} minutes
+     * @memberof WordWolf
+     */
+    async updateTimer(minutes){
+        const query = {
+            text: 'UPDATE word_wolf_setting set timer = $1 where pl_id = $2',
+            values: [minutes,this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated timer");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * endTimeを計算して入れる
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async updateEndTime(){
+        const timer = await this.getTimer();
+        const minutes = timer + " minutes";
+        const query = {
+            text: 'update word_wolf_setting set end_time = start_time + $1 WHERE pl_id = $2',
+            values: [minutes,this.plId]
+        }
+        try {
+            await pg.query(query);
+            console.log("Updated end-time ");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 時間の設定を一括挿入
+     *
+     * @memberof WordWolf
+     */
+    async updateTimeSetting(){
+        await this.updateStartTime();
+        await this.updateEndTime();
+    }
+
+    /**
+     * 残り時間が1分を切っているかどうかを返す
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async isRemainingTimeLessThan1minute(){
+        const currentTime = await commonFunction.getCurrentTime();
+        const minutes = "1 minutes"
+        const query = {
+            text: 'SELECT ((end_time - $1 ) < $2 ) as ans FROM word_wolf_setting WHERE pl_id = $3',
+            values: [currentTime,minutes,this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].ans;
+        } catch (err) {
+            console.log(err);
+            console.log("ここでエラー")
+        }
+    }
+
+    /**
+     * 話し合い時間が終了しているかどうかを返す
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async isOverTime(){
+        const currentTime = await commonFunction.getCurrentTime();
+        const second = "0 second"
+        const query = {
+            text: 'SELECT ((end_time - $1 ) < $2 ) as ans FROM word_wolf_setting WHERE pl_id = $3',
+            values: [currentTime,second,this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].ans;
+        } catch (err) {
+            console.log(err);
+            console.log("いや、ここでエラー");
+            console.log(currentTime);
+        }
+    }
+
+    /**
+     * 〇分××秒の形で残り時間を返す
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async getRemainingTime(){
+        const currentTime = await commonFunction.getCurrentTime();
+
+        const query1 = {
+            text: 'SELECT EXTRACT(minutes from (end_time - $1 )) AS minutes FROM word_wolf_setting WHERE pl_id = $2',
+            values: [currentTime,this.plId]
+        }
+        const query2 = {
+            text: 'SELECT EXTRACT(second from (end_time - $1 )) AS second FROM word_wolf_setting WHERE pl_id = $2',
+            values: [currentTime,this.plId]
+        }
+
+        try {
+            const res1 = await pg.query(query1);
+            const minutes =  res1.rows[0].minutes;
+            const res2 = await pg.query(query2);
+            const second =  res2.rows[0].second;
+
+            const remainingTime = minutes+"分"+second+"秒";
+            return remainingTime;
+        } catch (err) {
+            console.log(err);
+        }   
     }
 }
 

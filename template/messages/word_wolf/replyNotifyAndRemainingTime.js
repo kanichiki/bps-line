@@ -1,31 +1,20 @@
 const parts = require("../../constants/messageParts");
 
-exports.main = async (timer) => {
+exports.main = async (remainingTime) => {
     return [
         {
             type: "text",
-            text: `ゲームをスタートします\nそれぞれの単語を個人トークルームにて確認してください`
+            text: `話し合いの残り時間は${remainingTime}です`
         },
         {
             type: "text",
-            text: `話し合い時間は${timer}分です\n話し合いを途中で終了するには「終了」と発言してください`
+            text: `残り1分を切っています！`
         },
         {
             "type": "flex",
             "altText": "残り時間",
             "contents": {
                 "type": "bubble",
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {
-                            "type": "text",
-                            "text": "話し合いの残り時間は下のボタンで確認できます！",
-                            "wrap": true
-                        }
-                    ]
-                },
                 "footer": {
                     "type": "box",
                     "layout": "vertical",

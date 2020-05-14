@@ -22,11 +22,11 @@ exports.main = async (displayNames,userIds) => {
     return [
         {
             type: "text",
-            text: `話し合いを終了します`
+            text: `話し合い時間が終了しました`
         },
         {
             "type": "flex",
-            "altText": "This is a Flex Message",
+            "altText": "投票",
             "contents": {
                 "type": "bubble",
                 "body": {

@@ -50,7 +50,7 @@ const main = async (req, res) => {
     const user = new User(userId);
     const replyToken = event.replyToken;
 
-    const usePostback = true;
+    // const usePostback = true;
 
     if (eventType == "message") {
 
@@ -196,7 +196,7 @@ const main = async (req, res) => {
               const gameId = await playingGame.getGameId();
               if (gameId == 1) { // プレイするゲームがワードウルフの場合
 
-                await wordWolfBranch.playingMessageBranch(plId, text, replyToken, usePostback, promises);
+                await wordWolfBranch.playingMessageBranch(plId, text, replyToken, promises);
                 continue;
               }
             }
@@ -334,44 +334,65 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
  * @returns
  */
 const replyRollCallReaction = async (plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken) => {
-  const replyMessage = require("../template/messages/replyRollCallReaction");
   const pl = new ParticipantList();
   const user = new User(userId);
 
   const recruitingGame = new PlayingGame(plId);
   const recruitingGameName = await recruitingGame.getGameName();
 
-  const profile = await client.getProfile(userId);
-  const displayName = profile.displayName;
+  const displayName = await user.getDisplayName();
 
   // DB変更操作１
   if (!isUserParticipant) { // ユーザーがまだ参加してない場合
-    await pl.addUserIdToUserIds(plId, userId);
-    await pl.addDisplayNameToDisplayNames(plId, userId);
-    if (isUser) { // ユーザーデータがある場合
-      if (isUserRestarting) { // ユーザーがリスタート待ちの場合
-        const pushMessage = require("../template/messages/pushGameFinish");
+    const displayNameExists = await pl.displayNameExists(plId, displayName);
+    if (!displayNameExists) { // 同じ名前の参加者が存在しなければ
 
-        await user.updateIsRestartingFalse(); // is_restartingをfalseにしてあげる
+      const replyMessage = require("../template/messages/replyRollCallReaction");
 
-        const oldPlId = await user.getPlid();
-        await pl.finishParticipantList(oldPlId); // ここで前の参加者リストを全部終わらせる
-        const oldGroupId = await pl.getGroupId(oldPlId);
+      await pl.addUserIdToUserIds(plId, userId);
+      await pl.addDisplayNameToDisplayNames(plId, displayName);
+      if (isUser) { // ユーザーデータがある場合
+        if (isUserRestarting) { // ユーザーがリスタート待ちの場合
 
-        // 終了したゲームのグループにその旨を送る
-        await client.pushMessage(oldGroupId, await pushMessage.main());
+          const hasPlId = await user.hasPlId();
+          if (hasPlId) { // リスタート待ちの間に消えてる可能性もあるので
+
+            const pushMessage = require("../template/messages/pushGameFinish");
+
+            await user.updateIsRestartingFalse(); // is_restartingをfalseにしてあげる
+
+            const oldPlId = await user.getPlid();
+            await pl.finishParticipantList(oldPlId); // ここで前の参加者リストを全部終わらせる
+            const oldGroupId = await pl.getGroupId(oldPlId);
+
+            // 終了したゲームのグループにその旨を送る
+            await client.pushMessage(oldGroupId, await pushMessage.main());
+          }
+        }
+
+        await user.updatePlId(plId); // これはあとに実行しないとこのplIdが消えちゃう
+
+      } else { // ユーザーデータがない場合
+        await user.createUser(plId);
       }
 
-      await user.updatePlId(plId); // これはあとに実行しないとこのplIdが消えちゃう
+      const displayNames = await pl.getDisplayNames(plId); // 参加者リストのユーザー全員の表示名の配列
+      return client.replyMessage(replyToken, await replyMessage.main(recruitingGameName, displayName, isUserParticipant, displayNames));
 
-    } else { // ユーザーデータがない場合
-      await user.createUser(plId);
+    } else { // 同じ名前のユーザーが存在するなら
+      const replyMessage = require("../template/messages/replyDisplayNameExists");
+      return client.replyMessage(replyToken, await replyMessage.main());
     }
 
+
+
+  } else { // 既に参加していた場合
+    const replyMessage = require("../template/messages/replyRollCallReaction");
+    const displayNames = await pl.getDisplayNames(plId); // 参加者リストのユーザー全員の表示名の配列
+    return client.replyMessage(replyToken, await replyMessage.main(recruitingGameName, displayName, isUserParticipant, displayNames));
   }
 
-  const displayNames = await pl.getDisplayNames(plId); // 参加者リストのユーザー全員の表示名の配列
-  return client.replyMessage(replyToken, await replyMessage.main(recruitingGameName, displayName, isUserParticipant, displayNames));
+
 }
 
 /**

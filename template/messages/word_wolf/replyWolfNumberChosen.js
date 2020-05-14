@@ -100,7 +100,7 @@ exports.main = async (wolfNumber, depth) => {
       },
       {
           "type": "flex",
-          "altText": "This is a Flex Message",
+          "altText": "確認",
           "contents": {
               "type": "bubble",
               "body": {

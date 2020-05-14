@@ -22,11 +22,11 @@ exports.rollCallBranch = async (plId, replyToken, promises) => {
     const pl = new ParticipantList();
     const userNumber = await pl.getUserNumber(plId); // 
     if (userNumber < 3) { // 参加者数が2人以下の場合
-        promises.push(replyTooFewParticipant(plId, replyToken));
+        await promises.push(replyTooFewParticipant(plId, replyToken));
     } else {
         // 参加受付終了の意思表明に対するリプライ
         // 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
-        promises.push(replyRollCallEnd(plId, replyToken));
+        await promises.push(replyRollCallEnd(plId, replyToken));
     }
 }
 
@@ -36,10 +36,9 @@ exports.rollCallBranch = async (plId, replyToken, promises) => {
  * @param {*} plId
  * @param {*} text
  * @param {*} replyToken
- * @param {*} usePostBack
  * @param {*} promises
  */
-exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promises) => {
+exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
     const wordWolf = new WordWolf(plId);
     const genreStatus = await wordWolf.getGenreStatus();
     if (!genreStatus) { // ジャンルがまだ指定されてない場合
@@ -50,13 +49,13 @@ exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promi
             const genreId = await wordWolf.getGenreIdFromName(text); // 名前からジャンルのidをとってくる
             console.log("genreId:" + genreId);
             // ジャンル選択後のリプライ
-            promises.push(replyGenreChosen(plId, genreId, replyToken));
+            await promises.push(replyGenreChosen(plId, genreId, replyToken));
         }
         */
 
         // depth
-        if((text==1||text==2)||(text==3||text==4)){
-            promises.push(replyDepthChosen(plId, text, replyToken));
+        if ((text == 1 || text == 2) || (text == 3 || text == 4)) {
+            await promises.push(replyDepthChosen(plId, text, replyToken));
         }
     } else { // ジャンルが選択済みの場合
 
@@ -68,28 +67,64 @@ exports.playingMessageBranch = async (plId, text, replyToken, usePostback, promi
 
                 const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
                 console.log("wolfNumber:" + wolfNumber);
-                promises.push(replyWolfNumberChosen(plId, wolfNumber, replyToken));
+                await promises.push(replyWolfNumberChosen(plId, wolfNumber, replyToken));
             }
         } else {
             const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
             if (!settingConfirmStatus) {
                 if (text == "はい") {
-                    promises.push(replyConfirmYes(plId, replyToken));
+                    await promises.push(replyConfirmYes(plId, replyToken));
                 } else if (text == "いいえ") {
-                    promises.push(replyConfirmNo(plId, replyToken));
+                    await promises.push(replyConfirmNo(plId, replyToken));
                 }
             } else {
                 const finishedStatus = await wordWolf.getFinishedStatus();
-                if (!finishedStatus) {
-                    if (text == "終了") { //TODO 参加者が言わないと無効
-                        promises.push(replyFinish(plId, usePostback, replyToken));
+                if (!finishedStatus) { // 話し合い中だった場合
+
+                    if (text == "終了") {
+                        await promises.push(replyFinish(plId, replyToken));
+                    } else { // 発言が終了以外の場合
+                        const isOverTime = await wordWolf.isOverTime();
+                        if (isOverTime) { // 話し合い時間が終了していた場合
+                            await promises.push(replyFinish(plId, replyToken));
+
+                        } else {
+                            if (text == "残り時間") {
+                                const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
+                                if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
+
+                                    const notifyStatus = await wordWolf.getNotifyStatus();
+                                    if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
+                                        await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
+                                    }else{
+                                        await promises.push(replyRemainingTime(plId, replyToken));
+                                    }
+                                } else { // 残り1分切ってなかったら
+
+                                    await promises.push(replyRemainingTime(plId, replyToken));
+                                }
+                            }
+
+                            const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
+                            if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
+                                console.log("aaaaa");
+
+                                const notifyStatus = await wordWolf.getNotifyStatus();
+                                if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
+                                    await promises.push(replyNotify(plId, replyToken));
+                                }
+                            }
+
+                        }
                     }
+
+
                 } else { // 話し合いが終了していた場合
 
                     const resultStatus = await wordWolf.getResultStatus();
                     if (!resultStatus) { // すべての結果発表がまだなら
                         if (text == "ワードを見る") {
-                            promises.push(replyAnnounceResult(plId, replyToken));
+                            await promises.push(replyAnnounceResult(plId, replyToken));
                         }
                     }
 
@@ -131,10 +166,10 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
 
                         // この中は下の※と同じになるように
                         if (userId != postbackData) { // 自分以外に投票していた場合
-                            promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
+                            await promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
 
                         } else { // 自分に投票していた場合
-                            promises.push(replySelfVote(plId, replyToken, userIndex));
+                            await promises.push(replySelfVote(plId, replyToken, userIndex));
                         }
                     }
 
@@ -145,17 +180,38 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
 
                         // ※
                         if (userId != postbackData) { // 自分以外に投票していた場合
-                            promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
+                            await promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
 
                         } else { // 自分に投票していた場合
-                            promises.push(replySelfVote(plId, replyToken, userIndex));
+                            await promises.push(replySelfVote(plId, replyToken, userIndex));
                         }
                     }
                 }
 
 
             } else {
-                promises.push(replyDuplicateVote(plId, replyToken, userIndex));
+                await promises.push(replyDuplicateVote(plId, replyToken, userIndex));
+            }
+        }
+    } else { // 話し合い中だった場合
+        const isOverTime = await wordWolf.isOverTime();
+        if (isOverTime) { // 話し合い時間が終了していた場合
+            await promises.push(replyFinish(plId, replyToken));
+
+        } else {
+            if (postbackData == "残り時間") {
+                const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
+                if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
+
+                    const notifyStatus = await wordWolf.getNotifyStatus();
+                    if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
+                        await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
+                    }else{
+                        await promises.push(replyRemainingTime(plId, replyToken));
+                    }
+                } else {
+                    await promises.push(replyRemainingTime(plId, replyToken));
+                }
             }
         }
     }
@@ -192,12 +248,12 @@ const replyRollCallEnd = async (plId, replyToken) => {
 
     /* ジャンル
     const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
-
+ 
     return client.replyMessage(replyToken, await replyMessage.main(displayNames, genres));
     */
 
     // 深さ
-    
+
     return client.replyMessage(replyToken, await replyMessage.main(displayNames));
 }
 
@@ -297,7 +353,7 @@ const replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
     /* ジャンル
     const genreId = await wordWolf.getGenreId();
     const genreName = await wordWolf.getGenreName(genreId);
-
+ 
     return client.replyMessage(replyToken, await replyMessage.main(wolfNumber, genreName));
     */
 
@@ -319,6 +375,8 @@ const replyConfirmYes = async (plId, replyToken) => {
 
     const wordWolf = new WordWolf(plId);
     await wordWolf.updateConfirmStatusTrue();
+    await wordWolf.updateTimeSetting(); // 話し合い時間に関する設定を挿入
+
     // const profiles = await wordWolf.getDisplayNames();
     const wolfIndexes = await wordWolf.getWolfIndexes();
     const citizenWord = await wordWolf.getCitizenWord();
@@ -345,7 +403,9 @@ const replyConfirmYes = async (plId, replyToken) => {
         client.pushMessage(userIds[i], await pushMessage.main(profiles[i], userWords[i]))
     }
 
-    return client.replyMessage(replyToken, await replyMessage.main());
+    const timer = await wordWolf.getTimer(); // タイマー設定を取得
+
+    return client.replyMessage(replyToken, await replyMessage.main(timer));
 }
 
 /**
@@ -370,11 +430,11 @@ const replyConfirmNo = async (plId, replyToken) => {
 
     /* ジャンル
     const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
-
+ 
     return client.replyMessage(replyToken, await replyMessage.main(genres));
     */
 
-    const depths = ["1","2","3","4"];
+    const depths = ["1", "2", "3", "4"];
     return client.replyMessage(replyToken, await replyMessage.main(depths));
 }
 
@@ -386,16 +446,17 @@ const replyConfirmNo = async (plId, replyToken) => {
  * ２．話し合い終了ステータスをtrueに更新
  *
  * @param {*} plId
- * @param {*} usePostback
+ * @param {*} usePostback →廃止
  * @param {*} replyToken
  * @returns
  */
-const replyFinish = async (plId, usePostback, replyToken) => {
+const replyFinish = async (plId, replyToken) => {
     const wordWolf = new WordWolf(plId);
 
     // DB変更操作１，２
     // 投票データを挿入出来たら話し合い終了ステータスをtrueにする同期処理
     await wordWolf.createWordWolfVote().then(wordWolf.updateFinishedStatusTrue());
+    await wordWolf.updateNotifyStatusTrue();
 
     const userNumber = await wordWolf.getUserNumber();
     const shuffleUserIndexes = await commonFunction.makeShuffuleNumberArray(userNumber);
@@ -410,12 +471,13 @@ const replyFinish = async (plId, usePostback, replyToken) => {
         displayNames[i] = profile.displayName;
     }
 
-    if (usePostback) { // postbackを使う設定の場合
-        const replyMessage = require("../template/messages/word_wolf/replyFinish");
 
-        return client.replyMessage(replyToken, await replyMessage.main(displayNames, userIds));
+    //if (usePostback) { // postbackを使う設定の場合
+    const replyMessage = require("../template/messages/word_wolf/replyFinish");
 
-    } else { // postbackを使わない設定の場合
+    return client.replyMessage(replyToken, await replyMessage.main(displayNames, userIds));
+
+    /*} else { // postbackを使わない設定の場合
         const replyMessage = require("../template/messages/word_wolf/withoutPostback/replyFinishWithoutPostback");
         const pushMessage = require("../template/messages/word_wolf/withoutPostback/pushFinishWithoutPostback");
 
@@ -428,7 +490,48 @@ const replyFinish = async (plId, usePostback, replyToken) => {
             client.pushMessage(userIds[userIndex], await pushMessage.main(shuffleUserIndexes, displayNames, userIndex));
         }
 
-    }
+    }*/
+}
+
+/**
+ * 話し合いの残り時間を通知する
+ *
+ * @param {*} plId
+ * @param {*} replyToken
+ * @returns
+ */
+const replyRemainingTime = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyRemainingTime");
+    const wordWolf = new WordWolf(plId);
+
+    const remainingTime = await wordWolf.getRemainingTime();
+
+    return client.replyMessage(replyToken, await replyMessage.main(remainingTime));
+}
+
+/**
+ * 話し合いが1分を切っていた場合の処理
+ *
+ * @param {*} plId
+ * @param {*} replyToken
+ * @returns
+ */
+const replyNotify = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyNotify");
+    const wordWolf = new WordWolf(plId);
+
+    await wordWolf.updateNotifyStatusTrue();
+    return client.replyMessage(replyToken, await replyMessage.main());
+}
+
+const replyNotifyAndRemainingTime = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyNotifyAndRemainingTime");
+    const wordWolf = new WordWolf(plId);
+
+    const remainingTime = await wordWolf.getRemainingTime();
+    await wordWolf.updateNotifyStatusTrue();
+
+    return client.replyMessage(replyToken, await replyMessage.main(remainingTime));
 
 }
 

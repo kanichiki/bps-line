@@ -19,7 +19,7 @@ exports.main = async (displayNames, userNumber, recruitingGameName) => {
                 "type": "bubble",
                 "footer": {
                     "type": "box",
-                    "layout": "vertical",
+                    "layout": "horizontal",
                     "spacing": "sm",
                     "contents": [
                         {

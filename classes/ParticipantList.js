@@ -583,16 +583,14 @@ module.exports = class ParticipantList {
     }
 
     /**
-     * 発言者をplIdの参加者リストに追加
+     * 発言者の名前をplIdのdisplay_namesに追加
      *
      * @param {*} plId
-     * @param {*} userId
+     * @param {*} displayName
      * @returns
      */
 
-    async addDisplayNameToDisplayNames(plId, userId) {
-        const profile = await client.getProfile(userId);
-        const displayName = profile.displayName;
+    async addDisplayNameToDisplayNames(plId, displayName) {
         const query = {
             text: 'UPDATE participant_list SET display_names = array_append(display_names, $1) WHERE id = $2;',
             values: [displayName, plId]
@@ -656,6 +654,28 @@ module.exports = class ParticipantList {
                 }
             }
             return index;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 与えられた表示名が存在するかどうか
+     *
+     * @param {*} plId
+     * @param {*} name
+     * @returns
+     */
+    async displayNameExists(plId,name){
+        try {
+            const displayNames = await this.getDisplayNames(plId);
+            let res = false;
+            for (let i = 0; i < displayNames.length; i++) {
+                if (displayNames[i] == name) {
+                    res = true;
+                }
+            }
+            return res;
         } catch (err) {
             console.log(err);
         }
