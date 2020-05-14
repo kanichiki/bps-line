@@ -191,6 +191,9 @@ const main = async (req, res) => {
             const plId = await pl.getPlayingParticipantListId(groupId);
             const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
             if (isUserParticipant) { // 参加者の発言の場合
+              if(text == "強制終了"){
+                promises.push(replyTerminate(plId, replyToken));
+              }
 
               const playingGame = new PlayingGame(plId);
               const gameId = await playingGame.getGameId();
@@ -469,6 +472,13 @@ const replyRestartConfirmIfPlaying = async (plId, gameId, replyToken) => {
 
   // 一応newGameNameも渡すがまだ使ってない
   return client.replyMessage(replyToken, await replyMessage.main(playingGameName, newGameName));
+}
+
+const replyTerminate = async (plId, replyToken) => {
+  const replyMessage = require("../template/messages/replyTerminate");
+  const pl = new ParticipantList();
+  await pl.finishParticipantList(plId);
+  return client.replyMessage(replyToken, await replyMessage.main());
 }
 
 

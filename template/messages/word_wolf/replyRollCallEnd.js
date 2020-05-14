@@ -87,11 +87,11 @@ exports.main = async (displayNames, depths) => {
   return [
     {
       type: "text",
-      text: `参加受付を終了します`
+      text: `参加受付を終了します\n参加者は\n\n${displayNamesSan}さん\n\nです！` 
     },
     {
       type: "text",
-      text: `参加者は\n\n${displayNamesSan}さん\n\nです！`
+      text: `ゲームを途中で終了する際は「強制終了」と発言してください`
     },
     {
       "type": "flex",
