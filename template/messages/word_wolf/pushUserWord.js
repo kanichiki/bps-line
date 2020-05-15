@@ -14,7 +14,7 @@ exports.main = async (profile, userWord, isLunatic) => {
         reply = [
             {
                 type: "text",
-                text: `あなたは「狂人」です。ただし、ウルフを兼ねている可能性もあるので気をつけてください\n${profile}さんのワードは\n\n${userWord}\n\nです！`
+                text: `あなたは「狂人」です。ただし、ウルフを兼ねている可能性もあるので気をつけてください\n\n${profile}さんのワードは\n\n${userWord}\n\nです！`
             }
         ]
     }
