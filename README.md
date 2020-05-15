@@ -30,7 +30,8 @@
 - Windows版LINE：5.17.0以降
   
 すべてのゲームに共通で、MiniGame DABYSSはグループ（もしくはトークルーム）に招待していただくことで動作します。
-表示名を使用するため
+ユーザーの表示名を使用するため参加者はDABYSSを友達追加している必要があります。
   
-  ## ワードウルフ
+# Author
+[kanichiki](https://github.com/kanichiki)
   
