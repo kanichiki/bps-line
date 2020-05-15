@@ -1,181 +1,62 @@
 const parts = require("../../constants/messageParts");
 
-/* ジャンル
-exports.main = async (wolfNumber, genreName) => {
-    return [
-        {
-            type: "text",
-            text: `ウルフは${wolfNumber}人ですね！`
-        },
-        {
-            "type": "flex",
-            "altText": "This is a Flex Message",
-            "contents": {
-                "type": "bubble",
-                "body": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "contents": [
-                        {
-                          "type": "text",
-                          "text": "以下の内容でよろしいですか？",
-                          "size": "md"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "separator",
-                      "margin": "md"
-                    },
-                    {
-                      "type": "box",
-                      "layout": "vertical",
-                      "contents": [
-                        {
-                          "type": "spacer"
-                        },
-                        {
-                          "type": "text",
-                          "text": `ジャンル : ${genreName}`,
-                          "size": "md"
-                        },
-                        {
-                          "type": "text",
-                          "text": `ウルフ : ${wolfNumber}人`
-                        }
-                      ]
-                    }
-                  ]
-                },
-                "footer": {
-                  "type": "box",
-                  "layout": "horizontal",
-                  "spacing":"sm",
-                  "contents": [
-                    {
-                      "type": "button",
-                      "style": "link",
-                      "height": "sm",
-                      "action": {
-                        "type": "message",
-                        "label": "はい",
-                        "text": "はい"
-                      },
-                      "color": parts.mainColor,
-                      "style": "primary"
-                    },
-                    {
-                      "type": "separator"
-                    },
-                    {
-                      "type": "button",
-                      "style": "link",
-                      "height": "sm",
-                      "action": {
-                        "type": "message",
-                        "label": "いいえ",
-                        "text": "いいえ"
-                      },
-                      "color": parts.mainColor
-                    }
-                  ]
-                }
-              }
-        }
-    ]
-}
-*/
-
-// depth
-
-exports.main = async (wolfNumber, depth) => {
-  return [
-      {
-          type: "text",
-          text: `ウルフは${wolfNumber}人ですね！`
+exports.main = async (wolfNumber, lunaticNumberOptions) => {
+  let lunaticNumberMessages = [];
+  for (let lunaticNumberOption of lunaticNumberOptions) {
+    const lunaticNumberMessage = {
+      "type": "button",
+      "style": "link",
+      "height": "sm",
+      "action": {
+        "type": "message",
+        "label": `${lunaticNumberOption}人`,
+        "text": `${lunaticNumberOption}人`
       },
-      {
-          "type": "flex",
-          "altText": "確認",
-          "contents": {
-              "type": "bubble",
-              "body": {
-                "type": "box",
-                "layout": "vertical",
-                "contents": [
-                  {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                      {
-                        "type": "text",
-                        "text": "以下の内容でよろしいですか？",
-                        "size": "md"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "separator",
-                    "margin": "md"
-                  },
-                  {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                      {
-                        "type": "spacer"
-                      },
-                      {
-                        "type": "text",
-                        "text": `難易度 : ${depth}`,
-                        "size": "md"
-                      },
-                      {
-                        "type": "text",
-                        "text": `ウルフ : ${wolfNumber}人`
-                      }
-                    ]
-                  }
-                ]
-              },
-              "footer": {
-                "type": "box",
-                "layout": "horizontal",
-                "spacing":"sm",
-                "contents": [
-                  {
-                    "type": "button",
-                    "style": "link",
-                    "height": "sm",
-                    "action": {
-                      "type": "message",
-                      "label": "はい",
-                      "text": "はい"
-                    },
-                    "color": parts.mainColor,
-                    "style": "primary"
-                  },
-                  {
-                    "type": "separator"
-                  },
-                  {
-                    "type": "button",
-                    "style": "link",
-                    "height": "sm",
-                    "action": {
-                      "type": "message",
-                      "label": "いいえ",
-                      "text": "いいえ"
-                    },
-                    "color": parts.mainColor
-                  }
-                ]
-              }
-            }
+      "color": parts.mainColor
+    }
+    lunaticNumberMessages.push(lunaticNumberMessage);
+  }
+  return [
+    {
+      type: "text",
+      text: `ウルフは${wolfNumber}人ですね！`
+    },
+    {
+      "type": "flex",
+      "altText": "狂人の人数候補",
+      "contents": {
+        "type": "bubble",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "狂人の人数を選んでください",
+              "weight": "bold",
+              "size": "md"
+            },
+            {
+              "type": "separator",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "狂人はウルフ側が勝利した場合(ウルフ以外が処刑された場合)に勝利となります。ただし、ウルフが狂人を兼ねる場合もあります。狂人にはワードが配られる際に狂人であることが告げられます。",
+              "weight": "bold",
+              "size": "sm",
+              "wrap": true
+            },
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "contents": lunaticNumberMessages,
+          "flex": 0
+        }
       }
+    }
   ]
 }

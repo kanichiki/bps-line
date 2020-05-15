@@ -1,12 +1,20 @@
 const parts = require("../../constants/messageParts");
 
-exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf) => {
+exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf,displayNames,isWinnerArray) => {
     let message = "";
     if(!isExecutorWolf){
         message = "ウルフ側の勝利です！！"
     }else{
         message = "市民側の勝利です！！"
     }
+
+    let winners = [];
+    for(let i=0;i<displayNames.length;i++){
+      if(isWinnerArray[i]){
+        winners.push(displayNames[i]);
+      }
+    }
+    const winnerMessage = winners.join("さん、");
     
     return [
         {
@@ -32,6 +40,16 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf) => {
                       "size": "lg",
                       "wrap": true,
                       "align": "center"
+                    },
+                    {
+                      "type": "separator",
+                      "margin": "md"
+                    },
+                    {
+                      "type": "text",
+                      "text": `勝者 : ${winnerMessage}さん`,
+                      "margin": "md",
+                      "wrap": true
                     }
                   ]
                 },

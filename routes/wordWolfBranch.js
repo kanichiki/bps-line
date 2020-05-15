@@ -69,65 +69,78 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
                 console.log("wolfNumber:" + wolfNumber);
                 await promises.push(replyWolfNumberChosen(plId, wolfNumber, replyToken));
             }
-        } else {
-            const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
-            if (!settingConfirmStatus) {
-                if (text == "はい") {
-                    await promises.push(replyConfirmYes(plId, replyToken));
-                } else if (text == "いいえ") {
-                    await promises.push(replyConfirmNo(plId, replyToken));
+        } else { // ウルフの数が指定済みの場合
+
+            const lunaticStatus = await wordWolf.getLunaticStatus();
+            if (!lunaticStatus) { // 狂人の設定がまだの場合
+
+                const lunaticNumberExists = await wordWolf.lunaticNumberExists(text);
+                if (lunaticNumberExists) { // 狂人の人数が発言された場合
+
+                    const lunaticNumber = await wordWolf.getLunaticNumberFromText(text);
+                    await promises.push(replyLunaticNumberChosen(plId, lunaticNumber, replyToken));
                 }
             } else {
-                const finishedStatus = await wordWolf.getFinishedStatus();
-                if (!finishedStatus) { // 話し合い中だった場合
 
-                    if (text == "終了") {
-                        await promises.push(replyFinish(plId, replyToken));
-                    } else { // 発言が終了以外の場合
-                        const isOverTime = await wordWolf.isOverTime();
-                        if (isOverTime) { // 話し合い時間が終了していた場合
+                const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
+                if (!settingConfirmStatus) {
+                    if (text == "はい") {
+                        await promises.push(replyConfirmYes(plId, replyToken));
+                    } else if (text == "いいえ") {
+                        await promises.push(replyConfirmNo(plId, replyToken));
+                    }
+                } else {
+                    const finishedStatus = await wordWolf.getFinishedStatus();
+                    if (!finishedStatus) { // 話し合い中だった場合
+
+                        if (text == "終了") {
                             await promises.push(replyFinish(plId, replyToken));
+                        } else { // 発言が終了以外の場合
+                            const isOverTime = await wordWolf.isOverTime();
+                            if (isOverTime) { // 話し合い時間が終了していた場合
+                                await promises.push(replyFinish(plId, replyToken));
 
-                        } else {
-                            if (text == "残り時間") {
+                            } else {
+                                if (text == "残り時間") {
+                                    const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
+                                    if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
+
+                                        const notifyStatus = await wordWolf.getNotifyStatus();
+                                        if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
+                                            await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
+                                        } else {
+                                            await promises.push(replyRemainingTime(plId, replyToken));
+                                        }
+                                    } else { // 残り1分切ってなかったら
+
+                                        await promises.push(replyRemainingTime(plId, replyToken));
+                                    }
+                                }
+
                                 const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
                                 if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
+                                    console.log("aaaaa");
 
                                     const notifyStatus = await wordWolf.getNotifyStatus();
                                     if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
-                                        await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
-                                    }else{
-                                        await promises.push(replyRemainingTime(plId, replyToken));
+                                        await promises.push(replyNotify(plId, replyToken));
                                     }
-                                } else { // 残り1分切ってなかったら
-
-                                    await promises.push(replyRemainingTime(plId, replyToken));
                                 }
+
                             }
+                        }
 
-                            const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
-                            if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
-                                console.log("aaaaa");
 
-                                const notifyStatus = await wordWolf.getNotifyStatus();
-                                if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
-                                    await promises.push(replyNotify(plId, replyToken));
-                                }
+                    } else { // 話し合いが終了していた場合
+
+                        const resultStatus = await wordWolf.getResultStatus();
+                        if (!resultStatus) { // すべての結果発表がまだなら
+                            if (text == "ワードを見る") {
+                                await promises.push(replyAnnounceResult(plId, replyToken));
                             }
-
                         }
+
                     }
-
-
-                } else { // 話し合いが終了していた場合
-
-                    const resultStatus = await wordWolf.getResultStatus();
-                    if (!resultStatus) { // すべての結果発表がまだなら
-                        if (text == "ワードを見る") {
-                            await promises.push(replyAnnounceResult(plId, replyToken));
-                        }
-                    }
-
                 }
             }
         }
@@ -206,7 +219,7 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
                     const notifyStatus = await wordWolf.getNotifyStatus();
                     if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
                         await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
-                    }else{
+                    } else {
                         await promises.push(replyRemainingTime(plId, replyToken));
                     }
                 } else {
@@ -324,7 +337,7 @@ const replyDepthChosen = async (plId, text, replyToken) => {
     }
     await wordWolf.updateWordSetIdMatchDepth(text).then(wordWolf.updateGenreStatusTrue());
 
-    const wolfNumberOptions = await wordWolf.getWolfNumberOptions()
+    const wolfNumberOptions = await wordWolf.getWolfNumberOptions();
 
     return client.replyMessage(replyToken, await replyMessage.main(text, wolfNumberOptions));
 }
@@ -350,6 +363,27 @@ const replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
     //ウルフ番号データを挿入できたらステータスをtrueにする
     await wordWolf.updateWolfIndexes(wolfNumber).then(wordWolf.updateWolfNumberStatusTrue());
 
+    const lunaticNumberOptions = await wordWolf.getLunaticNumberOptions();
+
+    return client.replyMessage(replyToken, await replyMessage.main(wolfNumber, lunaticNumberOptions));
+}
+
+/**
+ * 狂人の人数が選ばれたときのリプライ
+ *
+ * @param {*} plId
+ * @param {*} lunaticNumber
+ * @param {*} replyToken
+ * @returns
+ */
+const replyLunaticNumberChosen = async (plId, lunaticNumber, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyLunaticNumberChosen");
+
+    const wordWolf = new WordWolf(plId);
+
+    //狂人番号データを挿入できたらステータスをtrueにする
+    await wordWolf.updateLunaticIndexes(lunaticNumber).then(wordWolf.updateLunaticStatusTrue());
+
     /* ジャンル
     const genreId = await wordWolf.getGenreId();
     const genreName = await wordWolf.getGenreName(genreId);
@@ -359,7 +393,9 @@ const replyWolfNumberChosen = async (plId, wolfNumber, replyToken) => {
 
     // depth
     const depth = await wordWolf.getDepth();
-    return client.replyMessage(replyToken, await replyMessage.main(wolfNumber, depth));
+
+    const wolfNumber = await wordWolf.getWolfNumber();
+    return client.replyMessage(replyToken, await replyMessage.main(depth, wolfNumber, lunaticNumber));
 }
 
 /**
@@ -379,6 +415,7 @@ const replyConfirmYes = async (plId, replyToken) => {
 
     // const profiles = await wordWolf.getDisplayNames();
     const wolfIndexes = await wordWolf.getWolfIndexes();
+    const lunaticIndexes = await wordWolf.getLunaticIndexes();
     const citizenWord = await wordWolf.getCitizenWord();
     const wolfWord = await wordWolf.getWolfWord();
     const userNumber = await wordWolf.getUserNumber();
@@ -386,6 +423,7 @@ const replyConfirmYes = async (plId, replyToken) => {
     let userIds = [];
     let profiles = [];
     let userWords = [];
+    let isLunatic = [];
     for (let i = 0; i < userNumber; i++) {
         userIds[i] = await wordWolf.getUserId(i);
         const profile = await client.getProfile(userIds[i]);
@@ -395,12 +433,19 @@ const replyConfirmYes = async (plId, replyToken) => {
         } else {
             userWords[i] = wolfWord;
         }
+
+        if (lunaticIndexes.indexOf(i) == -1) {
+            isLunatic[i] = false;
+        } else {
+            isLunatic[i] = true;
+        }
     }
+
     console.log(profiles);
 
     for (let i = 0; i < userNumber; i++) {
         // プッシュメッセージ数節約のため開発時は一時的に無効化
-        client.pushMessage(userIds[i], await pushMessage.main(profiles[i], userWords[i]))
+        client.pushMessage(userIds[i], await pushMessage.main(profiles[i], userWords[i], isLunatic[i]))
     }
 
     const timer = await wordWolf.getTimer(); // タイマー設定を取得
@@ -423,10 +468,13 @@ const replyConfirmNo = async (plId, replyToken) => {
 
     const wordWolf = new WordWolf(plId);
 
+    /*
     // DB変更操作１
     await wordWolf.updateGenreStatusFalse();
     // DB変更操作２
     await wordWolf.updateWolfNumberStatusFalse();
+    */
+    await wordWolf.resetSettingStatus();
 
     /* ジャンル
     const genres = await wordWolf.getAllGenreIdAndName(); // すべてのジャンルのid:nameのオブジェクト
@@ -574,8 +622,10 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
             const isExecutorWolf = await wordWolf.isUserWolf(mostVotedUserIndex); // 処刑者がウルフかどうか
 
             await wordWolf.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
+            const displayNames = await wordWolf.getDisplayNames();
+            const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf); 
 
-            return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf));
+            return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf,displayNames,isWinnerArray));
 
         } else { // 最多得票者が複数いた場合
             const mostVotedUserIndexes = await wordWolf.getMostVotedUserIndexes(); // 最多得票者の配列
@@ -598,8 +648,10 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
                 const isExecutorWolf = await wordWolf.isUserWolf(executorIndex); // 処刑者がウルフかどうか
 
                 await wordWolf.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
+                const displayNames = await wordWolf.getDisplayNames();
+                const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf); 
 
-                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf));
+                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf,displayNames,isWinnerArray));
             }
 
         }
@@ -634,6 +686,7 @@ const replyAnnounceResult = async (plId, replyToken) => {
 
     const displayNames = await pl.getDisplayNames(plId);
     const wolfIndexes = await wordWolf.getWolfIndexes();
+    const lunaticIndexes = await wordWolf.getLunaticIndexes();
 
     const citizenWord = await wordWolf.getCitizenWord();
     const wolfWord = await wordWolf.getWolfWord();
@@ -641,6 +694,6 @@ const replyAnnounceResult = async (plId, replyToken) => {
     await wordWolf.updateResultStatusTrue();
     await pl.finishParticipantList(plId);
 
-    return client.replyMessage(replyToken, await replyMessage.main(displayNames, wolfIndexes, citizenWord, wolfWord));
+    return client.replyMessage(replyToken, await replyMessage.main(displayNames, wolfIndexes, lunaticIndexes, citizenWord, wolfWord));
 }
 

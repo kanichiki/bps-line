@@ -487,9 +487,11 @@ class WordWolf {
         }
     }
 
-    
+
 
     // ここまでワードに関する関数
+
+    // ここからウルフの設定に関する関数
 
     /**
      * ウルフの人数を設定する
@@ -529,28 +531,6 @@ class WordWolf {
     }
 
     /**
-     * ParticipantListのメソッド転用
-     * 参加者の人数を返す
-     *
-     * @returns
-     */
-    async getUserNumber() {
-        const participantList = new ParticipantList();
-        return participantList.getUserNumber(this.plId);
-    }
-
-    /**
-     * ParticipantListの転用メソッド
-     * 参加者のインデックスの配列を返す
-     *
-     * @returns
-     */
-    async getUserIndexes() {
-        const participantList = new ParticipantList();
-        return participantList.getUserIndexes(this.plId);
-    }
-
-    /**
      * 与えられたwolfNumberの数だけウルフのインデックスを重複のないように選んで返す
      * このインデックスは0から「参加者リストのuserの数-1」まで
      *
@@ -558,30 +538,10 @@ class WordWolf {
      * @returns
      */
     async chooseWolfIndexes(wolfNumber) {
-        await this.updateWolfNumber(wolfNumber);
         const userNumber = await this.getUserNumber();
 
-        try {
-            let wolfIndexes = [];
-            LOOP: for (let i = 0; i < wolfNumber; i++) {
-                while (true) {
-                    const num = Math.floor(Math.random() * userNumber);
-                    let status = true;
-                    for (const wolfIndex of wolfIndexes) {
-                        if (wolfIndex == num) {
-                            status = false;
-                        }
-                    }
-                    if (status) {
-                        wolfIndexes.push(num);
-                        continue LOOP;
-                    }
-                }
-            }
-            return wolfIndexes;
-        } catch (err) {
-            console.log(err);
-        }
+        const wolfIndexes = await commonFunction.chooseRandomIndexes(userNumber, wolfNumber);
+        return wolfIndexes;
     }
 
 
@@ -592,6 +552,7 @@ class WordWolf {
      * @param {*} wolfNumber
      */
     async updateWolfIndexes(wolfNumber) {
+        await this.updateWolfNumber(wolfNumber); // ウルフの数をアップデート
         const wolfIndexes = await this.chooseWolfIndexes(wolfNumber);
 
         const query = {
@@ -622,6 +583,328 @@ class WordWolf {
             console.log(err);
         }
     }
+
+    /**
+     * ウルフの人数の選択肢の配列を返す
+     * 整数の配列
+     * 1人～参加者の半分未満となるうち最大の人数
+     *
+     * @returns
+     */
+    async getWolfNumberOptions() {
+        const userNumber = await this.getUserNumber();
+        const maxWolfNumber = await commonFunction.calculateMaxNumberLessThanHalf(userNumber);
+
+        let res = [];
+        for (let i = 1; i <= maxWolfNumber; i++) {
+            res.push(i);
+        }
+        return res;
+    }
+
+    /**
+     * ウルフの人数の選択肢の整数配列の要素それぞれに「人」をつけたものを返す
+     *
+     * @returns
+     */
+    async getWolfNumberNinOptions() {
+        const wolfNumberOptions = await this.getWolfNumberOptions();
+        let wolfNumberNinOptions = [];
+        for (let i = 0; i < wolfNumberOptions.length; i++) {
+            wolfNumberNinOptions[i] = wolfNumberOptions[i] + "人";
+        }
+        return wolfNumberNinOptions;
+    }
+
+    /**
+     * テキストがウルフの人数に一致するかどうかを返す
+     * 1人、2人などじゃないとtrueにならない
+     *
+     * @param {*} text
+     * @returns
+     */
+    async wolfNumberExists(text) {
+        const wolfNumberNinOptions = await this.getWolfNumberNinOptions();
+        let res = false;
+        for (let wolfNumberNinOption of wolfNumberNinOptions) {
+            if (text == wolfNumberNinOption) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * テキストからウルフの人数を返す
+     *
+     * @param {*} text
+     * @returns
+     */
+    async getWolfNumberFromText(text) {
+
+        const wolfNumberNinOptions = await this.getWolfNumberNinOptions();
+        let wolfNumber = -1;
+        for (let i = 0; i < wolfNumberNinOptions.length; i++) {
+            if (text == wolfNumberNinOptions[i]) {
+                wolfNumber = i + 1;
+            }
+        }
+        if (wolfNumber != -1) {
+            return wolfNumber;
+        } else {
+            throw "ウルフの人数と一致しないよ"
+        }
+
+    }
+
+    /**
+     * 与えられたuserIndexのユーザーがウルフかどうかを返す
+     *
+     * @param {*} userIndex
+     * @returns
+     */
+    async isUserWolf(userIndex) {
+        const wolfIndexes = await this.getWolfIndexes();
+        let res = false;
+        for (let wolfIndex of wolfIndexes) {
+            if (userIndex == wolfIndex) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+
+    // ここまでウルフに関する関数
+
+    // ここから狂人に関する関数
+
+
+    /**
+     * 狂人の人数を設定する
+     *
+     * @param {*} lunaticNumber
+     */
+    async updateLunaticNumber(lunaticNumber) {
+        const query = {
+            text: 'UPDATE word_wolf_setting set lunatic_number = $1 where pl_id = $2',
+            values: [lunaticNumber, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated lunatic-number");
+        } catch (err) {
+            console.log(err);
+            console.log("狂人の人数設定できんかった");
+        }
+    }
+
+    /**
+     * 狂人の人数を返す
+     *
+     * @returns
+     */
+    async getLunaticNumber() {
+        const query = {
+            text: 'SELECT lunatic_number FROM word_wolf_setting WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].lunatic_number;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 与えられたlunaticNumberの数だけ狂人のインデックスを重複のないように選んで返す
+     * このインデックスは0から「参加者リストのuserの数-1」まで
+     *
+     * @param {*} lunaticNumber
+     * @returns
+     */
+    async chooseLunaticIndexes(lunaticNumber) {
+        const userNumber = await this.getUserNumber();
+
+        const lunaticIndexes = await commonFunction.chooseRandomIndexes(userNumber, lunaticNumber);
+        return lunaticIndexes;
+    }
+
+
+    /**
+     * 狂人の番号を設定する
+     * chooseLunaticIndexes参照
+     *
+     * @param {*} lunaticNumber
+     */
+    async updateLunaticIndexes(lunaticNumber) {
+        await this.updateLunaticNumber(lunaticNumber); // ウルフの数をアップデート
+        const lunaticIndexes = await this.chooseLunaticIndexes(lunaticNumber);
+
+        const query = {
+            text: 'UPDATE word_wolf_setting set lunatic_indexes = $1 where pl_id = $2',
+            values: [lunaticIndexes, this.plId]
+        };
+        try {
+            await pg.query(query).then(console.log("Updated lunatic-indexes"));
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 狂人の番号を取得する
+     *
+     * @returns
+     */
+    async getLunaticIndexes() {
+        const query = {
+            text: 'SELECT lunatic_indexes FROM word_wolf_setting WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].lunatic_indexes;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 狂人の人数の選択肢の配列を返す
+     * 整数の配列
+     * とりあえず0人か1人かな～
+     *
+     * @returns
+     */
+    async getLunaticNumberOptions() {
+        const userNumber = await this.getUserNumber();
+
+        /*
+        const maxLunaticNumber = await commonFunction.calculateMaxNumberLessThanHalf(userNumber);
+
+        let res = [];
+        for (let i = 1; i <= maxLunaticNumber; i++) {
+            res.push(i);
+        }
+        return res;
+        */
+
+        return [0, 1];
+    }
+
+    /**
+     * ウルフの人数の選択肢の整数配列の要素それぞれに「人」をつけたものを返す
+     *
+     * @returns
+     */
+    async getLunaticNumberNinOptions() {
+        const lunaticNumberOptions = await this.getLunaticNumberOptions();
+        let lunaticNumberNinOptions = [];
+        for (let i = 0; i < lunaticNumberOptions.length; i++) {
+            lunaticNumberNinOptions[i] = lunaticNumberOptions[i] + "人";
+        }
+        return lunaticNumberNinOptions;
+    }
+
+    /**
+     * テキストがウルフの人数に一致するかどうかを返す
+     * 1人、2人などじゃないとtrueにならない
+     *
+     * @param {*} text
+     * @returns
+     */
+    async lunaticNumberExists(text) {
+        const lunaticNumberNinOptions = await this.getLunaticNumberNinOptions();
+        let res = false;
+        for (let lunaticNumberNinOption of lunaticNumberNinOptions) {
+            if (text == lunaticNumberNinOption) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * テキストからウルフの人数を返す
+     *
+     * @param {*} text
+     * @returns
+     */
+    async getLunaticNumberFromText(text) {
+
+        const lunaticNumberNinOptions = await this.getLunaticNumberNinOptions();
+        let lunaticNumber = -1;
+        for (let i = 0; i < lunaticNumberNinOptions.length; i++) {
+            if (text == lunaticNumberNinOptions[i]) {
+                lunaticNumber = i;
+            }
+        }
+        if (lunaticNumber != -1) {
+            return lunaticNumber;
+        } else {
+            throw "狂人の人数と一致しないよ"
+        }
+
+    }
+
+    /**
+     * 与えられたuserIndexのユーザーがウルフかどうかを返す
+     *
+     * @param {*} userIndex
+     * @returns
+     */
+    async isUserLunatic(userIndex) {
+        const lunaticIndexes = await this.getLunaticIndexes();
+        let res = false;
+        for (let lunaticIndex of lunaticIndexes) {
+            if (userIndex == lunaticIndex) {
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    // ここまで狂人の設定に関する関数
+
+    async isUserWolfSide(userIndex){
+        const isUserWolf = await this.isUserWolf(userIndex);
+        const isUserLunatic = await this.isUserLunatic(userIndex);
+        let res = false;
+        if(isUserWolf || isUserLunatic){
+            res = true;
+        }
+        return res;
+    }
+
+
+
+    /**
+     * ParticipantListのメソッド転用
+     * 参加者の人数を返す
+     *
+     * @returns
+     */
+    async getUserNumber() {
+        const participantList = new ParticipantList();
+        return participantList.getUserNumber(this.plId);
+    }
+
+    /**
+     * ParticipantListの転用メソッド
+     * 参加者のインデックスの配列を返す
+     *
+     * @returns
+     */
+    async getUserIndexes() {
+        const participantList = new ParticipantList();
+        return participantList.getUserIndexes(this.plId);
+    }
+
+
+
+
 
 
     // word_wolf_statusテーブルに関する関数
@@ -671,6 +954,8 @@ class WordWolf {
             console.log(err);
         }
     }
+
+    // ここからgenre status
 
     /**
      * genreの選択状況をtrueにする
@@ -724,6 +1009,10 @@ class WordWolf {
         }
     }
 
+    // ここまでgenre status
+
+    // ここからwolf_number status
+
     /**
      * wolf_numberの選択状況をtrueにする
      *
@@ -774,6 +1063,73 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
+    }
+
+    // ここまでwolf_Number status
+
+    // ここからlunatic status
+
+    /**
+     * lunaticの選択状況をtrueにする
+     *
+     */
+    async updateLunaticStatusTrue() {
+        const query = {
+            text: 'UPDATE word_wolf_status set lunatic = true where pl_id = $1',
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query).then(console.log("Updated lunatic status"));
+        } catch (err) {
+            console.log(err);
+            console.log("狂人の人数の設定状況更新できんかった");
+        }
+    }
+
+    /**
+     * lunaticの選択状況をfalseにする
+     *
+     */
+    async updateLunaticStatusFalse() {
+        const query = {
+            text: 'UPDATE word_wolf_status set lunatic = false where pl_id = $1',
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query).then(console.log("Updated lunatic status to false"));
+        } catch (err) {
+            console.log(err);
+            console.log("狂人の人数の設定状況更新できんかった");
+        }
+    }
+
+    /**
+     * lunaticの選択状況を返す
+     *
+     * @returns
+     */
+    async getLunaticStatus() {
+        const query = {
+            text: 'SELECT lunatic FROM word_wolf_status WHERE pl_id = $1;',
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].lunatic;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 確認がNoだった場合に設定をリセットする
+     *
+     * @memberof WordWolf
+     */
+    async resetSettingStatus() {
+        await this.updateGenreStatusFalse();
+        await this.updateWolfNumberStatusFalse();
+        await this.updateLunaticStatusFalse();
     }
 
     /**
@@ -1350,95 +1706,6 @@ class WordWolf {
         return userIndexes[index];
     }
 
-    /**
-     * ウルフの人数の選択肢の配列を返す
-     * 整数の配列
-     * 1人～参加者の半分未満となるうち最大の人数
-     *
-     * @returns
-     */
-    async getWolfNumberOptions() {
-        const userNumber = await this.getUserNumber();
-        const maxWolfNumber = await commonFunction.calculateMaxNumberLessThanHalf(userNumber);
-
-        let res = [];
-        for (let i = 1; i <= maxWolfNumber; i++) {
-            res.push(i);
-        }
-        return res;
-    }
-
-    /**
-     * ウルフの人数の選択肢の整数配列の要素それぞれに「人」をつけたものを返す
-     *
-     * @returns
-     */
-    async getWolfNumberNinOptions() {
-        const wolfNumberOptions = await this.getWolfNumberOptions();
-        let wolfNumberNinOptions = [];
-        for (let i = 0; i < wolfNumberOptions.length; i++) {
-            wolfNumberNinOptions[i] = wolfNumberOptions[i] + "人";
-        }
-        return wolfNumberNinOptions;
-    }
-
-    /**
-     * テキストがウルフの人数に一致するかどうかを返す
-     * 1人、2人などじゃないとtrueにならない
-     *
-     * @param {*} text
-     * @returns
-     */
-    async wolfNumberExists(text) {
-        const wolfNumberNinOptions = await this.getWolfNumberNinOptions();
-        let res = false;
-        for (let wolfNumberNinOption of wolfNumberNinOptions) {
-            if (text == wolfNumberNinOption) {
-                res = true;
-            }
-        }
-        return res;
-    }
-
-    /**
-     * テキストからウルフの人数を返す
-     *
-     * @param {*} text
-     * @returns
-     */
-    async getWolfNumberFromText(text) {
-
-        const wolfNumberNinOptions = await this.getWolfNumberNinOptions();
-        let wolfNumber = -1;
-        for (let i = 0; i < wolfNumberNinOptions.length; i++) {
-            if (text == wolfNumberNinOptions[i]) {
-                wolfNumber = i + 1;
-            }
-        }
-        if (wolfNumber != -1) {
-            return wolfNumber;
-        } else {
-            throw "ウルフの人数と一致しないよ"
-        }
-
-    }
-
-    /**
-     * 与えられたuserIndexのユーザーがウルフかどうかを返す
-     *
-     * @param {*} userIndex
-     * @returns
-     */
-    async isUserWolf(userIndex) {
-        const wolfIndexes = await this.getWolfIndexes();
-        let res = false;
-        for (let wolfIndex of wolfIndexes) {
-            if (userIndex == wolfIndex) {
-                res = true;
-            }
-        }
-        return res;
-    }
 
     /**
      * 話し合いスタート時間を取得
@@ -1446,7 +1713,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getStartTime(){
+    async getStartTime() {
         const query = {
             text: 'SELECT start_time FROM word_wolf_setting WHERE pl_id = $1;',
             values: [this.plId]
@@ -1464,11 +1731,11 @@ class WordWolf {
      *
      * @memberof WordWolf
      */
-    async updateStartTime(){
+    async updateStartTime() {
         const startTime = await commonFunction.getCurrentTime();
         const query = {
             text: 'UPDATE word_wolf_setting set start_time = $1 where pl_id = $2',
-            values: [startTime,this.plId]
+            values: [startTime, this.plId]
         };
         try {
             await pg.query(query);
@@ -1485,7 +1752,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getTimer(){
+    async getTimer() {
         const query = {
             text: 'SELECT timer FROM word_wolf_setting WHERE pl_id = $1',
             values: [this.plId]
@@ -1504,10 +1771,10 @@ class WordWolf {
      * @param {*} minutes
      * @memberof WordWolf
      */
-    async updateTimer(minutes){
+    async updateTimer(minutes) {
         const query = {
             text: 'UPDATE word_wolf_setting set timer = $1 where pl_id = $2',
-            values: [minutes,this.plId]
+            values: [minutes, this.plId]
         };
         try {
             await pg.query(query);
@@ -1523,12 +1790,12 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async updateEndTime(){
+    async updateEndTime() {
         const timer = await this.getTimer();
         const minutes = timer + " minutes";
         const query = {
             text: 'update word_wolf_setting set end_time = start_time + $1 WHERE pl_id = $2',
-            values: [minutes,this.plId]
+            values: [minutes, this.plId]
         }
         try {
             await pg.query(query);
@@ -1543,7 +1810,7 @@ class WordWolf {
      *
      * @memberof WordWolf
      */
-    async updateTimeSetting(){
+    async updateTimeSetting() {
         await this.updateStartTime();
         await this.updateEndTime();
     }
@@ -1554,12 +1821,12 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async isRemainingTimeLessThan1minute(){
+    async isRemainingTimeLessThan1minute() {
         const currentTime = await commonFunction.getCurrentTime();
         const minutes = "1 minutes"
         const query = {
             text: 'SELECT ((end_time - $1 ) < $2 ) as ans FROM word_wolf_setting WHERE pl_id = $3',
-            values: [currentTime,minutes,this.plId]
+            values: [currentTime, minutes, this.plId]
         }
         try {
             const res = await pg.query(query);
@@ -1576,12 +1843,12 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async isOverTime(){
+    async isOverTime() {
         const currentTime = await commonFunction.getCurrentTime();
         const second = "0 second"
         const query = {
             text: 'SELECT ((end_time - $1 ) < $2 ) as ans FROM word_wolf_setting WHERE pl_id = $3',
-            values: [currentTime,second,this.plId]
+            values: [currentTime, second, this.plId]
         }
         try {
             const res = await pg.query(query);
@@ -1599,29 +1866,53 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getRemainingTime(){
+    async getRemainingTime() {
         const currentTime = await commonFunction.getCurrentTime();
 
         const query1 = {
             text: 'SELECT EXTRACT(minutes from (end_time - $1 )) AS minutes FROM word_wolf_setting WHERE pl_id = $2',
-            values: [currentTime,this.plId]
+            values: [currentTime, this.plId]
         }
         const query2 = {
             text: 'SELECT EXTRACT(second from (end_time - $1 )) AS second FROM word_wolf_setting WHERE pl_id = $2',
-            values: [currentTime,this.plId]
+            values: [currentTime, this.plId]
         }
 
         try {
             const res1 = await pg.query(query1);
-            const minutes =  res1.rows[0].minutes;
+            const minutes = res1.rows[0].minutes;
             const res2 = await pg.query(query2);
-            const second =  res2.rows[0].second;
+            const second = res2.rows[0].second;
 
-            const remainingTime = minutes+"分"+second+"秒";
+            const remainingTime = minutes + "分" + second + "秒";
             return remainingTime;
         } catch (err) {
             console.log(err);
-        }   
+        }
+    }
+
+    async isWinnerArray(isExecutorWolf) {
+        const wolfIndexes = await this.getWolfIndexes();
+        const lunaticIndexes = await this.getLunaticIndexes();
+        const userNumber = await this.getUserNumber();
+        let res = [];
+        for(let i=0;i<userNumber;i++){
+            const isUserWolfSide = await this.isUserWolfSide(i);
+            if(isExecutorWolf){
+                if(!isUserWolfSide){
+                    res[i]=true;
+                }else{
+                    res[i]=false;
+                }
+            }else{
+                if(!isUserWolfSide){
+                    res[i]=false;
+                }else{
+                    res[i]=true;
+                }
+            }
+        }
+        return res;
     }
 }
 
