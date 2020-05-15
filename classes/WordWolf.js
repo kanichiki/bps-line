@@ -66,6 +66,10 @@ class WordWolf {
 
     constructor(plId) {
         this.plId = plId;
+        this.setting = "word_wolf_setting";
+        this.status = "word_wolf_status";
+        this.vote = "word_wolf_vote";
+        this.revote = "word_wolf_revote"
     }
 
 
@@ -80,7 +84,7 @@ class WordWolf {
     async createWordWolfSetting() {
         const isReverse = await this.chooseIsReverse();
         const query = {
-            text: 'INSERT INTO word_wolf_setting (pl_id,is_reverse) VALUES ($1,$2);',
+            text: `INSERT INTO ${this.setting} (pl_id,is_reverse) VALUES ($1,$2);`,
             values: [this.plId, isReverse]
         }
         try {
@@ -102,7 +106,7 @@ class WordWolf {
      */
     async hasWordWolfSetting() {
         const query = {
-            text: 'SELECT pl_id from word_wolf_setting where pl_id = $1',
+            text: `SELECT pl_id from ${this.setting} where pl_id = $1`,
             values: [this.plId]
         }
         try {
@@ -130,7 +134,7 @@ class WordWolf {
      */
     async getWordSetIdsMatchGenreId(genreId) {
         const query = {
-            text: 'SELECT id FROM word_set WHERE genre_id = $1;',
+            text: `SELECT id FROM word_set WHERE genre_id = $1;`,
             values: [genreId]
         }
         try {
@@ -181,7 +185,7 @@ class WordWolf {
 
     async getWordSetId() {
         const query = {
-            text: 'SELECT word_set_id FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT word_set_id FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -201,7 +205,7 @@ class WordWolf {
         const wordSetId = await this.chooseWordSetIdMatchGenreId(genreId);
 
         const query = {
-            text: 'UPDATE word_wolf_setting set word_set_id = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set word_set_id = $1 where pl_id = $2`,
             values: [wordSetId, this.plId]
         };
         try {
@@ -222,7 +226,7 @@ class WordWolf {
     async getGenreId() {
         const wordSetId = await this.getWordSetId();
         const query = {
-            text: 'SELECT genre_id FROM word_set WHERE id = $1;',
+            text: `SELECT genre_id FROM word_set WHERE id = $1;`,
             values: [wordSetId]
         }
         try {
@@ -242,7 +246,7 @@ class WordWolf {
      */
     async getGenreName(genreId) {
         const query = {
-            text: 'SELECT name FROM word_genre WHERE id = $1;',
+            text: `SELECT name FROM word_genre WHERE id = $1;`,
             values: [genreId]
         }
         try {
@@ -261,7 +265,7 @@ class WordWolf {
      */
     async getAllGenreIdAndName() {
         const query = {
-            text: 'SELECT id, name FROM word_genre'
+            text: `SELECT id, name FROM word_genre`
         }
         try {
             let obj = {};
@@ -284,7 +288,7 @@ class WordWolf {
      */
     async getGenreIdFromName(genreName) {
         const query = {
-            text: 'SELECT id FROM word_genre WHERE name = $1',
+            text: `SELECT id FROM word_genre WHERE name = $1`,
             values: [genreName]
         }
         try {
@@ -303,7 +307,7 @@ class WordWolf {
      */
     async genreNameExists(text) {
         const query = {
-            text: 'SELECT id FROM word_genre WHERE name = $1',
+            text: `SELECT id FROM word_genre WHERE name = $1`,
             values: [text]
         }
         try {
@@ -327,7 +331,7 @@ class WordWolf {
      */
     async getIsReverse() {
         const query = {
-            text: 'SELECT is_reverse FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT is_reverse FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -351,12 +355,12 @@ class WordWolf {
         let query = {}
         if (!isReverse) {
             query = {
-                text: 'SELECT word1 FROM word_set WHERE id = $1;',
+                text: `SELECT word1 FROM word_set WHERE id = $1;`,
                 values: [wordSetId]
             };
         } else {
             query = {
-                text: 'SELECT word2 FROM word_set WHERE id = $1;',
+                text: `SELECT word2 FROM word_set WHERE id = $1;`,
                 values: [wordSetId]
             };
         }
@@ -387,12 +391,12 @@ class WordWolf {
         let query = {}
         if (!isReverse) {
             query = {
-                text: 'SELECT word2 FROM word_set WHERE id = $1;',
+                text: `SELECT word2 FROM word_set WHERE id = $1;`,
                 values: [wordSetId]
             };
         } else {
             query = {
-                text: 'SELECT word1 FROM word_set WHERE id = $1;',
+                text: `SELECT word1 FROM word_set WHERE id = $1;`,
                 values: [wordSetId]
             };
         }
@@ -417,7 +421,7 @@ class WordWolf {
      */
     async getWordSetIdsMatchDepth(depth) {
         const query = {
-            text: 'SELECT id FROM word_set WHERE depth = $1;',
+            text: `SELECT id FROM word_set WHERE depth = $1;`,
             values: [depth]
         }
         try {
@@ -455,7 +459,7 @@ class WordWolf {
         const wordSetId = await this.chooseWordSetIdMatchDepth(depth);
 
         const query = {
-            text: 'UPDATE word_wolf_setting set word_set_id = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set word_set_id = $1 where pl_id = $2`,
             values: [wordSetId, this.plId]
         };
         try {
@@ -476,7 +480,7 @@ class WordWolf {
     async getDepth() {
         const wordSetId = await this.getWordSetId();
         const query = {
-            text: 'SELECT depth FROM word_set WHERE id = $1;',
+            text: `SELECT depth FROM word_set WHERE id = $1;`,
             values: [wordSetId]
         }
         try {
@@ -500,7 +504,7 @@ class WordWolf {
      */
     async updateWolfNumber(wolfNumber) {
         const query = {
-            text: 'UPDATE word_wolf_setting set wolf_number = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set wolf_number = $1 where pl_id = $2`,
             values: [wolfNumber, this.plId]
         };
         try {
@@ -519,7 +523,7 @@ class WordWolf {
      */
     async getWolfNumber() {
         const query = {
-            text: 'SELECT wolf_number FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT wolf_number FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -556,7 +560,7 @@ class WordWolf {
         const wolfIndexes = await this.chooseWolfIndexes(wolfNumber);
 
         const query = {
-            text: 'UPDATE word_wolf_setting set wolf_indexes = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set wolf_indexes = $1 where pl_id = $2`,
             values: [wolfIndexes, this.plId]
         };
         try {
@@ -573,7 +577,7 @@ class WordWolf {
      */
     async getWolfIndexes() {
         const query = {
-            text: 'SELECT wolf_indexes FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT wolf_indexes FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -687,7 +691,7 @@ class WordWolf {
      */
     async updateLunaticNumber(lunaticNumber) {
         const query = {
-            text: 'UPDATE word_wolf_setting set lunatic_number = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set lunatic_number = $1 where pl_id = $2`,
             values: [lunaticNumber, this.plId]
         };
         try {
@@ -706,7 +710,7 @@ class WordWolf {
      */
     async getLunaticNumber() {
         const query = {
-            text: 'SELECT lunatic_number FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT lunatic_number FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -743,7 +747,7 @@ class WordWolf {
         const lunaticIndexes = await this.chooseLunaticIndexes(lunaticNumber);
 
         const query = {
-            text: 'UPDATE word_wolf_setting set lunatic_indexes = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set lunatic_indexes = $1 where pl_id = $2`,
             values: [lunaticIndexes, this.plId]
         };
         try {
@@ -760,7 +764,7 @@ class WordWolf {
      */
     async getLunaticIndexes() {
         const query = {
-            text: 'SELECT lunatic_indexes FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT lunatic_indexes FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -917,7 +921,7 @@ class WordWolf {
      */
     async createWordWolfStatus() {
         const query = {
-            text: 'INSERT INTO word_wolf_status (pl_id) VALUES ($1);',
+            text: `INSERT INTO ${this.status} (pl_id) VALUES ($1);`,
             values: [this.plId]
         }
         try {
@@ -938,7 +942,7 @@ class WordWolf {
      */
     async hasWordWolfStatus() {
         const query = {
-            text: 'SELECT pl_id from word_wolf_status where pl_id = $1',
+            text: `SELECT pl_id from ${this.status} where pl_id = $1`,
             values: [this.plId]
         }
         try {
@@ -963,7 +967,7 @@ class WordWolf {
      */
     async updateGenreStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set genre = true where pl_id = $1',
+            text: `UPDATE ${this.status} set genre = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -980,7 +984,7 @@ class WordWolf {
      */
     async updateGenreStatusFalse() {
         const query = {
-            text: 'UPDATE word_wolf_status set genre = false where pl_id = $1',
+            text: `UPDATE ${this.status} set genre = false where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -998,7 +1002,7 @@ class WordWolf {
      */
     async getGenreStatus() {
         const query = {
-            text: 'SELECT genre FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT genre FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1019,7 +1023,7 @@ class WordWolf {
      */
     async updateWolfNumberStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set wolf_number = true where pl_id = $1',
+            text: `UPDATE ${this.status} set wolf_number = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1036,7 +1040,7 @@ class WordWolf {
      */
     async updateWolfNumberStatusFalse() {
         const query = {
-            text: 'UPDATE word_wolf_status set wolf_number = false where pl_id = $1',
+            text: `UPDATE ${this.status} set wolf_number = false where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1054,7 +1058,7 @@ class WordWolf {
      */
     async getWolfNumberStatus() {
         const query = {
-            text: 'SELECT wolf_number FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT wolf_number FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1075,7 +1079,7 @@ class WordWolf {
      */
     async updateLunaticStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set lunatic = true where pl_id = $1',
+            text: `UPDATE ${this.status} set lunatic = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1092,7 +1096,7 @@ class WordWolf {
      */
     async updateLunaticStatusFalse() {
         const query = {
-            text: 'UPDATE word_wolf_status set lunatic = false where pl_id = $1',
+            text: `UPDATE ${this.status} set lunatic = false where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1110,7 +1114,7 @@ class WordWolf {
      */
     async getLunaticStatus() {
         const query = {
-            text: 'SELECT lunatic FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT lunatic FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1138,7 +1142,7 @@ class WordWolf {
      */
     async updateConfirmStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set confirm = true where pl_id = $1',
+            text: `UPDATE ${this.status} set confirm = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1156,7 +1160,7 @@ class WordWolf {
      */
     async getSettingConfirmStatus() {
         const query = {
-            text: 'SELECT confirm FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT confirm FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1173,7 +1177,7 @@ class WordWolf {
      */
     async updateNotifyStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set notify = true where pl_id = $1',
+            text: `UPDATE ${this.status} set notify = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1191,7 +1195,7 @@ class WordWolf {
      */
     async getNotifyStatus() {
         const query = {
-            text: 'SELECT notify FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT notify FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1208,7 +1212,7 @@ class WordWolf {
      */
     async updateFinishedStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set finished = true where pl_id = $1',
+            text: `UPDATE ${this.status} set finished = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1226,7 +1230,7 @@ class WordWolf {
      */
     async getFinishedStatus() {
         const query = {
-            text: 'SELECT finished FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT finished FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1243,7 +1247,7 @@ class WordWolf {
      */
     async updateWinnerStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set winner = true where pl_id = $1',
+            text: `UPDATE ${this.status} set winner = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1261,7 +1265,7 @@ class WordWolf {
      */
     async getWinnerStatus() {
         const query = {
-            text: 'SELECT winner FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT winner FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1278,7 +1282,7 @@ class WordWolf {
      */
     async updateResultStatusTrue() {
         const query = {
-            text: 'UPDATE word_wolf_status set result = true where pl_id = $1',
+            text: `UPDATE ${this.status} set result = true where pl_id = $1`,
             values: [this.plId]
         };
         try {
@@ -1296,7 +1300,7 @@ class WordWolf {
      */
     async getResultStatus() {
         const query = {
-            text: 'SELECT result FROM word_wolf_status WHERE pl_id = $1;',
+            text: `SELECT result FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1374,7 +1378,7 @@ class WordWolf {
         }
 
         const query = {
-            text: 'INSERT INTO word_wolf_vote (pl_id,numbers,status) VALUES ($1,$2,$3);',
+            text: `INSERT INTO ${this.vote} (pl_id,numbers,status) VALUES ($1,$2,$3);`,
             values: [this.plId, votes, status]
         }
         try {
@@ -1396,7 +1400,7 @@ class WordWolf {
      */
     async getVoteNumbers() {
         const query = {
-            text: 'SELECT numbers FROM word_wolf_vote WHERE pl_id = $1',
+            text: `SELECT numbers FROM ${this.vote} WHERE pl_id = $1`,
             values: [this.plId]
         }
         try {
@@ -1414,7 +1418,7 @@ class WordWolf {
      */
     async getVoteStatus() {
         const query = {
-            text: 'SELECT status FROM word_wolf_vote WHERE pl_id = $1',
+            text: `SELECT status FROM ${this.vote} WHERE pl_id = $1`,
             values: [this.plId]
         }
         try {
@@ -1461,7 +1465,7 @@ class WordWolf {
         let numbers = await this.getVoteNumbers();
         numbers[userIndex] += 1; // 得票数1追加
         const query = {
-            text: 'UPDATE word_wolf_vote set numbers = $1 where pl_id = $2',
+            text: `UPDATE ${this.vote} set numbers = $1 where pl_id = $2`,
             values: [numbers, this.plId]
         };
         try {
@@ -1485,7 +1489,7 @@ class WordWolf {
             throw "既に投票済み";
         }
         const query = {
-            text: 'UPDATE word_wolf_vote set status = $1 where pl_id = $2',
+            text: `UPDATE ${this.vote} set status = $1 where pl_id = $2`,
             values: [status, this.plId]
         };
         try {
@@ -1554,7 +1558,7 @@ class WordWolf {
      */
     async getRevoteCandidateIndexes() {
         const query = {
-            text: 'SELECT indexes FROM word_wolf_revote WHERE pl_id = $1;',
+            text: `SELECT indexes FROM ${this.revote} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1610,7 +1614,7 @@ class WordWolf {
      */
     async createWordWolfRevote(candidateIndexes) {
         const query = {
-            text: 'INSERT INTO word_wolf_revote (pl_id,indexes) VALUES ($1,$2);',
+            text: `INSERT INTO ${this.revote} (pl_id,indexes) VALUES ($1,$2);`,
             values: [this.plId, candidateIndexes]
         }
         try {
@@ -1637,7 +1641,7 @@ class WordWolf {
             status.push(false);
         }
         const query = {
-            text: 'UPDATE word_wolf_vote set numbers = $1, status = $2 where pl_id = $3',
+            text: `UPDATE ${this.vote} set numbers = $1, status = $2 where pl_id = $3`,
             values: [votes, status, this.plId]
         };
         try {
@@ -1656,7 +1660,7 @@ class WordWolf {
      */
     async isRevoting() {
         const query = {
-            text: 'SELECT pl_id FROM word_wolf_revote WHERE pl_id = $1',
+            text: `SELECT pl_id FROM ${this.revote} WHERE pl_id = $1`,
             values: [this.plId]
         }
         try {
@@ -1715,7 +1719,7 @@ class WordWolf {
      */
     async getStartTime() {
         const query = {
-            text: 'SELECT start_time FROM word_wolf_setting WHERE pl_id = $1;',
+            text: `SELECT start_time FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
         }
         try {
@@ -1734,7 +1738,7 @@ class WordWolf {
     async updateStartTime() {
         const startTime = await commonFunction.getCurrentTime();
         const query = {
-            text: 'UPDATE word_wolf_setting set start_time = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
             values: [startTime, this.plId]
         };
         try {
@@ -1754,7 +1758,7 @@ class WordWolf {
      */
     async getTimer() {
         const query = {
-            text: 'SELECT timer FROM word_wolf_setting WHERE pl_id = $1',
+            text: `SELECT timer FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
         }
         try {
@@ -1773,7 +1777,7 @@ class WordWolf {
      */
     async updateTimer(minutes) {
         const query = {
-            text: 'UPDATE word_wolf_setting set timer = $1 where pl_id = $2',
+            text: `UPDATE ${this.setting} set timer = $1 where pl_id = $2`,
             values: [minutes, this.plId]
         };
         try {
@@ -1794,7 +1798,7 @@ class WordWolf {
         const timer = await this.getTimer();
         const minutes = timer + " minutes";
         const query = {
-            text: 'update word_wolf_setting set end_time = start_time + $1 WHERE pl_id = $2',
+            text: `update ${this.setting} set end_time = start_time + $1 WHERE pl_id = $2`,
             values: [minutes, this.plId]
         }
         try {
@@ -1825,7 +1829,7 @@ class WordWolf {
         const currentTime = await commonFunction.getCurrentTime();
         const minutes = "1 minutes"
         const query = {
-            text: 'SELECT ((end_time - $1 ) < $2 ) as ans FROM word_wolf_setting WHERE pl_id = $3',
+            text: `SELECT ((end_time - $1 ) < $2 ) as ans FROM ${this.setting} WHERE pl_id = $3`,
             values: [currentTime, minutes, this.plId]
         }
         try {
@@ -1847,7 +1851,7 @@ class WordWolf {
         const currentTime = await commonFunction.getCurrentTime();
         const second = "0 second"
         const query = {
-            text: 'SELECT ((end_time - $1 ) < $2 ) as ans FROM word_wolf_setting WHERE pl_id = $3',
+            text: `SELECT ((end_time - $1 ) < $2 ) as ans FROM ${this.setting} WHERE pl_id = $3`,
             values: [currentTime, second, this.plId]
         }
         try {
@@ -1870,11 +1874,11 @@ class WordWolf {
         const currentTime = await commonFunction.getCurrentTime();
 
         const query1 = {
-            text: 'SELECT EXTRACT(minutes from (end_time - $1 )) AS minutes FROM word_wolf_setting WHERE pl_id = $2',
+            text: `SELECT EXTRACT(minutes from (end_time - $1 )) AS minutes FROM ${this.setting} WHERE pl_id = $2`,
             values: [currentTime, this.plId]
         }
         const query2 = {
-            text: 'SELECT EXTRACT(second from (end_time - $1 )) AS second FROM word_wolf_setting WHERE pl_id = $2',
+            text: `SELECT EXTRACT(second from (end_time - $1 )) AS second FROM ${this.setting} WHERE pl_id = $2`,
             values: [currentTime, this.plId]
         }
 
@@ -1891,9 +1895,14 @@ class WordWolf {
         }
     }
 
+    /**
+     * ユーザーがそれぞれ勝者かどうかを配列で返す
+     *
+     * @param {*} isExecutorWolf
+     * @returns
+     * @memberof WordWolf
+     */
     async isWinnerArray(isExecutorWolf) {
-        const wolfIndexes = await this.getWolfIndexes();
-        const lunaticIndexes = await this.getLunaticIndexes();
         const userNumber = await this.getUserNumber();
         let res = [];
         for(let i=0;i<userNumber;i++){

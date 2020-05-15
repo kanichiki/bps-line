@@ -13,6 +13,7 @@ module.exports = {
               "text": "ワードの難易度を選んでください！",
               "size": "md",
               "wrap": true,
+              "weight": "bold",
               "margin": "none"
             },
             {

@@ -38,7 +38,7 @@ module.exports = class ParticipantList {
     async createPaticipantList(groupId) {
         const userIds = [];
         const query = {
-            text: 'INSERT INTO participant_list (group_id,user_ids) VALUES ($1,$2);',
+            text: `INSERT INTO participant_list (group_id,user_ids) VALUES ($1,$2);`,
             values: [groupId, userIds]
         }
         try {
