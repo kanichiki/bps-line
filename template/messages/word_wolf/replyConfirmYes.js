@@ -32,9 +32,9 @@ exports.main = async (timer) => {
                       "action": {
                         "type": "uri",
                         "label": "ワードを確認する",
-                        "uri": `https://line.me/R/oaMessage/${process.env.channelId}`,
+                        "uri": `https://line.me/R/oaMessage/${process.env.channelId}/`,
                         "altUri": {
-                          "desktop": `https://line.me/R/oaMessage/${process.env.channelId}`
+                          "desktop": `https://line.me/R/oaMessage/${process.env.channelId}/`
                         }
                       },
                       "color":parts.mainColor
@@ -42,10 +42,6 @@ exports.main = async (timer) => {
                   ]
                 }
               }
-        },
-        {
-            type: "text",
-            text: `話し合い時間は${timer}分です\n話し合いを途中で終了するには「終了」と発言してください`
         },
         {
             "type": "flex",
