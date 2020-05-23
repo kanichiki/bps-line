@@ -174,8 +174,8 @@ class CrazyNoisy extends ParticipantList {
         const guruNumber = 1;
         const fanaticNumber = await this.chooseFanaticNumber();
         // const fanaticNumber = 1;
-        const detectiveNumber = await this.chooseDetectiveNumber();
-        // const detectiveNumber = 1;
+        // const detectiveNumber = await this.chooseDetectiveNumber();
+        const detectiveNumber = 1;
         let positions = [];
         let isDecided = [];
 
