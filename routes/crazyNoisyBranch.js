@@ -810,7 +810,7 @@ const replyDetectiveAction = async (plId, userIndex, targetUserIndex, replyToken
     const replyMessage = require("../template/messages/crazy_noisy/replyDetectiveAction");
     const crazyNoisy = new CrazyNoisy(plId);
     await crazyNoisy.updateActionsStateTrue(userIndex);
-    const isGuru = crazyNoisy.isGuru(targetUserIndex);
+    const isGuru = await crazyNoisy.isGuru(targetUserIndex);
     const displayName = await crazyNoisy.getDisplayName(targetUserIndex);
 
     await client.replyMessage(replyToken, await replyMessage.main(displayName, isGuru));
@@ -840,17 +840,42 @@ const replyDetectiveAction = async (plId, userIndex, targetUserIndex, replyToken
                 await client.pushMessage(userIds[i], await pushCraziness.main(contents, remarks));
             }
         }
-        await sleep(5000); // 5秒待つ
 
-        const pushFinishActions = require("../template/messages/crazy_noisy/pushFinishActions");
-        const groupId = await crazyNoisy.getGroupId(plId);
+        await sleep(5000); // 5秒待つ
 
         await crazyNoisy.updateDay(); // 日付更新
         const day = await crazyNoisy.getDay();
-        await crazyNoisy.updateActionStatusFalse();
-        await crazyNoisy.updateDiscussStatusTrue();
-        const timer = await crazyNoisy.getTimer(); // タイマー設定を取得
-        return client.pushMessage(groupId, await pushFinishActions.main(day, timer));
+        const pushDay = require("../template/messages/crazy_noisy/pushDay");
+        const pushDayMessage = await pushDay.main(day);
+        const groupId = await crazyNoisy.getGroupId(plId);
+
+        const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
+        if (!isBrainwashCompleted) {
+            await crazyNoisy.updateTimeSetting();
+            const timer = await crazyNoisy.getTimer(); // タイマー設定を取得
+
+            const pushFinishActions = require("../template/messages/crazy_noisy/pushFinishActions");
+            const pushFinishActionsMessage = await pushFinishActions.main(day, timer);
+
+            await crazyNoisy.updateActionStatusFalse();
+            await crazyNoisy.updateDiscussStatusTrue();
+
+            const pushMessage = await pushDayMessage.concat(pushFinishActionsMessage);
+
+            return client.pushMessage(groupId, pushMessage);
+
+        } else { // 洗脳が完了したら
+            await crazyNoisy.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
+            const isWinnerGuru = true;
+            const winnerIndexes = await crazyNoisy.getWinnerIndexes(isWinnerGuru);
+
+            const replyWinner = require("../template/messages/crazy_noisy/replyWinner");
+            const displayNames = await crazyNoisy.getDisplayNames();
+            const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerGuru, winnerIndexes);
+
+            const pushMessage = await pushDayMessage.concat(pushWinnerMessage);
+            return client.pushMessage(groupId, pushMessage);
+        }
 
     }
 }
