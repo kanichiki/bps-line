@@ -142,7 +142,7 @@ class CrazyNoisy extends ParticipantList {
         const userNumber = await this.getUserNumber();
         const number = Math.floor((userNumber - 1) / 3);
         const detectiveNumber = await commonFunction.getRandomNumber(number - 1, number);
-        if(number>1){
+        if (number > 1) {
             detectiveNumber = 1;
         }
         return detectiveNumber;
@@ -155,10 +155,10 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async chooseSpNumber(){
+    async chooseSpNumber() {
         const userNumber = await this.getUserNumber();
         let spNumber = 0;
-        if(userNumber>6){
+        if (userNumber > 6) {
             spNumber = 1
         }
         return spNumber
@@ -174,8 +174,8 @@ class CrazyNoisy extends ParticipantList {
         const guruNumber = 1;
         const fanaticNumber = await this.chooseFanaticNumber();
         // const fanaticNumber = 1;
-        // const detectiveNumber = await this.chooseDetectiveNumber();
-        const detectiveNumber = 1;
+        const detectiveNumber = await this.chooseDetectiveNumber();
+        // const detectiveNumber = 1;
         let positions = [];
         let isDecided = [];
 
@@ -1374,7 +1374,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async isBrainwash(userIndex){
+    async isBrainwash(userIndex) {
         const status = await this.getBrainwashStatus();
         return status[userIndex];
     }
