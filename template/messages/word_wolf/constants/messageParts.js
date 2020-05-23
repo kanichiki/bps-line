@@ -99,7 +99,7 @@ module.exports = {
                     "label": "4",
                     "text": "4"
                   },
-                  "color":mainColor
+                  "color":parts.mainColor
                 },
                 {
                   "type": "separator"
@@ -111,7 +111,7 @@ module.exports = {
                     "label": "5",
                     "text": "5"
                   },
-                  "color":mainColor
+                  "color":parts.mainColor
                 }
               ]
             }
