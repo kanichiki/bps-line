@@ -8,6 +8,7 @@ const User = require("../classes/User");
 const Game = require("../classes/Game");
 
 const wordWolfBranch = require("./wordWolfBranch");
+const crazyNoisyBranch = require("./crazyNoisyBranch");
 
 
 const config = {
@@ -51,194 +52,242 @@ const main = async (req, res) => {
     const replyToken = event.replyToken;
 
     // const usePostback = true;
+    let isFriend = true;
+    try {
+      await client.getProfile(userId);
+    } catch{
+      isFriend = false;
+    }
 
-    if (eventType == "message") {
+    if (isFriend) {
+      if (eventType == "message") {
 
-      const text = event.message.text;
-      const toType = event.source.type;
+        const text = event.message.text;
+        const toType = event.source.type;
 
-      if (toType == "group" || toType == "room") {
-        let groupId = ""
-        if (toType == "group") {
-          groupId = event.source.groupId;
-        } else if (toType == "room") {
-          groupId = event.source.roomId; // roomIdもgroupId扱いしよう
-        }
-
-
-        // TODO 友達追加されていないユーザーの場合の分岐
-        // 初めの処理
-        const isUser = await user.isUser();
-        if (isUser) {
-          if (text != "参加") {
-            await user.updateIsRestartingFalse(); // もし「参加」以外の言葉がユーザーから発言されたら確認状況をリセットする
+        if (toType == "group" || toType == "room") {
+          let groupId = ""
+          if (toType == "group") {
+            groupId = event.source.groupId;
+          } else if (toType == "room") {
+            groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
-        }
 
-        const game = new Game();
-        const gameNameExists = await game.gameNameExists(text);
-        if (gameNameExists) {
-          const gameId = await game.getGameIdFromName(text);
 
-          const isRestarting = await pl.hasGroupRestartingParticipantList(groupId);
-          const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
-          const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
-          if (isRestarting) {
-            // ここの内容は※1マークのところと同じになるように
-            // 本当は統合したいが条件分岐がぐちゃぐちゃになる
+          // TODO 友達追加されていないユーザーの場合の分岐
+          // 初めの処理
+          const isUser = await user.isUser();
+          if (isUser) {
+            if (text != "参加") {
+              await user.updateIsRestartingFalse(); // もし「参加」以外の言葉がユーザーから発言されたら確認状況をリセットする
+            }
+          }
 
-            promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
-            continue;
-          } else if (isRecruiting) {
+          const game = new Game();
+          const gameNameExists = await game.gameNameExists(text);
+          if (gameNameExists) {
+            const gameId = await game.getGameIdFromName(text);
 
-            // 参加者募集中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
-            const plId = await pl.getRecruitingParticipantListId(groupId); // 募集中の参加者リストのidを取得
-            promises.push(replyRestartConfirmIfRecruiting(plId, gameId, replyToken));
-            continue;
+            const isRestarting = await pl.hasGroupRestartingParticipantList(groupId);
+            const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
+            const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
+            if (isRestarting) {
+              // ここの内容は※1マークのところと同じになるように
+              // 本当は統合したいが条件分岐がぐちゃぐちゃになる
 
-          } else if (isPlaying) {
+              promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
+              continue;
+            } else if (isRecruiting) {
 
-            const plId = await pl.getPlayingParticipantListId(groupId);
-            const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
-            if (isUserParticipant) { // 参加者の発言の場合
+              // 参加者募集中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
+              const plId = await pl.getRecruitingParticipantListId(groupId); // 募集中の参加者リストのidを取得
+              promises.push(replyRestartConfirmIfRecruiting(plId, gameId, replyToken));
+              continue;
 
-              // プレイ中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
-              promises.push(replyRestartConfirmIfPlaying(plId, gameId, replyToken));
+            } else if (isPlaying) {
+
+              const plId = await pl.getPlayingParticipantListId(groupId);
+              const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
+              if (isUserParticipant) { // 参加者の発言の場合
+
+                // プレイ中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
+                promises.push(replyRestartConfirmIfPlaying(plId, gameId, replyToken));
+                continue;
+              }
+
+            } else {
+              // ※1
+              // 参加を募集する旨のリプライを返す
+              promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
               continue;
             }
+          } else { // 発言の内容がゲーム名じゃないなら
+            await pl.updateIsRestartingOfGroupFalse(groupId); // 発言グループのリスタート待ちを解除
 
-          } else {
-            // ※1
-            // 参加を募集する旨のリプライを返す
-            promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
-            continue;
-          }
-        } else { // 発言の内容がゲーム名じゃないなら
-          await pl.updateIsRestartingOfGroupFalse(groupId); // 発言グループのリスタート待ちを解除
+            // 発言グループに募集中の参加者リストがあるかどうか
+            const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
+            if (isRecruiting) { // 参加者募集中の場合
+              const plId = await pl.getRecruitingParticipantListId(groupId); // 発言グループの募集中の参加者リストを返す
+              console.log("募集中の参加者リストidは" + plId);
 
-          // 発言グループに募集中の参加者リストがあるかどうか
-          const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
-          if (isRecruiting) { // 参加者募集中の場合
-            const plId = await pl.getRecruitingParticipantListId(groupId); // 発言グループの募集中の参加者リストを返す
-            console.log("募集中の参加者リストidは" + plId);
+              if (text == "参加") {
+                if (isUser) { // ユーザーテーブルにデータがあるか
+                  const hasPlId = await user.hasPlId();
+                  const isUserRestarting = await user.isRestarting();
+                  if (hasPlId) { // ユーザーに参加中の参加者リストがある場合
 
-            if (text == "参加") {
-              if (isUser) { // ユーザーテーブルにデータがあるか
-                const hasPlId = await user.hasPlId();
-                const isUserRestarting = await user.isRestarting();
-                if (hasPlId) { // ユーザーに参加中の参加者リストがある場合
+                    const isUserParticipant = await pl.isUserParticipant(plId, userId)
+                    if (!isUserParticipant) { // そのplIdがグループで募集中のものと違うなら（つまり参加中じゃないなら）
 
-                  const isUserParticipant = await pl.isUserParticipant(plId, userId)
-                  if (!isUserParticipant) { // そのplIdがグループで募集中のものと違うなら（つまり参加中じゃないなら）
+                      if (isUserRestarting) { // 確認した上で参加と言ってるなら
 
-                    if (isUserRestarting) { // 確認した上で参加と言ってるなら
+                        // この内容は※2と一致
+                        // 参加意思表明に対するリプライ
+                        // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
+                        promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
+                        continue;
+                      } else { // まだ確認してなかったら
 
-                      // この内容は※2と一致
+                        promises.push(replyParticipateConfirm(userId, replyToken));
+                        continue;
+                      }
+                    } else {
+                      // ※2
                       // 参加意思表明に対するリプライ
                       // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
                       promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                       continue;
-                    } else { // まだ確認してなかったら
-
-                      promises.push(replyParticipateConfirm(userId, replyToken));
-                      continue;
                     }
-                  } else {
+                  } else { // 参加中参加者リストがない場合
+                    const isUserParticipant = false; // 便宜的に
                     // ※2
                     // 参加意思表明に対するリプライ
                     // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
                     promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                     continue;
                   }
-                } else { // 参加中参加者リストがない場合
-                  const isUserParticipant = false; // 便宜的に
+                } else { // ユーザーテーブルにデータがない場合
+                  const isUserRestarting = false; // 便宜的に
+                  const isUserParticipant = false;
                   // ※2
                   // 参加意思表明に対するリプライ
                   // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
                   promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
                   continue;
                 }
-              } else { // ユーザーテーブルにデータがない場合
-                const isUserRestarting = false; // 便宜的に
-                const isUserParticipant = false;
-                // ※2
-                // 参加意思表明に対するリプライ
-                // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
-                continue;
+              }
+
+              const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
+              if (isUserParticipant) { // 参加受付を終了できるのは参加済みの者のみ
+
+                if (text == "受付終了") {
+                  const playingGame = new PlayingGame(plId);
+                  const gameId = await playingGame.getGameId();
+                  if (gameId == 1) { // ワードウルフの場合
+
+                    await wordWolfBranch.rollCallBranch(plId, replyToken, promises);
+                    continue;
+                  }
+                  if (gameId == 2) { // クレイジーノイジーの場合
+
+                    await crazyNoisyBranch.rollCallBranch(plId, replyToken, promises);
+                    continue;
+                  }
+                }
               }
             }
 
-            const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
-            if (isUserParticipant) { // 参加受付を終了できるのは参加済みの者のみ
+            // 発言グループにプレイ中の参加者リストがあるかどうか（参加受付終了した時点で募集中からプレイ中に変更してある）
+            const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
+            if (isPlaying) {　// プレイ中の場合
 
-              if (text == "受付終了") {
+              const plId = await pl.getPlayingParticipantListId(groupId);
+              const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
+              if (isUserParticipant) { // 参加者の発言の場合
+                if (text == "強制終了") {
+                  promises.push(replyTerminate(plId, replyToken));
+                }
+
                 const playingGame = new PlayingGame(plId);
                 const gameId = await playingGame.getGameId();
-                if (gameId == 1) { // ワードウルフの場合
+                if (gameId == 1) { // プレイするゲームがワードウルフの場合
 
-                  await wordWolfBranch.rollCallBranch(plId, replyToken, promises);
+                  await wordWolfBranch.playingMessageBranch(plId, text, replyToken, promises);
+                  continue;
+                }
+                if (gameId == 2) { // プレイするゲームがクレイジーノイジーの場合
+
+                  await crazyNoisyBranch.playingMessageBranch(plId, text, replyToken, promises);
                   continue;
                 }
               }
             }
           }
 
-          // 発言グループにプレイ中の参加者リストがあるかどうか（参加受付終了した時点で募集中からプレイ中に変更してある）
-          const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
-          if (isPlaying) {　// プレイ中の場合
+          // promises.push(replyDefaultGroupMessage(event));
 
+        } else if (toType == "user") {
+          const hasPlId = await user.hasPlId();
+          if (hasPlId) { // 参加中の参加者リストがあるなら
+            const plId = await user.getPlid();
+
+            const playingGame = new PlayingGame(plId);
+            const gameId = await playingGame.getGameId();
+
+            if (gameId == 2) {
+              
+              // await crazyNoisyBranch.userMessageBranch();
+            }
+          }
+        }
+
+
+      } else if (eventType == "postback") {
+        const toType = event.source.type;
+        const postbackData = event.postback.data;
+
+        if (toType == "group" || toType == "room") {
+          let groupId = ""
+          if (toType == "group") {
+            groupId = event.source.groupId;
+          } else if (toType == "room") {
+            groupId = event.source.roomId; // roomIdもgroupId扱いしよう
+          }
+          const isPlaying = pl.hasGroupPlayingParticipantList(groupId);
+          if (isPlaying) {
             const plId = await pl.getPlayingParticipantListId(groupId);
-            const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
-            if (isUserParticipant) { // 参加者の発言の場合
-              if(text == "強制終了"){
-                promises.push(replyTerminate(plId, replyToken));
-              }
-
+            const isUserParticipant = await pl.isUserParticipant(plId, userId);
+            if (isUserParticipant) {
               const playingGame = new PlayingGame(plId);
               const gameId = await playingGame.getGameId();
-              if (gameId == 1) { // プレイするゲームがワードウルフの場合
-
-                await wordWolfBranch.playingMessageBranch(plId, text, replyToken, promises);
+              if (gameId == 1) {
+                await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
+                continue;
+              }
+              if (gameId == 2) {
+                await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
                 continue;
               }
             }
           }
-        }
+        } else if (toType == "user") {
+          const hasPlId = await user.hasPlId();
+          if (hasPlId) { // 参加中の参加者リストがあるなら
+            const plId = await user.getPlid();
 
-        // promises.push(replyDefaultGroupMessage(event));
-
-      } else if (toType == "user") {
-        // promises.push(replyDefaultPersonalMessage(event));
-      }
-
-
-    } else if (eventType == "postback") {
-      const toType = event.source.type;
-
-      if (toType == "group" || toType == "room") {
-        let groupId = ""
-        if (toType == "group") {
-          groupId = event.source.groupId;
-        } else if (toType == "room") {
-          groupId = event.source.roomId; // roomIdもgroupId扱いしよう
-        }
-        const isPlaying = pl.hasGroupPlayingParticipantList(groupId);
-        const postbackData = event.postback.data;
-        if (isPlaying) {
-          const plId = await pl.getPlayingParticipantListId(groupId);
-          const isUserParticipant = await pl.isUserParticipant(plId, userId);
-          if (isUserParticipant) {
             const playingGame = new PlayingGame(plId);
             const gameId = await playingGame.getGameId();
-            if (gameId == 1) {
-              await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
-              continue;
+
+            if (gameId == 2) {
+              
+              await crazyNoisyBranch.postbackUserBranch(plId,userId,postbackData,replyToken,promises);
             }
           }
         }
-      }
-    } else if (eventType == "join") {
+
+      } 
+    }
+    if (eventType == "join") {
       if (event.source.type == "group" || event.source.type == "room") {
         promises.push(joinGroupMessage(event.replyToken));
       }

@@ -1,4 +1,5 @@
 const parts = require("../../constants/messageParts");
+const wordWolfParts = require("./constants/messageParts");
 
 /* ジャンル
 exports.main = async (genres) => {
@@ -85,7 +86,7 @@ exports.main = async (depths) => {
         {
             "type": "flex",
             "altText": "ワードの難易度",
-            "contents": parts.depthOptions
+            "contents": wordWolfParts.depthOptions
         }
     ]
 }

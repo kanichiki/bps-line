@@ -119,7 +119,6 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
 
                                 const isRemainingTimeLessThan1minute = await wordWolf.isRemainingTimeLessThan1minute();
                                 if (isRemainingTimeLessThan1minute) { // 話し合い時間が1分を切っていた場合
-                                    console.log("aaaaa");
 
                                     const notifyStatus = await wordWolf.getNotifyStatus();
                                     if (!notifyStatus) { // 残り1分をまだ通知していなかった場合

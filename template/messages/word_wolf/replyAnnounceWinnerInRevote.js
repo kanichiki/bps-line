@@ -27,7 +27,7 @@ exports.main = async (voterDisplayName, executorDisplayName, isExecutorWolf,disp
         },
         {
             "type": "flex",
-            "altText": "再投票",
+            "altText": "勝者",
             "contents": {
                 "type": "bubble",
                 "body": {

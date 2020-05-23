@@ -1,4 +1,5 @@
 const parts = require("../../constants/messageParts");
+const wordWolfParts = require("./constants/messageParts");
 
 /* ジャンル
 exports.main = async (displayNames, genres) => {
@@ -87,7 +88,7 @@ exports.main = async (displayNames, depths) => {
   return [
     {
       type: "text",
-      text: `参加受付を終了します\n参加者は\n\n${displayNamesSan}さん\n\nです！` 
+      text: `参加受付を終了します\n\n参加者は\n\n${displayNamesSan}さん\n\nです！` 
     },
     {
       type: "text",
@@ -96,7 +97,7 @@ exports.main = async (displayNames, depths) => {
     {
       "type": "flex",
       "altText": "ワードの難易度",
-      "contents": parts.depthOptions
+      "contents": wordWolfParts.depthOptions
     }
 
 

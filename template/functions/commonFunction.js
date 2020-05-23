@@ -89,3 +89,40 @@ exports.chooseRandomIndexes = async (userNumber, chooseNumber) => {
         console.log(err);
     }
 }
+
+/**
+ * 与えられたインデックスの中からchooseNumberの数だけランダムに抽出して配列で返す
+ * indexes.length >= chooseNumber
+ *
+ * @param {*} indexes
+ * @param {*} chooseNumber
+ */
+exports.getRandomIndexes = async (indexes,chooseNumber) => {
+    try{
+        let randomIndexes = [];
+        LOOP: for (let i = 0; i < chooseNumber; i++) {
+            while (true) {
+                const num = Math.floor(Math.random() * indexes.length);
+                const index = indexes[num];
+                let status = true;
+                for (const randomIndex of randomIndexes) {
+                    if (randomIndex == index) {
+                        status = false;
+                    }
+                }
+                if (status) {
+                    randomIndexes.push(index);
+                    continue LOOP;
+                }
+            }
+        }
+        return randomIndexes;
+    }catch(err){
+        console.log(err);
+    }
+}
+
+exports.getRandomNumber = async (minNumber,maxNumber) =>{
+    const number = Math.floor(Math.random() * (maxNumber-minNumber+1)) + minNumber;
+    return number;
+}

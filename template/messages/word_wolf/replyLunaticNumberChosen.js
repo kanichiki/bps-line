@@ -114,7 +114,8 @@ exports.main = async (depth,wolfNumber,lunaticNumber) => {
                       {
                         "type": "text",
                         "text": "以下の内容でよろしいですか？",
-                        "size": "md"
+                        "size": "md",
+                        "wrap": true
                       }
                     ]
                   },

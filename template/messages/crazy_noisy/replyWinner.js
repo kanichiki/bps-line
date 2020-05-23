@@ -1,30 +1,23 @@
 const parts = require("../../constants/messageParts");
 
-exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf,displayNames,isWinnerArray) => {
-    let message = "";
-    if(!isExecutorWolf){
-        message = "ウルフ側の勝利です！！"
-    }else{
-        message = "市民側の勝利です！！"
-    }
-
+exports.main = async (displayNames, isWinnerGuru, winnerIndexes)　=>{
     let winners = [];
-    for(let i=0;i<displayNames.length;i++){
-      if(isWinnerArray[i]){
-        winners.push(displayNames[i]);
-      }
+    for(let winnerIndex of winnerIndexes){
+        winners.push(displayNames[winnerIndex]);
     }
     const winnerMessage = winners.join("さん、");
-    
+
+    let message1 = ""
+    let message2 = "";
+    if(isWinnerGuru){
+        message1 = "教祖以外全員狂ってしまいました"
+        message2 = "教団陣営の勝利です！！"
+    }else{
+        message1 = "教祖の正体を暴きました"
+        message2 = "市民陣営の勝利です！！"
+    }
+
     return [
-        {
-            type: "text",
-            text: `${voterDisplayName}さん、投票完了しました！`
-        },
-        {
-            type: "text",
-            text: `${executorDisplayName}さんが処刑されました`
-        },
         {
             "type": "flex",
             "altText": "勝者",
@@ -36,7 +29,14 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf,displa
                   "contents": [
                     {
                       "type": "text",
-                      "text": message,
+                      "text": message1,
+                      "size": "md",
+                      "wrap": true,
+                      "align": "center"
+                    },
+                    {
+                      "type": "text",
+                      "text": message2,
                       "size": "lg",
                       "wrap": true,
                       "align": "center"
@@ -61,8 +61,8 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf,displa
                       "type": "button",
                       "action": {
                         "type": "message",
-                        "label": "ワードを見る",
-                        "text": "ワードを見る"
+                        "label": "役職・狂気を見る",
+                        "text": "役職・狂気を見る"
                       },
                       "color": "#E83b10"
                     }
@@ -71,4 +71,5 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf,displa
               }
         }
     ]
+
 }

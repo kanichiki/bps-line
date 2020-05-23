@@ -198,7 +198,7 @@ module.exports = class User {
         };
         try {
             await pg.query(query);
-            console.log("Updated is_restarting true");
+            console.log("Updated is_restarting false");
         } catch (err) {
             console.log(err);
         }

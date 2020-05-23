@@ -3,45 +3,8 @@ const parts = require("../../constants/messageParts");
 exports.main = async (timer) => {
     return [
         {
-            "type": "flex",
-            "altText": "ゲームスタート",
-            "contents": {
-                "type": "bubble",
-                "body": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "ゲームをスタートします",
-                      "wrap": true
-                    },
-                    {
-                      "type": "text",
-                      "text": "それぞれのワードを個人トークルームにて確認してください",
-                      "wrap": true
-                    }
-                  ]
-                },
-                "footer": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "button",
-                      "action": {
-                        "type": "uri",
-                        "label": "ワードを確認する",
-                        "uri": `https://line.me/R/oaMessage/${process.env.channelId}/`,
-                        "altUri": {
-                          "desktop": `https://line.me/R/oaMessage/${process.env.channelId}/`
-                        }
-                      },
-                      "color":parts.mainColor
-                    }
-                  ]
-                }
-              }
+            type: "text",
+            text: `全員の確認がとれました！\nありがとうございます！`
         },
         {
             "type": "flex",
@@ -52,6 +15,12 @@ exports.main = async (timer) => {
                     "type": "box",
                     "layout": "vertical",
                     "contents": [
+                        {
+                            "type": "text",
+                            "text": `1日目の話し合いをスタートします`,
+                            "wrap": true,
+                            "weight":"bold"
+                        },
                         {
                             "type": "text",
                             "text": `話し合い時間は${timer}分です`,
