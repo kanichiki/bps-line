@@ -570,7 +570,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
                         if (positions[i] == crazyNoisy.detective && isBrainwash) {
                             await crazyNoisy.updateActionsStateTrue(i);
                         }
-                        await sleep(4000);
+                        // await sleep(4000);
 
                         await client.pushMessage(userIds[i], await pushUserAction.main(displayNames[i], positions[i], isBrainwash, targetDisplayNames, targetUserIds));
                     }
@@ -662,7 +662,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
                             if (positions[i] == crazyNoisy.detective && isBrainwash) {
                                 await crazyNoisy.updateActionsStateTrue(i);
                             }
-                            await sleep(4000);
+                            // await sleep(4000);
 
                             await client.pushMessage(userIds[i], await pushUserAction.main(displayNames[i], positions[i],isBrainwash, targetDisplayNames, targetUserIds));
                         }
@@ -759,7 +759,7 @@ const replyGuruAction = async (plId, userIndex, targetUserIndex, replyToken) => 
                 await client.pushMessage(userIds[i], await pushCraziness.main(contents, remarks));
             }
         }
-        await sleep(5000); // 5秒待つ
+        // await sleep(1000); // 5秒待つ
 
         await crazyNoisy.updateDay(); // 日付更新
         const day = await crazyNoisy.getDay();
@@ -841,7 +841,7 @@ const replyDetectiveAction = async (plId, userIndex, targetUserIndex, replyToken
             }
         }
 
-        await sleep(5000); // 5秒待つ
+        // await sleep(1000); // 5秒待つ
 
         await crazyNoisy.updateDay(); // 日付更新
         const day = await crazyNoisy.getDay();
