@@ -619,7 +619,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
             const isGuru = await crazyNoisy.isGuru(mostVotedUserIndex); // 最多得票者が教祖かどうか
 
             if (!isGuru) { // 最多得票者が教祖じゃなかった場合
-                replyMessage = await replyExecutorIsNotGuru(replyMessage, plId, executorDisplayName,executorIndex);
+                replyMessage = await replyExecutorIsNotGuru(replyMessage, plId, executorDisplayName,mostVotedUserIndex);
 
                 const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
                 if (!isBrainwashCompleted) {
