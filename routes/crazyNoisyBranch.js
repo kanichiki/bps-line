@@ -290,7 +290,7 @@ const replyRollCallEnd = async (plId, replyToken) => {
 
     // DB変更操作２
     const crazyNoisy = new CrazyNoisy(plId);
-    
+
     await crazyNoisy.createStatus(); // クレイジーノイジーのゲーム進行状況データを作成
     await crazyNoisy.createSetting(); // 設定データつくっとこ
 
@@ -619,10 +619,11 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
             const isGuru = await crazyNoisy.isGuru(mostVotedUserIndex); // 最多得票者が教祖かどうか
 
             if (!isGuru) { // 最多得票者が教祖じゃなかった場合
-                replyMessage = await replyExecutorIsNotGuru(replyMessage, plId, executorDisplayName,mostVotedUserIndex);
+                replyMessage = await replyExecutorIsNotGuru(replyMessage, plId, executorDisplayName, mostVotedUserIndex);
 
                 const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
                 if (!isBrainwashCompleted) {
+                    
                     await replyVoteFinish(replyMessage, plId, replyToken);
 
                 } else { // 洗脳が完了したら
@@ -670,11 +671,11 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
 
                 const isGuru = await crazyNoisy.isGuru(executorIndex); // 最多得票者が教祖かどうか
                 if (!isGuru) { // 処刑者が教祖じゃなかったら
-                    replyMessage = await replyExecutorIsNotGuru(replyMessage, plId, executorDisplayName,executorIndex);
+                    replyMessage = await replyExecutorIsNotGuru(replyMessage, plId, executorDisplayName, executorIndex);
 
                     const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
                     if (!isBrainwashCompleted) {
-
+                        
                         await replyVoteFinish(replyMessage, plId, replyToken);
 
                     } else { // 洗脳が完了したら
@@ -705,7 +706,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
  * @param {*} executorIndex
  * @returns
  */
-const replyExecutorIsNotGuru = async (replyMessage, plId, executorDisplayName,executorIndex) => {
+const replyExecutorIsNotGuru = async (replyMessage, plId, executorDisplayName, executorIndex) => {
     const crazyNoisy = new CrazyNoisy(plId);
     await crazyNoisy.updateBrainwashState(executorIndex); // 最多投票者洗脳
     await crazyNoisy.addCrazinessId(executorIndex); // 最多投票者狂気追加
@@ -746,10 +747,6 @@ const replyVoteFinish = async (replyMessage, plId, replyToken) => {
         const targetUserIds = await crazyNoisy.getActionTargetsUserIds(i);
         await crazyNoisy.initializeActionsStatus();
         const isBrainwash = await crazyNoisy.isBrainwash(i);
-        if (positions[i] == crazyNoisy.detective && isBrainwash) {
-            await crazyNoisy.updateActionsStateTrue(i);
-        }
-        // await sleep(4000);
 
         await client.pushMessage(userIds[i], await pushUserAction.main(displayNames[i], positions[i], isBrainwash, targetDisplayNames, targetUserIds));
     }

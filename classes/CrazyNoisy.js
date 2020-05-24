@@ -799,9 +799,10 @@ class CrazyNoisy extends ParticipantList {
     async initializeActionsStatus() {
         const userNumber = await this.getUserNumber();
         const positions = await this.getPositions();
+        const brainwash = await this.getBrainwashStatus();
         let actions = [];
         for (let i = 0; i < userNumber; i++) {
-            if (positions[i] == this.guru || positions[i] == this.detective) {
+            if (positions[i] == this.guru || (positions[i] == this.detective && !brainwash[i])) {
                 actions[i] = false;
             } else {
                 actions[i] = true;
