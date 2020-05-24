@@ -435,11 +435,11 @@ class CrazyNoisy extends ParticipantList {
     }
 
     /**
-     * 確認がNoだった場合に設定をリセット
+     * 確認がNoだった場合に設定ステータスをリセット
      *
      * @memberof CrazyNoisy
      */
-    async resetSetting() {
+    async resetSettingStatus() {
         await this.updateModeStatusFalse();
         await this.updateTypeStatusFalse();
     }
@@ -1380,12 +1380,30 @@ class CrazyNoisy extends ParticipantList {
     }
 
     /**
+     * 洗脳されていない人数
+     *
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async notBrainwashNumber(){
+        const status = await this.getBrainwashStatus();
+        let res = 0;
+        for(let state of status){
+            if(!state){
+                res++;
+            }
+        }
+        return res;
+    }
+
+    /**
      * 洗脳が完了しているかどうか
      *
      * @returns
      * @memberof CrazyNoisy
      */
     async isBrainwashCompleted() {
+        /*
         const status = await this.getBrainwashStatus();
         let res = true;
         for (let state of status) {
@@ -1393,6 +1411,14 @@ class CrazyNoisy extends ParticipantList {
                 res = false;
             }
         }
+        return res;
+        */
+
+        const notBrainwashNumber = await this.notBrainwashNumber();
+        let res = false;
+        if(notBrainwashNumber <= 1){ // 教祖の人数と同じかそれより少なかったら
+            res = true;
+        }   
         return res;
     }
 

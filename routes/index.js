@@ -417,8 +417,12 @@ const replyRollCallReaction = async (plId, userId, isUser, isUserParticipant, is
             await pl.finishParticipantList(oldPlId); // ここで前の参加者リストを全部終わらせる
             const oldGroupId = await pl.getGroupId(oldPlId);
 
-            // 終了したゲームのグループにその旨を送る
-            await client.pushMessage(oldGroupId, await pushMessage.main());
+            try{
+              // 終了したゲームのグループにその旨を送る
+              await client.pushMessage(oldGroupId, await pushMessage.main());
+            }catch(err){
+              
+            }
           }
         }
 

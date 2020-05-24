@@ -1,11 +1,7 @@
 const parts = require("../../constants/messageParts");
 
-exports.main = async (executorDisplayName,day) => {
+exports.main = async (day) => {
     return [
-        {
-            type: "text",
-            text: `${executorDisplayName}さんは教祖ではなかったようですが、拷問の結果気が狂ってしまいました`
-        },
         {
             "type": "flex",
             "altText": "設定確認",

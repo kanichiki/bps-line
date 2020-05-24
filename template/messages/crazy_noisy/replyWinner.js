@@ -10,7 +10,7 @@ exports.main = async (displayNames, isWinnerGuru, winnerIndexes)　=>{
     let message1 = ""
     let message2 = "";
     if(isWinnerGuru){
-        message1 = "教祖以外全員狂ってしまいました"
+        message1 = "狂っていない人が1人以下になりました"
         message2 = "教団陣営の勝利です！！"
     }else{
         message1 = "教祖の正体を暴きました"
