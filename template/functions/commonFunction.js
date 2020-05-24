@@ -33,24 +33,24 @@ exports.getCurrentTime = async () => {
     require('date-utils');
 
     const currentTime = new Date();
-    let year = currentTime.getUTCFullYear();
-    let month = currentTime.getUTCMonth();
+    let year = currentTime.getFullYear();
+    let month = currentTime.getMonth();
     if (month < 10) {
         month = "0" + month;
     }
-    let day = currentTime.getUTCDay();
+    let day = currentTime.getDate();
     if (day < 10) {
         day = "0" + day;
     }
-    let hours = currentTime.getUTCHours();
+    let hours = currentTime.getHours();
     if (hours < 10) {
         hours = "0" + hours;
     }
-    let minutes = currentTime.getUTCMinutes();
+    let minutes = currentTime.getMinutes();
     if (minutes < 10) {
         minutes = "0" + minutes;
     }
-    let second = currentTime.getUTCSeconds();
+    let second = currentTime.getSeconds();
     if (second < 10) {
         second = "0" + second;
     }

@@ -1160,6 +1160,7 @@ class CrazyNoisy extends ParticipantList {
      */
     async updateStartTime() {
         const startTime = await commonFunction.getCurrentTime();
+        // const startTime = new Date().toUTCString;
         const query = {
             text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
             values: [startTime, this.plId]
