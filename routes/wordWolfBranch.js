@@ -21,7 +21,12 @@ const commonFunction = require("../template/functions/commonFunction");
 exports.rollCallBranch = async (plId, replyToken, promises) => {
     const pl = new ParticipantList();
     const userNumber = await pl.getUserNumber(plId); // 
-    if (userNumber < 3) { // 参加者数が2人以下の場合
+
+    let minNumber = 3;
+    if(process.env.SERVER_ENV=="dev"){
+        minNumber = 2;
+    }
+    if (userNumber < minNumber) { // 参加者数が2人以下の場合
         await promises.push(replyTooFewParticipant(plId, replyToken));
     } else {
         // 参加受付終了の意思表明に対するリプライ

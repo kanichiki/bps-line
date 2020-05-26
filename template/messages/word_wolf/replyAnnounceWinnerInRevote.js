@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 exports.main = async (voterDisplayName, executorDisplayName, isExecutorWolf,displayNames,isWinnerArray) => {
     let message = "";

@@ -1,4 +1,4 @@
-const parts = require("../../../constants/messageParts");
+const parts = require("../../constants/messageParts");
 
 module.exports = {
     depthOptions : {
@@ -124,3 +124,4 @@ module.exports = {
         }
       }
 }
+

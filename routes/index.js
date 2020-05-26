@@ -252,7 +252,7 @@ const main = async (req, res) => {
           } else if (toType == "room") {
             groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
-          const isPlaying = pl.hasGroupPlayingParticipantList(groupId);
+          const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
           if (isPlaying) {
             const plId = await pl.getPlayingParticipantListId(groupId);
             const isUserParticipant = await pl.isUserParticipant(plId, userId);

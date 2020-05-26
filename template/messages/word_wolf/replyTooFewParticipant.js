@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 exports.main = async (displayNames, userNumber, recruitingGameName) => {
     const displayNamesSan = displayNames.join("さん、\n");

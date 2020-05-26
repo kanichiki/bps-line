@@ -1,11 +1,12 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
-exports.main = async (displayNames,userIds) => {
-    
+exports.main = async (displayNames, userIds) => {
+
     let voteMessages = [];
 
     // どうやら整数は送れないらしい
     for (let i = 0; i < userIds.length; i++) {
+        /*
         const voteMessage = {
             "type": "button",
             "action": {
@@ -14,16 +15,57 @@ exports.main = async (displayNames,userIds) => {
                 "data": userIds[i]
             },
             "color": parts.mainColor
+        }*/
+        const voteMessage = {
+            "type": "bubble",
+            "size": "micro",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "postback",
+                            "label": displayNames[i],
+                            "data": userIds[i]
+                        },
+                        "color": parts.mainColor
+                    }
+                ]
+            }
         }
+
         voteMessages.push(voteMessage);
     }
-    
+
 
     return [
         {
             type: "text",
             text: `話し合い時間が終了しました`
         },
+        {
+            "type": "flex",
+            "altText": "投票",
+            "contents": {
+                "type": "bubble",
+                "size": "giga",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "みなさん投票してください",
+                            "wrap": true,
+                            "align": "center"
+                        }
+                    ]
+                }
+            }
+        },
+        /*
         {
             "type": "flex",
             "altText": "投票",
@@ -46,6 +88,15 @@ exports.main = async (displayNames,userIds) => {
                     "layout": "vertical",
                     "contents": voteMessages
                 }
+            }
+        }
+        */
+        {
+            "type": "flex",
+            "altText": "投票",
+            "contents": {
+                "type": "carousel",
+                "contents": await parts.voteMessage(displayNames,userIds)
             }
         }
     ]

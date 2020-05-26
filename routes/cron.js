@@ -49,11 +49,12 @@ exports.crazyNoisyDiscussFinish = async () => {
                 //if (usePostback) { // postbackを使う設定の場合
                 const pushMessage = require("../template/messages/crazy_noisy/replyDiscussFinish");
 
-                try {
+                // try {
                     await client.pushMessage(groupId, await pushMessage.main(displayNames, userIds));
-                } catch{
-                    pl.finishParticipantList(plId);
-                }
+                // } catch{
+                    // console.log("failed to push message");
+                    // await pl.finishParticipantList(plId);
+                // }
             }
         }
     }
@@ -95,7 +96,7 @@ exports.wordWolfDiscussFinish = async () => {
                 try {
                     await client.pushMessage(groupId, await pushMessage.main(displayNames, userIds));
                 } catch{
-                    pl.finishParticipantList(plId);
+                    await pl.finishParticipantList(plId);
                 }
             }
         }

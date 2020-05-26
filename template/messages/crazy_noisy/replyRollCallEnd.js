@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 const crazyNoisyParts = require("./constants/messageParts");
 
 exports.main = async (displayNames) => {

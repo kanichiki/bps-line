@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wolfWord) => {
     let resultMessage = "それぞれの単語は以下の通りです\n\n";

@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 /* ジャンル
 exports.main = async (wolfNumber, genreName) => {

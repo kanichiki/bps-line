@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 exports.main = async (voterDisplayName, displayNames,userIds, mostVotedUserIndexes) => {
     let revoteMessages = [];
@@ -29,30 +29,8 @@ exports.main = async (voterDisplayName, displayNames,userIds, mostVotedUserIndex
             "type": "flex",
             "altText": "再投票",
             "contents": {
-                "type": "bubble",
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {
-                            "type": "box",
-                            "layout": "vertical",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": "ウルフだと思う人に再度投票してください",
-                                    "size": "md",
-                                    "wrap": true
-                                }
-                            ]
-                        },
-                        {
-                            "type": "box",
-                            "layout": "vertical",
-                            "contents": revoteMessages
-                    }
-                    ]
-                }
+                "type": "carousel",
+                "contents": await parts.revoteMessage(displayNames,userIds,mostVotedUserIndexes)
             }
         }
     ]

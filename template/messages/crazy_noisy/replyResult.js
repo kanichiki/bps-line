@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 exports.main = async (displayNames,positions,contentsList) =>{
     let positionMessages = "役職一覧\n\n"

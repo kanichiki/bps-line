@@ -1,4 +1,4 @@
-const parts = require("../../constants/messageParts");
+const parts = require("../constants/messageParts");
 
 exports.main = async (displayNames,userIds) => {
     
@@ -29,23 +29,27 @@ exports.main = async (displayNames,userIds) => {
             "altText": "投票",
             "contents": {
                 "type": "bubble",
+                "size": "giga",
                 "body": {
                     "type": "box",
                     "layout": "vertical",
                     "contents": [
                         {
                             "type": "text",
-                            "text": "教祖だと思う人に投票してください",
+                            "text": "みなさん投票してください",
                             "wrap": true,
-                            "size": "md"
+                            "align": "center"
                         }
                     ]
-                },
-                "footer": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": voteMessages
                 }
+            }
+        },
+        {
+            "type": "flex",
+            "altText": "投票",
+            "contents": {
+                "type": "carousel",
+                "contents": await parts.voteMessage(displayNames,userIds)
             }
         },
         {
