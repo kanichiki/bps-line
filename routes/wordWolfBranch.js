@@ -21,7 +21,7 @@ const commonFunction = require("../template/functions/commonFunction");
 exports.rollCallBranch = async (plId, replyToken, promises) => {
     const pl = new ParticipantList();
     const userNumber = await pl.getUserNumber(plId); // 
-    if (userNumber < 3) { // 参加者数が2人以下の場合
+    if (userNumber < 2) { // 参加者数が2人以下の場合
         await promises.push(replyTooFewParticipant(plId, replyToken));
     } else {
         // 参加受付終了の意思表明に対するリプライ
@@ -66,7 +66,6 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
             if (wolfNumberExists) {
 
                 const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
-                console.log("wolfNumber:" + wolfNumber);
                 await promises.push(replyWolfNumberChosen(plId, wolfNumber, replyToken));
             }
         } else { // ウルフの数が指定済みの場合
@@ -440,7 +439,6 @@ const replyConfirmYes = async (plId, replyToken) => {
         }
     }
 
-    console.log(profiles);
 
     for (let i = 0; i < userNumber; i++) {
         // プッシュメッセージ数節約のため開発時は一時的に無効化

@@ -164,7 +164,7 @@ module.exports = class User {
         };
         try {
             await pg.query(query);
-            console.log("Updated pl_id to null");
+            console.log("Updated pl_id of user to null");
         } catch (err) {
             console.log(err);
         }

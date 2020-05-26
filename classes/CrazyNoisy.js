@@ -56,6 +56,10 @@ class CrazyNoisy extends ParticipantList {
         return super.getDisplayNames(this.plId)
     }
 
+    async getGroupId(){
+        return super.getGroupId(this.plId);
+    }
+
     async getUserIndexFromUserId(userId) {
         return super.getUserIndexFromUserId(this.plId, userId);
     }
@@ -1262,7 +1266,6 @@ class CrazyNoisy extends ParticipantList {
             return res.rows[0].ans;
         } catch (err) {
             console.log(err);
-            console.log("ここでエラー")
         }
     }
 
@@ -1284,7 +1287,6 @@ class CrazyNoisy extends ParticipantList {
             return res.rows[0].ans;
         } catch (err) {
             console.log(err);
-            console.log("いや、ここでエラー");
             console.log(currentTime);
         }
     }
@@ -1971,11 +1973,11 @@ class CrazyNoisy extends ParticipantList {
         }
         try {
             await pg.query(query);
-            console.log("Word-Wolf Revote Inserted");
+            console.log("Crazy-noisy Revote Inserted");
             return true;
         } catch (err) {
             console.log(err);
-            console.log("新しいワードウルフの再投票データ作れんかったよ");
+            console.log("新しいクレイジーノイジーの再投票データ作れんかったよ");
             return false;
         }
     }
@@ -2150,8 +2152,29 @@ class CrazyNoisy extends ParticipantList {
         return res;
     }
 
-
-
+    /**
+     * cron用の関数
+     * 議論中のplidリストを送る
+     *
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async getDiscussingPlIds(){
+        const query = {
+            text: `SELECT pl_id FROM ${this.status} WHERE discuss = true`
+        }
+        try {
+            const res = await pg.query(query);
+            let plIds = []
+            for(let i=0;i<res.rowCount;i++){
+                plIds.push(res.rows[i].pl_id);
+            }
+            return plIds;
+        } catch (err) {
+            console.log(err);
+            console.log("ここでエラー")
+        }
+    }
 
 }
 

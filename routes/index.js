@@ -128,7 +128,6 @@ const main = async (req, res) => {
             const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
             if (isRecruiting) { // 参加者募集中の場合
               const plId = await pl.getRecruitingParticipantListId(groupId); // 発言グループの募集中の参加者リストを返す
-              console.log("募集中の参加者リストidは" + plId);
 
               if (text == "参加") {
                 if (isUser) { // ユーザーテーブルにデータがあるか
@@ -350,7 +349,6 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
   if (isRestarting) {
     const oldPlId = await pl.getRestartingParticipantListId(groupId); // リスタート待ちの参加者リストとってくる
     await pl.finishParticipantList(oldPlId);
-    console.log("plIdは" + oldPlId);
   }
 
   // DB変更操作２

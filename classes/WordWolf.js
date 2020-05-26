@@ -603,6 +603,9 @@ class WordWolf {
         for (let i = 1; i <= maxWolfNumber; i++) {
             res.push(i);
         }
+        if(userNumber == 2){
+            res.push(1);
+        }
         return res;
     }
 
@@ -1922,6 +1925,29 @@ class WordWolf {
             }
         }
         return res;
+    }
+
+    /**
+     * cron用の関数
+     * 議論中のplidリストを送る
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async getDiscussingPlIds(){
+        const query = {
+            text: `SELECT pl_id FROM ${this.status} WHERE finished = false and confirm = true`
+        }
+        try {
+            const res = await pg.query(query);
+            let plIds = []
+            for(let i=0;i<res.rowCount;i++){
+                plIds.push(res.rows[i].pl_id);
+            }
+            return plIds;
+        } catch (err) {
+            console.log(err);
+        }
     }
 }
 

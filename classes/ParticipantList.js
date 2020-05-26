@@ -84,7 +84,6 @@ module.exports = class ParticipantList {
         }
         try {
             const res = await pg.query(query);
-            console.log(res.rows[0].user_ids);
             return res.rows[0].user_ids;
         } catch (err) {
             console.log(err);
@@ -110,7 +109,6 @@ module.exports = class ParticipantList {
             console.log("Added Participant");
         } catch (err) {
             console.log(err);
-            console.log("ここだよ")
         }
     }
 
@@ -151,7 +149,6 @@ module.exports = class ParticipantList {
         try {
             const res = await pg.query(query);
             if (res.rowCount == 1) {
-                console.log("true");
                 return true;
             } else if (res.rowCount > 1) {
                 throw "募集中の参加者リストが１グループに２つ以上ある";
@@ -247,7 +244,6 @@ module.exports = class ParticipantList {
         try {
             const res = await pg.query(query);
             if (res.rowCount == 1) {
-                console.log("true");
                 return true;
             } else if (res.rowCount > 1) {
                 throw "プレイ中の参加者リストが１グループに２つ以上ある";
@@ -345,6 +341,25 @@ module.exports = class ParticipantList {
         }
     }
 
+    /**
+     * プレイ中かどうか
+     *
+     * @param {*} plId
+     * @returns
+     */
+    async isPlaying(plId){
+        const query = {
+            text: 'SELECT is_playing FROM participant_list WHERE id = $1',
+            values: [plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].is_playing;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     // ここまでプレイ状況
 
     // ここからリスタート待ち状況（is_restarting）に関する関数
@@ -364,7 +379,6 @@ module.exports = class ParticipantList {
         try {
             const res = await pg.query(query);
             if (res.rowCount == 1) {
-                console.log("true");
                 return true;
             } else if (res.rowCount > 1) {
                 throw "リスタート待ちの参加者リストが１グループに２つ以上ある";
@@ -475,7 +489,6 @@ module.exports = class ParticipantList {
         try {
             const res = await pg.query(query);
             if (res.rowCount == 1) {
-                console.log("true");
                 return true;
             } else if (res.rowCount > 1) {
                 throw "終了待ちの参加者リストが１グループに２つ以上ある";

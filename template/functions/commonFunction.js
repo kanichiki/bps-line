@@ -34,7 +34,7 @@ exports.getCurrentTime = async () => {
 
     const currentTime = new Date();
     let year = currentTime.getFullYear();
-    let month = currentTime.getMonth();
+    let month = currentTime.getMonth() + 1; // 1月は0らしい
     if (month < 10) {
         month = "0" + month;
     }

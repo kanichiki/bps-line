@@ -47,6 +47,40 @@ exports.main = async (displayNames,userIds) => {
                     "contents": voteMessages
                 }
             }
+        },
+        {
+            "type": "flex",
+            "altText": "投票状況確認",
+            "contents": {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "未投票者は下のボタンで確認できます！",
+                            "wrap": true
+                        }
+                    ]
+                },
+                "footer": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "button",
+                            "action": {
+                                "type": "postback",
+                                "data": "投票状況確認",
+                                "label": "投票状況確認"
+                            },
+                            "color": parts.mainColor,
+                            "style": "primary"
+                        }
+                    ]
+                }
+            }
         }
     ]
 

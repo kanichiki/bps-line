@@ -7,6 +7,10 @@ exports.main = async (timer) => {
             text: `全員の確認がとれました！\nありがとうございます！`
         },
         {
+            type: "text",
+            text: `今後、各役職の人数を確認したい場合は「役職人数確認」と発言してください！`
+        },
+        {
             "type": "flex",
             "altText": "残り時間",
             "contents": {

@@ -53,3 +53,12 @@ app.use(function (err, req, res, next) {
 module.exports = app;
 
 app.listen(port, () => console.log(`BPS for LINE listening on port ${port}!`));
+
+const cron = require('node-cron');
+const cronFunction = require("./routes/cron");
+// const client = new line.Client(config);
+
+cron.schedule('*/3 * * * * *', async () => {
+  await cronFunction.crazyNoisyDiscussFinish();
+  await cronFunction.wordWolfDiscussFinish();
+});
