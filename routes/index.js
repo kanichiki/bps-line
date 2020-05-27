@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const line = require("@line/bot-sdk");
+const request = require('request');
 
 const ParticipantList = require("../classes/ParticipantList");
 const PlayingGame = require("../classes/PlayingGame");
