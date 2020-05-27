@@ -1,0 +1,9 @@
+{
+    "type": "button",
+    "action": {
+        "type": "postback",
+        "label": null,
+        "data": null
+    },
+    "color": null
+}
