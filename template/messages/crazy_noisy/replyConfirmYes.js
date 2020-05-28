@@ -105,7 +105,7 @@ exports.main = async (userNumber,numberOption) => {
                 "contents": [
                   {
                     "type": "text",
-                    "text": "役職を確認した方は「確認」ボタンを押してください",
+                    "text": "役職を確認した方は「確認しました」ボタンを押してください",
                     "wrap": true
                   }
                 ]
@@ -118,8 +118,8 @@ exports.main = async (userNumber,numberOption) => {
                     "type": "button",
                     "action": {
                       "type": "postback",
-                      "label": "確認",
-                      "data": "確認"
+                      "label": "確認しました",
+                      "data": "確認しました"
                     },
                     "color":parts.mainColor,
                     "style": "primary"
