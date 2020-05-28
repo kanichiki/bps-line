@@ -4,7 +4,7 @@ exports.main = async (displayName) => {
     return [
         {
             type: "text",
-            text: `${displayName}さんを洗脳しました`
+            text: `${displayName}さんを洗脳します`
         }
     ]
 }

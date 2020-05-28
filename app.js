@@ -18,7 +18,10 @@ const config = {
   channelSecret: process.env.channelSecret
 };
 
-app.use(line.middleware(config));
+// エミュレータを使えるように
+if (process.env.SERVER_ENV != "dev") {
+  app.use(line.middleware(config));
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
