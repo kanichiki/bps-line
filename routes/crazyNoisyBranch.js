@@ -154,7 +154,7 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) =
             const voteState = await crazyNoisy.isVotedUser(userIndex);
             if (!voteState) { // postbackした参加者の投票がまだの場合
 
-                const isRevoting = await crazyNoisy.hasRevote();
+                const isRevoting = await crazyNoisy.getRevoteStatus();
                 if (!isRevoting) { // １回目の投票中だった場合
 
                     const isPostbackParticipant = await crazyNoisy.isUserParticipant(postbackData);
