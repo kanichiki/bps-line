@@ -138,7 +138,7 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) =
 
     const isConfirmsCompleted = await crazyNoisy.isConfirmsCompleted();
     if (!isConfirmsCompleted) { // まだ役職確認が済んでいなかったら
-        if (postbackData == "確認") {
+        if (postbackData == "確認しました") {
             await replyPositionConfirm(plId, userId, replyToken);
         }
 
