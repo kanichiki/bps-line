@@ -180,6 +180,7 @@ class CrazyNoisy extends ParticipantList {
         // const fanaticNumber = 1;
         const detectiveNumber = await this.chooseDetectiveNumber();
         // const detectiveNumber = 1;
+        const spNumber = await this.chooseSpNumber();
         let positions = [];
         let isDecided = [];
 
@@ -211,6 +212,12 @@ class CrazyNoisy extends ParticipantList {
         for (let fanaticIndex of fanaticIndexes) {
             positions[fanaticIndex] = this.fanatic;
             isDecided[fanaticIndex] = true;
+        }
+
+        const spIndexes = await commonFunction.getRandomIndexes(undecided,spNumber);
+        for (let spIndex of spIndexes) {
+            positions[spIndex] = this.sp;
+            isDecided[spIndex] = true;
         }
 
         undecided = [];
@@ -2173,6 +2180,100 @@ class CrazyNoisy extends ParticipantList {
         } catch (err) {
             console.log(err);
             console.log("ここでエラー")
+        }
+    }
+
+    /**
+     * 洗脳のターゲットを設定
+     *
+     * @param {*} userIndex
+     * @memberof CrazyNoisy
+     */
+    async updateBrainwashTarget(userIndex){
+        const query = {
+            text: `UPDATE ${this.setting} set brainwash_target = $1 where pl_id = $2`,
+            values: [userIndex,this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated brainwash target");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 洗脳のターゲットを取得
+     *
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async getBrainwashTarget(){
+        const query = {
+            text: `SELECT brainwash_target FROM ${this.setting} WHERE pl_id = $1`,
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].brainwash_target;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 用心棒の護衛先設定
+     *
+     * @param {*} userIndex
+     * @memberof CrazyNoisy
+     */
+    async updateSpTarget(userIndex){
+        const query = {
+            text: `UPDATE ${this.setting} set sp_target = $1 where pl_id = $2`,
+            values: [userIndex,this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated sp target");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 用心棒の護衛先取得
+     *
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async getSpTarget(){
+        const query = {
+            text: `SELECT sp_target FROM ${this.setting} WHERE pl_id = $1`,
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].sp_target;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * spTargetをnullに
+     *
+     * @memberof CrazyNoisy
+     */
+    async resetSpTarget(){
+        const query = {
+            text: `UPDATE ${this.setting} set sp_target = null where pl_id = $1`,
+            values: [this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Reset sp target");
+        } catch (err) {
+            console.log(err);
         }
     }
 

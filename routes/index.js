@@ -39,12 +39,14 @@ router.post('/', (req, res, next) => {
 const main = async (req, res) => {
   res.status(200).end(); // 先に200を返してあげる
 
-  // イベント内容をコンソールに表示
-  console.log(req.body.events);
-
-
+  try {
+    // イベント内容をコンソールに表示
+    console.log(req.body.events);
+  } catch (err) {
+    return 0;
+  }
   const events = req.body.events;
-  const promises = [];
+  // const promises = [];
   for (const event of events) {
     const eventType = event.type;
     const pl = new ParticipantList();
@@ -96,13 +98,13 @@ const main = async (req, res) => {
               // ここの内容は※1マークのところと同じになるように
               // 本当は統合したいが条件分岐がぐちゃぐちゃになる
 
-              promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
+              await replyRollCall(groupId, gameId, isRestarting, replyToken);
               continue;
             } else if (isRecruiting) {
 
               // 参加者募集中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
               const plId = await pl.getRecruitingParticipantListId(groupId); // 募集中の参加者リストのidを取得
-              promises.push(replyRestartConfirmIfRecruiting(plId, gameId, replyToken));
+              await replyRestartConfirmIfRecruiting(plId, gameId, replyToken);
               continue;
 
             } else if (isPlaying) {
@@ -112,14 +114,14 @@ const main = async (req, res) => {
               if (isUserParticipant) { // 参加者の発言の場合
 
                 // プレイ中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
-                promises.push(replyRestartConfirmIfPlaying(plId, gameId, replyToken));
+                await replyRestartConfirmIfPlaying(plId, gameId, replyToken);
                 continue;
               }
 
             } else {
               // ※1
               // 参加を募集する旨のリプライを返す
-              promises.push(replyRollCall(groupId, gameId, isRestarting, replyToken));
+              await replyRollCall(groupId, gameId, isRestarting, replyToken);
               continue;
             }
           } else { // 発言の内容がゲーム名じゃないなら
@@ -144,18 +146,18 @@ const main = async (req, res) => {
                         // この内容は※2と一致
                         // 参加意思表明に対するリプライ
                         // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                        promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
+                        await replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken);
                         continue;
                       } else { // まだ確認してなかったら
 
-                        promises.push(replyParticipateConfirm(userId, replyToken));
+                        await replyParticipateConfirm(userId, replyToken);
                         continue;
                       }
                     } else {
                       // ※2
                       // 参加意思表明に対するリプライ
                       // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                      promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
+                      await replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken);
                       continue;
                     }
                   } else { // 参加中参加者リストがない場合
@@ -163,7 +165,7 @@ const main = async (req, res) => {
                     // ※2
                     // 参加意思表明に対するリプライ
                     // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                    promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
+                    await replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken);
                     continue;
                   }
                 } else { // ユーザーテーブルにデータがない場合
@@ -172,7 +174,7 @@ const main = async (req, res) => {
                   // ※2
                   // 参加意思表明に対するリプライ
                   // 参加を受け付けた旨、現在の参加者のリスト、参加募集継続中の旨を送る
-                  promises.push(replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken));
+                  await replyRollCallReaction(plId, userId, isUser, isUserParticipant, isUserRestarting, replyToken);
                   continue;
                 }
               }
@@ -185,12 +187,12 @@ const main = async (req, res) => {
                   const gameId = await playingGame.getGameId();
                   if (gameId == 1) { // ワードウルフの場合
 
-                    await wordWolfBranch.rollCallBranch(plId, replyToken, promises);
+                    await wordWolfBranch.rollCallBranch(plId, replyToken);
                     continue;
                   }
                   if (gameId == 2) { // クレイジーノイジーの場合
 
-                    await crazyNoisyBranch.rollCallBranch(plId, replyToken, promises);
+                    await crazyNoisyBranch.rollCallBranch(plId, replyToken);
                     continue;
                   }
                 }
@@ -205,26 +207,27 @@ const main = async (req, res) => {
               const isUserParticipant = await pl.isUserParticipant(plId, userId); // 発言ユーザーが参加者かどうか
               if (isUserParticipant) { // 参加者の発言の場合
                 if (text == "強制終了") {
-                  promises.push(replyTerminate(plId, replyToken));
+                  await replyTerminate(plId, replyToken);
+                  continue;
                 }
 
                 const playingGame = new PlayingGame(plId);
                 const gameId = await playingGame.getGameId();
                 if (gameId == 1) { // プレイするゲームがワードウルフの場合
 
-                  await wordWolfBranch.playingMessageBranch(plId, text, replyToken, promises);
+                  await wordWolfBranch.playingMessageBranch(plId, text, replyToken);
                   continue;
                 }
                 if (gameId == 2) { // プレイするゲームがクレイジーノイジーの場合
 
-                  await crazyNoisyBranch.playingMessageBranch(plId, text, replyToken, promises);
+                  await crazyNoisyBranch.playingMessageBranch(plId, text, replyToken);
                   continue;
                 }
               }
             }
           }
 
-          // promises.push(replyDefaultGroupMessage(event));
+          // await replyDefaultGroupMessage(event));
 
         } else if (toType == "user") {
           const hasPlId = await user.hasPlId();
@@ -235,7 +238,7 @@ const main = async (req, res) => {
             const gameId = await playingGame.getGameId();
 
             if (gameId == 2) {
-              
+
               // await crazyNoisyBranch.userMessageBranch();
             }
           }
@@ -261,11 +264,11 @@ const main = async (req, res) => {
               const playingGame = new PlayingGame(plId);
               const gameId = await playingGame.getGameId();
               if (gameId == 1) {
-                await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
+                await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
                 continue;
               }
               if (gameId == 2) {
-                await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken, promises);
+                await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
                 continue;
               }
             }
@@ -279,22 +282,22 @@ const main = async (req, res) => {
             const gameId = await playingGame.getGameId();
 
             if (gameId == 2) {
-              
-              await crazyNoisyBranch.postbackUserBranch(plId,userId,postbackData,replyToken,promises);
+
+              await crazyNoisyBranch.postbackUserBranch(plId, userId, postbackData, replyToken);
             }
           }
         }
 
-      } 
+      }
     }
     if (eventType == "join") {
       if (event.source.type == "group" || event.source.type == "room") {
-        promises.push(joinGroupMessage(event.replyToken));
+        await joinGroupMessage(event.replyToken);
       }
     }
   };
 
-  Promise.all(promises).then(console.log("成功")).catch(err => console.log(err));
+  // Promise.all(promises).then(console.log("成功")).catch(err => console.log(err));
 }
 
 const joinGroupMessage = async (replyToken) => {
@@ -416,11 +419,11 @@ const replyRollCallReaction = async (plId, userId, isUser, isUserParticipant, is
             await pl.finishParticipantList(oldPlId); // ここで前の参加者リストを全部終わらせる
             const oldGroupId = await pl.getGroupId(oldPlId);
 
-            try{
+            try {
               // 終了したゲームのグループにその旨を送る
               await client.pushMessage(oldGroupId, await pushMessage.main());
-            }catch(err){
-              
+            } catch (err) {
+
             }
           }
         }

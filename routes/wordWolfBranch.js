@@ -16,22 +16,21 @@ const commonFunction = require("../template/functions/commonFunction");
  *
  * @param {*} plId
  * @param {*} replyToken
- * @param {*} promises
  */
-exports.rollCallBranch = async (plId, replyToken, promises) => {
+exports.rollCallBranch = async (plId, replyToken) => {
     const pl = new ParticipantList();
     const userNumber = await pl.getUserNumber(plId); // 
 
     let minNumber = 3;
-    if(process.env.SERVER_ENV=="dev"){
+    if (process.env.SERVER_ENV == "dev") {
         minNumber = 2;
     }
     if (userNumber < minNumber) { // 参加者数が2人以下の場合
-        await promises.push(replyTooFewParticipant(plId, replyToken));
+        await replyTooFewParticipant(plId, replyToken);
     } else {
         // 参加受付終了の意思表明に対するリプライ
         // 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
-        await promises.push(replyRollCallEnd(plId, replyToken));
+        await replyRollCallEnd(plId, replyToken);
     }
 }
 
@@ -41,9 +40,8 @@ exports.rollCallBranch = async (plId, replyToken, promises) => {
  * @param {*} plId
  * @param {*} text
  * @param {*} replyToken
- * @param {*} promises
  */
-exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
+exports.playingMessageBranch = async (plId, text, replyToken) => {
     const wordWolf = new WordWolf(plId);
     const genreStatus = await wordWolf.getGenreStatus();
     if (!genreStatus) { // ジャンルがまだ指定されてない場合
@@ -54,13 +52,13 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
             const genreId = await wordWolf.getGenreIdFromName(text); // 名前からジャンルのidをとってくる
             console.log("genreId:" + genreId);
             // ジャンル選択後のリプライ
-            await promises.push(replyGenreChosen(plId, genreId, replyToken));
+            await replyGenreChosen(plId, genreId, replyToken));
         }
         */
 
         // depth
         if (((text == 1 || text == 2) || (text == 3 || text == 4)) || text == 5) {
-            await promises.push(replyDepthChosen(plId, text, replyToken));
+            await replyDepthChosen(plId, text, replyToken);
         }
     } else { // ジャンルが選択済みの場合
 
@@ -71,7 +69,7 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
             if (wolfNumberExists) {
 
                 const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
-                await promises.push(replyWolfNumberChosen(plId, wolfNumber, replyToken));
+                await replyWolfNumberChosen(plId, wolfNumber, replyToken);
             }
         } else { // ウルフの数が指定済みの場合
 
@@ -82,27 +80,27 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
                 if (lunaticNumberExists) { // 狂人の人数が発言された場合
 
                     const lunaticNumber = await wordWolf.getLunaticNumberFromText(text);
-                    await promises.push(replyLunaticNumberChosen(plId, lunaticNumber, replyToken));
+                    await replyLunaticNumberChosen(plId, lunaticNumber, replyToken);
                 }
             } else {
 
                 const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
                 if (!settingConfirmStatus) {
                     if (text == "はい") {
-                        await promises.push(replyConfirmYes(plId, replyToken));
+                        await replyConfirmYes(plId, replyToken);
                     } else if (text == "いいえ") {
-                        await promises.push(replyConfirmNo(plId, replyToken));
+                        await replyConfirmNo(plId, replyToken);
                     }
                 } else {
                     const finishedStatus = await wordWolf.getFinishedStatus();
                     if (!finishedStatus) { // 話し合い中だった場合
 
                         if (text == "終了") {
-                            await promises.push(replyFinish(plId, replyToken));
+                            await replyFinish(plId, replyToken);
                         } else { // 発言が終了以外の場合
                             const isOverTime = await wordWolf.isOverTime();
                             if (isOverTime) { // 話し合い時間が終了していた場合
-                                await promises.push(replyFinish(plId, replyToken));
+                                await replyFinish(plId, replyToken);
 
                             } else {
                                 if (text == "残り時間") {
@@ -111,13 +109,13 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
 
                                         const notifyStatus = await wordWolf.getNotifyStatus();
                                         if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
-                                            await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
+                                            await replyNotifyAndRemainingTime(plId, replyToken);
                                         } else {
-                                            await promises.push(replyRemainingTime(plId, replyToken));
+                                            await replyRemainingTime(plId, replyToken);
                                         }
                                     } else { // 残り1分切ってなかったら
 
-                                        await promises.push(replyRemainingTime(plId, replyToken));
+                                        await replyRemainingTime(plId, replyToken);
                                     }
                                 }
 
@@ -126,7 +124,7 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
 
                                     const notifyStatus = await wordWolf.getNotifyStatus();
                                     if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
-                                        await promises.push(replyNotify(plId, replyToken));
+                                        await replyNotify(plId, replyToken);
                                     }
                                 }
 
@@ -139,7 +137,7 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
                         const resultStatus = await wordWolf.getResultStatus();
                         if (!resultStatus) { // すべての結果発表がまだなら
                             if (text == "ワードを見る") {
-                                await promises.push(replyAnnounceResult(plId, replyToken));
+                                await replyAnnounceResult(plId, replyToken);
                             }
                         }
 
@@ -157,9 +155,8 @@ exports.playingMessageBranch = async (plId, text, replyToken, promises) => {
  * @param {*} userId
  * @param {*} postbackData
  * @param {*} replyToken
- * @param {*} promises
  */
-exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, promises) => {
+exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) => {
     const pl = new ParticipantList();
     const wordWolf = new WordWolf(plId);
 
@@ -182,10 +179,10 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
 
                         // この中は下の※と同じになるように
                         if (userId != postbackData) { // 自分以外に投票していた場合
-                            await promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
+                            await replyVoteSuccess(plId, postbackData, replyToken, userIndex);
 
                         } else { // 自分に投票していた場合
-                            await promises.push(replySelfVote(plId, replyToken, userIndex));
+                            await replySelfVote(plId, replyToken, userIndex);
                         }
                     }
 
@@ -196,23 +193,23 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
 
                         // ※
                         if (userId != postbackData) { // 自分以外に投票していた場合
-                            await promises.push(replyVoteSuccess(plId, postbackData, replyToken, userIndex));
+                            await replyVoteSuccess(plId, postbackData, replyToken, userIndex);
 
                         } else { // 自分に投票していた場合
-                            await promises.push(replySelfVote(plId, replyToken, userIndex));
+                            await replySelfVote(plId, replyToken, userIndex);
                         }
                     }
                 }
 
 
             } else {
-                await promises.push(replyDuplicateVote(plId, replyToken, userIndex));
+                await replyDuplicateVote(plId, replyToken, userIndex);
             }
         }
     } else { // 話し合い中だった場合
         const isOverTime = await wordWolf.isOverTime();
         if (isOverTime) { // 話し合い時間が終了していた場合
-            await promises.push(replyFinish(plId, replyToken));
+            await replyFinish(plId, replyToken);
 
         } else {
             if (postbackData == "残り時間") {
@@ -221,12 +218,12 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken, p
 
                     const notifyStatus = await wordWolf.getNotifyStatus();
                     if (!notifyStatus) { // 残り1分をまだ通知していなかった場合
-                        await promises.push(replyNotifyAndRemainingTime(plId, replyToken));
+                        await replyNotifyAndRemainingTime(plId, replyToken);
                     } else {
-                        await promises.push(replyRemainingTime(plId, replyToken));
+                        await replyRemainingTime(plId, replyToken);
                     }
                 } else {
-                    await promises.push(replyRemainingTime(plId, replyToken));
+                    await replyRemainingTime(plId, replyToken);
                 }
             }
         }
@@ -625,9 +622,9 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
 
             await wordWolf.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
             const displayNames = await wordWolf.getDisplayNames();
-            const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf); 
+            const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf);
 
-            return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf,displayNames,isWinnerArray));
+            return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf, displayNames, isWinnerArray));
 
         } else { // 最多得票者が複数いた場合
             const mostVotedUserIndexes = await wordWolf.getMostVotedUserIndexes(); // 最多得票者の配列
@@ -651,9 +648,9 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
 
                 await wordWolf.updateWinnerStatusTrue(); // 勝者発表状況をtrueにする
                 const displayNames = await wordWolf.getDisplayNames();
-                const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf); 
+                const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf);
 
-                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf,displayNames,isWinnerArray));
+                return client.replyMessage(replyToken, await replyMessage.main(voterDisplayName, executorDisplayName, isExecutorWolf, displayNames, isWinnerArray));
             }
 
         }
