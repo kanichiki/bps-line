@@ -607,7 +607,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
     // DB変更操作１，２
     // 投票ユーザーの投票状況をtrueにできたら得票ユーザーの得票数を+1する同期処理
     const votedUserIndex = await pl.getUserIndexFromUserId(plId, postbackData);
-    await wordWolf.updateVoteStatus(userIndex).then(wordWolf.updateVoteNumber(votedUserIndex));
+    await wordWolf.updateVoteStatus(userIndex).then(await wordWolf.updateVoteNumber(votedUserIndex));
 
     const isVoteCompleted = await wordWolf.isVoteCompleted();
     if (isVoteCompleted) {
