@@ -14,7 +14,7 @@ exports.main = async (contents,remarks) => {
     return [
         {
             type: "text",
-            text: `あなたの狂気は\n\n${message}\n以上です。\n自分が洗脳されていることや狂気の内容を話すことはできません。`
+            text: `あなたの狂気は\n\n${message}\n以上です。\n狂気の内容を話すことはできません。`
         }
     ]
 }
