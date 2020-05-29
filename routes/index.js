@@ -352,7 +352,7 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
   // DB変更操作１
   if (isRestarting) {
     const oldPlId = await pl.getRestartingParticipantListId(groupId); // リスタート待ちの参加者リストとってくる
-    await pl.finishParticipantList(oldPlId);
+    pl.finishParticipantList(oldPlId);
   }
 
   // DB変更操作２
@@ -361,7 +361,7 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
 
   // DB変更操作３
   const playingGame = new PlayingGame(plId);
-  await playingGame.createPlayingGame(gameId); // playing_gameテーブルに今から遊ぶゲームのidを入れる
+  playingGame.createPlayingGame(gameId); // playing_gameテーブルに今から遊ぶゲームのidを入れる
   const gameName = await playingGame.getGameName();
 
 
@@ -468,7 +468,7 @@ const replyParticipateConfirm = async (userId, replyToken) => {
   const user = new User(userId);
 
   // DB変更操作１．
-  await user.updateIsRestartingTrue(); // 確認状況をtrueにする
+  user.updateIsRestartingTrue(); // 確認状況をtrueにする
   const displayName = await user.getDisplayName();
 
   return client.replyMessage(replyToken, await replyMessage.main(displayName));
@@ -492,7 +492,7 @@ const replyRestartConfirmIfRecruiting = async (plId, gameId, replyToken) => {
   const newGame = new Game();
 
   // DB変更操作１
-  await pl.updateIsRestartingTrue(plId); // 参加者リストをリスタート待ちにする
+  pl.updateIsRestartingTrue(plId); // 参加者リストをリスタート待ちにする
 
   const recruitingGameName = await recruitingGame.getGameName();
   const newGameName = await newGame.getGameName(gameId);
@@ -520,7 +520,7 @@ const replyRestartConfirmIfPlaying = async (plId, gameId, replyToken) => {
   const newGame = new Game();
 
   // DB変更操作１
-  await pl.updateIsRestartingTrue(plId); // 参加者リストをリスタート待ちにする
+  pl.updateIsRestartingTrue(plId); // 参加者リストをリスタート待ちにする
 
   const playingGameName = await playingGame.getGameName();
   const newGameName = await newGame.getGameName(gameId);
@@ -532,7 +532,7 @@ const replyRestartConfirmIfPlaying = async (plId, gameId, replyToken) => {
 const replyTerminate = async (plId, replyToken) => {
   const replyMessage = require("../template/messages/replyTerminate");
   const pl = new ParticipantList();
-  await pl.finishParticipantList(plId);
+  pl.finishParticipantList(plId);
   return client.replyMessage(replyToken, await replyMessage.main());
 }
 
