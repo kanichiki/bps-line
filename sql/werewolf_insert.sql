@@ -1,0 +1,1 @@
+INSERT INTO game (name) VALUES ('人狼');
