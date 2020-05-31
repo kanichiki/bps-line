@@ -76,6 +76,10 @@ const main = async (req, res) => {
             groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
 
+          if(text == "ゲーム一覧"){
+            await replyGameList(replyToken);
+          }
+
 
           // TODO 友達追加されていないユーザーの場合の分岐
           // 初めの処理
@@ -338,6 +342,16 @@ const replyDefaultPersonalMessage = async (event) => {
 
 */
 
+
+/**
+ * ゲームリストを返す
+ *
+ * @param {*} replyToken
+ */
+const replyGameList = async (replyToken) =>{
+  const replyMessage = require("../template/messages/replyGameList");
+  return client.replyMessage(replyToken, await replyMessage.main());
+}
 
 /**
  * 参加受付用リプライ
