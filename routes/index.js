@@ -256,6 +256,7 @@ const main = async (req, res) => {
           } else if (toType == "room") {
             groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
+
           const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
           if (isPlaying) {
             const plId = await pl.getPlayingParticipantListId(groupId);
@@ -263,13 +264,22 @@ const main = async (req, res) => {
             if (isUserParticipant) {
               const playingGame = new PlayingGame(plId);
               const gameId = await playingGame.getGameId();
-              if (gameId == 1) {
-                await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
-                continue;
-              }
-              if (gameId == 2) {
-                await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
-                continue;
+              if (event.postback.params != undefined) {
+                const params = event.postback.params;
+
+                if (gameId == 1) {
+                  await wordWolfBranch.postbackDatetimeBranch(plId, userId, params, replyToken);
+                  continue;
+                }
+              } else {
+                if (gameId == 1) {
+                  await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
+                  continue;
+                }
+                if (gameId == 2) {
+                  await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
+                  continue;
+                }
               }
             }
           }

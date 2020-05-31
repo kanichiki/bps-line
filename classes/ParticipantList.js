@@ -153,7 +153,6 @@ module.exports = class ParticipantList {
             } else if (res.rowCount > 1) {
                 throw "募集中の参加者リストが１グループに２つ以上ある";
             } else {
-                console.log("false");
                 return false;
             }
         } catch (err) {
@@ -248,7 +247,6 @@ module.exports = class ParticipantList {
             } else if (res.rowCount > 1) {
                 throw "プレイ中の参加者リストが１グループに２つ以上ある";
             } else {
-                console.log("false");
                 return false;
             }
         } catch (err) {

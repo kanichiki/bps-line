@@ -86,10 +86,46 @@ exports.playingMessageBranch = async (plId, text, replyToken) => {
 
                 const settingConfirmStatus = await wordWolf.getSettingConfirmStatus();
                 if (!settingConfirmStatus) {
-                    if (text == "はい") {
-                        await replyConfirmYes(plId, replyToken);
-                    } else if (text == "いいえ") {
-                        await replyConfirmNo(plId, replyToken);
+                    const isChangingNull = await wordWolf.isChanginNull();
+                    if (isChangingNull) { // 設定変更の分岐
+                        if (text == "ゲームを開始する") {
+                            await replyConfirmYes(plId, replyToken);
+                        }
+                        if (text == "難易度変更") {
+                            await replyDepthChange(plId, replyToken);
+                        }
+                        if (text == "ウルフ人数変更") {
+                            await replyWolfNumberChange(plId, replyToken);
+                        }
+                        if (text == "狂人人数変更") {
+                            await replyLunaticNumberChange(plId, replyToken);
+                        }
+                        if(text == "議論時間変更"){
+                            await replyTimerChange(plId,replyToken);
+                        }
+                    } else {
+                        const changing = await wordWolf.getChanging();
+                        if (changing == "depth") {
+                            if (((text == 1 || text == 2) || (text == 3 || text == 4)) || text == 5) {
+                                await replyDepthChanged(plId, text, replyToken);
+                            }
+                        }
+                        if (changing == "wolf_number") {
+                            const wolfNumberExists = await wordWolf.wolfNumberExists(text); // ウルフの人数（"2人"など)が発言されたかどうか
+                            if (wolfNumberExists) {
+
+                                const wolfNumber = await wordWolf.getWolfNumberFromText(text); // textからウルフの人数(2など)を取得
+                                await replyWolfNumberChanged(plId, wolfNumber, replyToken);
+                            }
+                        }
+                        if (changing == "lunatic_number") {
+                            const lunaticNumberExists = await wordWolf.lunaticNumberExists(text);
+                            if (lunaticNumberExists) { // 狂人の人数が発言された場合
+
+                                const lunaticNumber = await wordWolf.getLunaticNumberFromText(text);
+                                await replyLunaticNumberChanged(plId, lunaticNumber, replyToken);
+                            }
+                        }
                     }
                 } else {
                     const finishedStatus = await wordWolf.getFinishedStatus();
@@ -207,6 +243,7 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) =
             }
         }
     } else { // 話し合い中だった場合
+        
         const isOverTime = await wordWolf.isOverTime();
         if (isOverTime) { // 話し合い時間が終了していた場合
             await replyFinish(plId, replyToken);
@@ -227,6 +264,14 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) =
                 }
             }
         }
+    }
+}
+
+exports.postbackDatetimeBranch = async (plId, userId, params, replyToken) => {
+    const wordWolf = new WordWolf(plId);
+    const changing = await wordWolf.getChanging();
+    if(changing == "timer"){
+        await replyTimerChanged(plId,params,replyToken);
     }
 }
 
@@ -395,7 +440,9 @@ const replyLunaticNumberChosen = async (plId, lunaticNumber, replyToken) => {
     const depth = await wordWolf.getDepth();
 
     const wolfNumber = await wordWolf.getWolfNumber();
-    return client.replyMessage(replyToken, await replyMessage.main(depth, wolfNumber, lunaticNumber));
+    const timer = await wordWolf.getTimerString();
+    const userNumber = await wordWolf.getUserNumber()
+    return client.replyMessage(replyToken, await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timer));
 }
 
 /**
@@ -447,7 +494,7 @@ const replyConfirmYes = async (plId, replyToken) => {
         client.pushMessage(userIds[i], await pushMessage.main(profiles[i], userWords[i], isLunatic[i]))
     }
 
-    const timer = await wordWolf.getTimer(); // タイマー設定を取得
+    const timer = await wordWolf.getTimerString(); // タイマー設定を取得
 
     return client.replyMessage(replyToken, await replyMessage.main(timer));
 }
@@ -482,7 +529,7 @@ const replyConfirmNo = async (plId, replyToken) => {
     */
 
     const depths = ["1", "2", "3", "4"];
-    return client.replyMessage(replyToken, await replyMessage.main(depths));
+    return client.replyMessage(replyToken, await replyMessage.main());
 }
 
 /**
@@ -527,16 +574,16 @@ const replyFinish = async (plId, replyToken) => {
     /*} else { // postbackを使わない設定の場合
         const replyMessage = require("../template/messages/word_wolf/withoutPostback/replyFinishWithoutPostback");
         const pushMessage = require("../template/messages/word_wolf/withoutPostback/pushFinishWithoutPostback");
-
+ 
         const userIds = await wordWolf.getUserIds();
-
+ 
         await client.replyMessage(replyToken, await replyMessage.main()); // 話し合い終了のグループリプライ
-
+ 
         for (let userIndex = 0; userIndex < userIds.length; userIndex++) {
             // 個人チャットで投票を送る
             client.pushMessage(userIds[userIndex], await pushMessage.main(shuffleUserIndexes, displayNames, userIndex));
         }
-
+ 
     }*/
 }
 
@@ -694,5 +741,100 @@ const replyAnnounceResult = async (plId, replyToken) => {
     await pl.finishParticipantList(plId);
 
     return client.replyMessage(replyToken, await replyMessage.main(displayNames, wolfIndexes, lunaticIndexes, citizenWord, wolfWord));
+}
+
+const replyDepthChange = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyDepthChange");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateChanging("depth");
+    return client.replyMessage(replyToken, await replyMessage.main());
+}
+
+const replyWolfNumberChange = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyWolfNumberChange");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateChanging("wolf_number");
+    const wolfNumberOptions = await wordWolf.getWolfNumberOptions();
+    return client.replyMessage(replyToken, await replyMessage.main(wolfNumberOptions));
+}
+
+const replyLunaticNumberChange = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyLunaticNumberChange");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateChanging("lunatic_number");
+    const lunaticNumberOptions = await wordWolf.getLunaticNumberOptions();
+    return client.replyMessage(replyToken, await replyMessage.main(lunaticNumberOptions));
+}
+
+const replyTimerChange = async (plId, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyTimerChange");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateChanging("timer");
+    return client.replyMessage(replyToken, await replyMessage.main());
+}
+
+const replyDepthChanged = async (plId, text, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyChanged");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateWordSetIdMatchDepth(text);
+    wordWolf.updateChangingNull();
+
+    const userNumber = await wordWolf.getUserNumber();
+    const wolfNumber = await wordWolf.getWolfNumber();
+    const lunaticNumber = await wordWolf.getLunaticNumber();
+    const timer = await wordWolf.getTimerString();
+    return client.replyMessage(replyToken, await replyMessage.main(userNumber, text, wolfNumber, lunaticNumber, timer));
+}
+
+
+const replyWolfNumberChanged = async (plId, wolfNumber, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyChanged");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateWolfIndexes(wolfNumber);
+    wordWolf.updateChangingNull();
+
+    const userNumber = await wordWolf.getUserNumber();
+    const depth = await wordWolf.getDepth();
+    const lunaticNumber = await wordWolf.getLunaticNumber();
+    const timer = await wordWolf.getTimerString();
+    return client.replyMessage(replyToken, await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timer));
+}
+
+const replyLunaticNumberChanged = async (plId, lunaticNumber, replyToken) => {
+    const replyMessage = require("../template/messages/word_wolf/replyChanged");
+    const wordWolf = new WordWolf(plId);
+
+    wordWolf.updateLunaticIndexes(lunaticNumber);
+    wordWolf.updateChangingNull();
+
+    const userNumber = await wordWolf.getUserNumber();
+    const depth = await wordWolf.getDepth();
+    const wolfNumber = await wordWolf.getWolfNumber();
+    const timer = await wordWolf.getTimerString();
+    return client.replyMessage(replyToken, await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timer));
+}
+
+const replyTimerChanged = async (plId,params,replyToken) =>{
+    const replyMessage = require("../template/messages/word_wolf/replyChanged");
+    const wordWolf = new WordWolf(plId);
+
+    const timerArray = params.time.split(":");
+    const timerData = `${timerArray[0]} minutes ${timerArray[1]} seconds`
+    await wordWolf.updateTimer(timerData);
+    
+    wordWolf.updateChangingNull();
+
+    const userNumber = await wordWolf.getUserNumber();
+    const depth = await wordWolf.getDepth();
+    const wolfNumber = await wordWolf.getWolfNumber();
+    const lunaticNumber = await wordWolf.getLunaticNumber();
+    const timer = await wordWolf.getTimerString();
+    return client.replyMessage(replyToken, await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timer));
 }
 
