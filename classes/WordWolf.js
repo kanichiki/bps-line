@@ -1773,15 +1773,37 @@ class WordWolf {
     }
 
     /**
-     * タイマーの値を設定
+     * タイマー設定を文字列で返す
      *
-     * @param {*} minutes
+     * @returns
      * @memberof WordWolf
      */
-    async updateTimer(minutes) {
+    async getTimerString() {
+        const timer = await this.getTimer();
+        let timerString = "";
+        if(timer.hour != undefined){
+            timerString += timer.hour + "時間";
+        }
+        if(timer.minutes != undefined){
+            timerString += timer.minutes + "分";
+        }
+        if(timer.seconds != undefined){
+            timerString += timer.seconds + "秒"
+        }
+
+        return timerString;
+    }
+
+    /**
+     * タイマーの値を設定
+     *
+     * @param {*} interval
+     * @memberof WordWolf
+     */
+    async updateTimer(interval) {
         const query = {
             text: `UPDATE ${this.setting} set timer = $1 where pl_id = $2`,
-            values: [minutes, this.plId]
+            values: [interval, this.plId]
         };
         try {
             await pg.query(query);
@@ -1799,10 +1821,9 @@ class WordWolf {
      */
     async updateEndTime() {
         const timer = await this.getTimer();
-        const minutes = timer + " minutes";
         const query = {
             text: `update ${this.setting} set end_time = start_time + $1 WHERE pl_id = $2`,
-            values: [minutes, this.plId]
+            values: [timer, this.plId]
         }
         try {
             await pg.query(query);
@@ -1840,7 +1861,6 @@ class WordWolf {
             return res.rows[0].ans;
         } catch (err) {
             console.log(err);
-            console.log("ここでエラー")
         }
     }
 
@@ -1862,7 +1882,6 @@ class WordWolf {
             return res.rows[0].ans;
         } catch (err) {
             console.log(err);
-            console.log("いや、ここでエラー");
             console.log(currentTime);
         }
     }
@@ -1948,6 +1967,66 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
+    }
+
+    /**
+     * 設定変更中のものを設定
+     *
+     * @param {*} text
+     * @memberof WordWolf
+     */
+    async updateChanging(text){
+        const query = {
+            text: `update ${this.setting} set changing = $1 WHERE pl_id = $2`,
+            values: [text, this.plId]
+        }
+        try {
+            await pg.query(query);
+            console.log("Updated changing");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    async updateChangingNull(){
+        const query = {
+            text: `update ${this.setting} set changing = null WHERE pl_id = $1`,
+            values: [this.plId]
+        }
+        try {
+            await pg.query(query);
+            console.log("Updated changing null");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * 変更中の設定を取得
+     *
+     * @returns
+     * @memberof WordWolf
+     */
+    async getChanging(){
+        const query = {
+            text: `SELECT changing FROM ${this.setting} WHERE pl_id = $1`,
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].changing;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    async isChanginNull(){
+        const changing = await this.getChanging();
+        let res = false;
+        if(changing == null){
+            res = true;
+        }
+        return res;
     }
 }
 

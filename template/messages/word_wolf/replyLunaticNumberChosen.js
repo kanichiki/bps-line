@@ -1,4 +1,5 @@
 const parts = require("../constants/messageParts");
+const wordWolfParts = require("./constants/messageParts");
 
 /* ジャンル
 exports.main = async (wolfNumber, genreName) => {
@@ -92,7 +93,7 @@ exports.main = async (wolfNumber, genreName) => {
 
 // depth
 
-exports.main = async (depth,wolfNumber,lunaticNumber) => {
+exports.main = async (userNumber,depth,wolfNumber,lunaticNumber,timer) => {
   return [
       {
           type: "text",
@@ -101,86 +102,7 @@ exports.main = async (depth,wolfNumber,lunaticNumber) => {
       {
           "type": "flex",
           "altText": "設定確認",
-          "contents": {
-              "type": "bubble",
-              "body": {
-                "type": "box",
-                "layout": "vertical",
-                "contents": [
-                  {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                      {
-                        "type": "text",
-                        "text": "以下の内容でよろしいですか？",
-                        "size": "md",
-                        "wrap": true
-                      }
-                    ]
-                  },
-                  {
-                    "type": "separator",
-                    "margin": "md"
-                  },
-                  {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                      {
-                        "type": "spacer"
-                      },
-                      {
-                        "type": "text",
-                        "text": `難易度 : ${depth}`,
-                        "size": "md"
-                      },
-                      {
-                        "type": "text",
-                        "text": `ウルフ : ${wolfNumber}人`
-                      },
-                      {
-                        "type": "text",
-                        "text": `狂人 : ${lunaticNumber}人`
-                      }
-                    ]
-                  }
-                ]
-              },
-              "footer": {
-                "type": "box",
-                "layout": "horizontal",
-                "spacing":"sm",
-                "contents": [
-                  {
-                    "type": "button",
-                    "style": "link",
-                    "height": "sm",
-                    "action": {
-                      "type": "message",
-                      "label": "はい",
-                      "text": "はい"
-                    },
-                    "color": parts.mainColor,
-                    "style": "primary"
-                  },
-                  {
-                    "type": "separator"
-                  },
-                  {
-                    "type": "button",
-                    "style": "link",
-                    "height": "sm",
-                    "action": {
-                      "type": "message",
-                      "label": "いいえ",
-                      "text": "いいえ"
-                    },
-                    "color": parts.mainColor
-                  }
-                ]
-              }
-            }
+          "contents": await wordWolfParts.settingConfirmMessage(userNumber,depth,wolfNumber,lunaticNumber,timer)
       }
   ]
 }

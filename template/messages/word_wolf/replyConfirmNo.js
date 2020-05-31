@@ -50,7 +50,7 @@ exports.main = async (genres) => {
 */
 
 // depth
-exports.main = async (depths) => {
+exports.main = async () => {
 
     /*
     let depthMessages = [];
