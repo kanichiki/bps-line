@@ -771,5 +771,22 @@ module.exports = class ParticipantList {
         }
     }
 
+    async exists(plId){
+        const query = {
+            text: `SELECT id FROM participant_list WHERE id = $1`,
+            values: [plId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
 
 }
