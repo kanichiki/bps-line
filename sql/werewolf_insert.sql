@@ -1,1 +1,1 @@
-INSERT INTO game (name) VALUES ('人狼');
+INSERT INTO game (id, name) VALUES (3, '人狼');

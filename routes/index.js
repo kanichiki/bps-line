@@ -201,6 +201,7 @@ const main = async (req, res) => {
                       headers: {
                         "Content-type":"application/json"
                       },
+                      // これがpythonに渡される
                       json:{
                         "replyToken":replyToken,
                         "pl_id":plId
