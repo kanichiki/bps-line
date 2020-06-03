@@ -185,7 +185,7 @@ exports.gamesMessage = async () => {
                   "action": {
                     "type": "message",
                     "label": "クレイジーノイジーを始める",
-                    "text": "ワードウルフ"
+                    "text": "クレイジーノイジー"
                   },
                   "style": "primary",
                   "margin": "md",
