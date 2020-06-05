@@ -200,6 +200,20 @@ const main = async (req, res) => {
                     await crazyNoisyBranch.rollCallBranch(plId, replyToken);
                     continue;
                   }
+                  if(gameId == 3){ // 人狼の場合
+                    const options = {
+                      uri: "http://localhost:8000/rollcall",
+                      headers: {
+                        "Content-type":"application/json"
+                      },
+                      // これがpythonに渡される
+                      json:{
+                        "replyToken":replyToken,
+                        "pl_id":plId
+                      }
+                    };
+                    request.post(options,(error,response,body)=>{});
+                  }
                 }
               }
             }
