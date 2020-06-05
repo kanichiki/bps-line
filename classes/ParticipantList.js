@@ -116,11 +116,10 @@ module.exports = class ParticipantList {
     /**
      * userIdがplIdの参加者リストに含まれるかどうか
      *
-     * @param 
-     * @param
-     * @returns boolean
+     * @param {*} plId
+     * @param {*} userId
+     * @returns
      */
-
     async isUserParticipant(plId, userId) {
         const userIds = await this.getUserIds(plId);
         let res = false;
@@ -136,11 +135,11 @@ module.exports = class ParticipantList {
 
 
     /**
-    * 発言グループが募集中の参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループが募集中の参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupRecruitingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_recruiting = true;',
@@ -230,11 +229,11 @@ module.exports = class ParticipantList {
     // ここからプレイ状況（is_playing）に関する関数
 
     /**
-    * 発言グループがプレイ中の参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループがプレイ中の参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupPlayingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_playing = true;',
@@ -363,12 +362,13 @@ module.exports = class ParticipantList {
     // ここからリスタート待ち状況（is_restarting）に関する関数
     // リスタート待ち状況とは募集中、並びにプレイ中にゲーム名が発言された場合に本当にリスタートするか確認待ちの状況
 
+
     /**
-    * 発言グループがリスタート待ちの参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループがリスタート待ちの参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupRestartingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_restarting = true;',
@@ -474,11 +474,11 @@ module.exports = class ParticipantList {
     // ここから終了待ち状況
 
     /**
-    * 発言グループが終了待ちの参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループが終了待ちの参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupFinishingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_finishing = true;',

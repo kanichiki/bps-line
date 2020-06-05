@@ -8,6 +8,7 @@ const logger = require('morgan');
 
 const indexRouter = require('./routes/index');
 const plRouter = require('./routes/participantList');
+const playingRouter = require('./routes/playingGame');
 // const usersRouter = require('./routes/users');
 
 const app = express();
@@ -36,7 +37,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/webhook', indexRouter);
-app.use('/pl',plRouter);
+app.use('/api/v1/participant',plRouter);
+app.use('/api/v1/games/playing',playingRouter);
 // app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
@@ -63,7 +65,7 @@ const cron = require('node-cron');
 const cronFunction = require("./routes/cron");
 // const client = new line.Client(config);
 
-cron.schedule('*/3 * * * * *', async () => {
+cron.schedule('*/2 * * * * *', async () => {
   await cronFunction.crazyNoisyDiscussFinish();
   await cronFunction.wordWolfDiscussFinish();
 });

@@ -50,10 +50,10 @@ exports.crazyNoisyDiscussFinish = async () => {
                 const pushMessage = require("../template/messages/crazy_noisy/replyDiscussFinish");
 
                 // try {
-                    await client.pushMessage(groupId, await pushMessage.main(displayNames, userIds));
+                await client.pushMessage(groupId, await pushMessage.main(displayNames, userIds));
                 // } catch{
-                    // console.log("failed to push message");
-                    // await pl.finishParticipantList(plId);
+                // console.log("failed to push message");
+                // await pl.finishParticipantList(plId);
                 // }
             }
         }
@@ -73,8 +73,7 @@ exports.wordWolfDiscussFinish = async () => {
 
                 // DB変更操作１，２
                 // 投票データを挿入出来たら話し合い終了ステータスをtrueにする同期処理
-                await wordWolf.createWordWolfVote().then(wordWolf.updateFinishedStatusTrue());
-                await wordWolf.updateNotifyStatusTrue();
+                await wordWolf.createVote().then(wordWolf.updateStatus("vote"));
 
                 const userNumber = await wordWolf.getUserNumber();
                 const shuffleUserIndexes = await commonFunction.makeShuffuleNumberArray(userNumber);
@@ -85,8 +84,7 @@ exports.wordWolfDiscussFinish = async () => {
                 // 公平にするため投票用の順番はランダムにする
                 for (let i = 0; i < userNumber; i++) {
                     userIds[i] = await wordWolf.getUserId(shuffleUserIndexes[i]);
-                    const profile = await client.getProfile(userIds[i]);
-                    displayNames[i] = profile.displayName;
+                    displayNames[i] = await wordWolf.getDisplayName(shuffleUserIndexes[i]);
                 }
 
 

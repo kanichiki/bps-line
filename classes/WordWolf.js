@@ -8,6 +8,8 @@ pg.connect().catch((error) => {
 require('date-utils');
 
 const ParticipantList = require("./ParticipantList");
+const PlayingGame = require("./PlayingGame");
+const Game = require("./Game");
 const commonFunction = require("../template/functions/commonFunction");
 
 /**
@@ -56,7 +58,7 @@ const commonFunction = require("../template/functions/commonFunction");
  * @class WordWolf
  */
 
-class WordWolf {
+class WordWolf extends PlayingGame {
 
 
     /**
@@ -65,14 +67,42 @@ class WordWolf {
      */
 
     constructor(plId) {
+        super();
         this.plId = plId;
         this.setting = "word_wolf_setting";
         this.status = "word_wolf_status";
         this.vote = "word_wolf_vote";
-        this.revote = "word_wolf_revote"
+        this.revote = "word_wolf_revote";
     }
 
-
+    /**
+     * PlayingGameデータ挿入
+     * timerのみtrue
+     *
+     * @memberof WordWolf
+     */
+    async createPlayingGame() {
+        const settingNames = await Game.getSettingNames(1);
+        let settingStatus = [];
+        for (let i = 0; i < settingNames.length; i++) {
+            if (settingNames[i] == "timer") {
+                settingStatus[i] = true;
+            }else{
+                settingStatus[i] = false;
+            }
+        }
+        const query = {
+            text: 'INSERT INTO playing_game (pl_id,game_id,setting_status) VALUES ($1,$2,$3);',
+            values: [this.plId, 1, settingStatus]
+        }
+        try {
+            await pg.query(query);
+            console.log("Playing Game Inserted");
+        } catch (err) {
+            console.log(err);
+            console.log("新しい進行中ゲーム作れんかったよ");
+        }
+    }
 
     /**
      * ワードウルフの設定データを挿入する
@@ -603,7 +633,7 @@ class WordWolf {
         for (let i = 1; i <= maxWolfNumber; i++) {
             res.push(i);
         }
-        if(userNumber == 2){
+        if (userNumber == 2) {
             res.push(1);
         }
         return res;
@@ -875,11 +905,11 @@ class WordWolf {
 
     // ここまで狂人の設定に関する関数
 
-    async isUserWolfSide(userIndex){
+    async isUserWolfSide(userIndex) {
         const isUserWolf = await this.isUserWolf(userIndex);
         const isUserLunatic = await this.isUserLunatic(userIndex);
         let res = false;
-        if(isUserWolf || isUserLunatic){
+        if (isUserWolf || isUserLunatic) {
             res = true;
         }
         return res;
@@ -1371,7 +1401,7 @@ class WordWolf {
      *
      * @returns
      */
-    async createWordWolfVote() {
+    /* async createWordWolfVote() {
         const userNumber = await this.getUserNumber();
         let votes = [];
         let status = [];
@@ -1393,7 +1423,7 @@ class WordWolf {
             console.log("新しいワードウルフの投票データ作れんかったよ");
             return false;
         }
-    }
+    } */
 
 
     /**
@@ -1401,7 +1431,7 @@ class WordWolf {
      *
      * @returns
      */
-    async getVoteNumbers() {
+    /* async getVoteNumbers() {
         const query = {
             text: `SELECT numbers FROM ${this.vote} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1412,14 +1442,14 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 投票状況の配列を返す
      *
      * @returns
      */
-    async getVoteStatus() {
+    /* async getVoteStatus() {
         const query = {
             text: `SELECT status FROM ${this.vote} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1430,7 +1460,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 与えられたuserIndexのユーザーの投票状況を返す
@@ -1438,17 +1468,17 @@ class WordWolf {
      * @param {*} userIndex
      * @returns
      */
-    async getVoteState(userIndex) {
+    /* async getVoteState(userIndex) {
         const status = await this.getVoteStatus();
         return status[userIndex];
-    }
+    } */
 
     /**
      * 投票が全員完了しているか否かを返す
      *
      * @returns
      */
-    async isVoteCompleted() {
+    /* async isVoteCompleted() {
         const status = await this.getVoteStatus();
         let res = true;
         for (let state of status) {
@@ -1457,14 +1487,14 @@ class WordWolf {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 与えられたuserIndexのユーザーの得票数を1増やす
      *
      * @param {*} userIndex
      */
-    async updateVoteNumber(userIndex) {
+    /* async updateVoteNumber(userIndex) {
         let numbers = await this.getVoteNumbers();
         numbers[userIndex] += 1; // 得票数1追加
         const query = {
@@ -1477,14 +1507,14 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 与えられたuserIndexのユーザーの投票状況をtrueにする
      *
      * @param {*} userIndex
      */
-    async updateVoteStatus(userIndex) {
+    /* async updateVoteStatus(userIndex) {
         let status = await this.getVoteStatus();
         if (!status[userIndex]) {
             status[userIndex] = true;
@@ -1501,14 +1531,14 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 最多得票者が複数いるかどうかを返す
      *
      * @returns
      */
-    async multipleMostVotedUserExists() {
+    /* async multipleMostVotedUserExists() {
         const voteNumbers = await this.getVoteNumbers();
         let res = false;
         let max = -1;
@@ -1521,18 +1551,18 @@ class WordWolf {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 最多得票数を返す
      *
      * @returns
      */
-    async getMostVotedNumber() {
+    /* async getMostVotedNumber() {
         const voteNumbers = await this.getVoteNumbers();
         const number = Math.max.apply(null, voteNumbers);
         return number;
-    }
+    } */
 
     /**
      * 最も得票数の多いユーザーのインデックスの配列を返す
@@ -1540,7 +1570,7 @@ class WordWolf {
      *
      * @returns
      */
-    async getMostVotedUserIndexes() {
+    /* async getMostVotedUserIndexes() {
         const voteNumbers = await this.getVoteNumbers();
         const mostVotedNumber = await this.getMostVotedNumber();
         let indexes = [];
@@ -1550,7 +1580,7 @@ class WordWolf {
             }
         }
         return indexes;
-    }
+    } */
 
     /**
      * 再投票の候補者の配列を取得する
@@ -1559,7 +1589,7 @@ class WordWolf {
      *
      * @returns
      */
-    async getRevoteCandidateIndexes() {
+    /* async getRevoteCandidateIndexes() {
         const query = {
             text: `SELECT indexes FROM ${this.revote} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -1571,7 +1601,7 @@ class WordWolf {
             console.log(err);
             console.log("再投票の候補者取得できんかった");
         }
-    }
+    } */
 
     /**
      * 与えられたテキストがユーザーインデックスかどうかを返す
@@ -1580,7 +1610,7 @@ class WordWolf {
      * @param {*} text
      * @returns
      */
-    async isUserIndex(text) {
+    /* async isUserIndex(text) {
         const userIndexes = await this.getUserIndexes();
         let res = false;
         for (let userIndex of userIndexes) {
@@ -1589,7 +1619,7 @@ class WordWolf {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 与えられたテキストが再投票の候補者かどうかを返す
@@ -1598,7 +1628,7 @@ class WordWolf {
      * @param {*} text
      * @returns
      */
-    async isRevoteCandidateIndex(text) {
+    /* async isRevoteCandidateIndex(text) {
         const candidateIndexes = await this.getRevoteCandidateIndexes();
         let res = false;
         for (let candidateIndex of candidateIndexes) {
@@ -1607,7 +1637,7 @@ class WordWolf {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 与えられたindexesで再投票データを作る
@@ -1615,7 +1645,7 @@ class WordWolf {
      *
      * @returns
      */
-    async createWordWolfRevote(candidateIndexes) {
+    /* async createWordWolfRevote(candidateIndexes) {
         const query = {
             text: `INSERT INTO ${this.revote} (pl_id,indexes) VALUES ($1,$2);`,
             values: [this.plId, candidateIndexes]
@@ -1629,13 +1659,13 @@ class WordWolf {
             console.log("新しいワードウルフの再投票データ作れんかったよ");
             return false;
         }
-    }
+    } */
 
     /**
      * 投票データを初期化する
      *
      */
-    async initializeWordWolfVote() {
+    /* async initializeWordWolfVote() {
         const userNumber = await this.getUserNumber();
         let votes = [];
         let status = [];
@@ -1654,14 +1684,14 @@ class WordWolf {
             console.log(err);
             console.log("投票データ初期化できんかった");
         }
-    }
+    } */
 
     /**
      * 再投票データが存在するかを返す
      *
      * @returns
      */
-    async isRevoting() {
+    /* async isRevoting() {
         const query = {
             text: `SELECT pl_id FROM ${this.revote} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1678,7 +1708,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
 
 
@@ -1688,7 +1718,7 @@ class WordWolf {
      *
      * @returns
      */
-    async getMostVotedUserIndex() {
+    /* async getMostVotedUserIndex() {
         const voteNumbers = await this.getVoteNumbers();
         let res = -1;
         let max = -1;
@@ -1699,7 +1729,7 @@ class WordWolf {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 再投票で最多得票者が複数出た場合に最多得票者の中から処刑者をランダムで選ぶ
@@ -1708,10 +1738,10 @@ class WordWolf {
      * @param {*} userIndexes
      * @returns
      */
-    async chooseExecutorIndex(userIndexes) {
+    /* async chooseExecutorIndex(userIndexes) {
         const index = Math.floor(Math.random() * userIndexes.length); // これは返さない
         return userIndexes[index];
-    }
+    } */
 
 
     /**
@@ -1720,7 +1750,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getStartTime() {
+    /* async getStartTime() {
         const query = {
             text: `SELECT start_time FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -1731,14 +1761,14 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * start_timeを現在の標準時刻で設定
      *
      * @memberof WordWolf
      */
-    async updateStartTime() {
+    /* async updateStartTime() {
         const startTime = await commonFunction.getCurrentTime();
         const query = {
             text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
@@ -1750,7 +1780,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
 
     /**
@@ -1759,7 +1789,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getTimer() {
+    /* async getTimer() {
         const query = {
             text: `SELECT timer FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1770,7 +1800,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * タイマー設定を文字列で返す
@@ -1778,21 +1808,21 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getTimerString() {
+    /* async getTimerString() {
         const timer = await this.getTimer();
         let timerString = "";
-        if(timer.hour != undefined){
+        if (timer.hour != undefined) {
             timerString += timer.hour + "時間";
         }
-        if(timer.minutes != undefined){
+        if (timer.minutes != undefined) {
             timerString += timer.minutes + "分";
         }
-        if(timer.seconds != undefined){
+        if (timer.seconds != undefined) {
             timerString += timer.seconds + "秒"
         }
 
         return timerString;
-    }
+    } */
 
     /**
      * タイマーの値を設定
@@ -1800,7 +1830,7 @@ class WordWolf {
      * @param {*} interval
      * @memberof WordWolf
      */
-    async updateTimer(interval) {
+    /* async updateTimer(interval) {
         const query = {
             text: `UPDATE ${this.setting} set timer = $1 where pl_id = $2`,
             values: [interval, this.plId]
@@ -1811,7 +1841,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * endTimeを計算して入れる
@@ -1819,7 +1849,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async updateEndTime() {
+    /* async updateEndTime() {
         const timer = await this.getTimer();
         const query = {
             text: `update ${this.setting} set end_time = start_time + $1 WHERE pl_id = $2`,
@@ -1831,17 +1861,17 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 時間の設定を一括挿入
      *
      * @memberof WordWolf
      */
-    async updateTimeSetting() {
+    /* async updateTimeSetting() {
         await this.updateStartTime();
         await this.updateEndTime();
-    }
+    } */
 
     /**
      * 残り時間が1分を切っているかどうかを返す
@@ -1849,7 +1879,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async isRemainingTimeLessThan1minute() {
+    /* async isRemainingTimeLessThan1minute() {
         const currentTime = await commonFunction.getCurrentTime();
         const minutes = "1 minutes"
         const query = {
@@ -1862,7 +1892,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 話し合い時間が終了しているかどうかを返す
@@ -1870,7 +1900,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async isOverTime() {
+    /* async isOverTime() {
         const currentTime = await commonFunction.getCurrentTime();
         const second = "0 second"
         const query = {
@@ -1884,7 +1914,7 @@ class WordWolf {
             console.log(err);
             console.log(currentTime);
         }
-    }
+    } */
 
     /**
      * 〇分××秒の形で残り時間を返す
@@ -1892,7 +1922,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getRemainingTime() {
+    /* async getRemainingTime() {
         const currentTime = await commonFunction.getCurrentTime();
 
         const query1 = {
@@ -1915,7 +1945,7 @@ class WordWolf {
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * ユーザーがそれぞれ勝者かどうかを配列で返す
@@ -1927,19 +1957,19 @@ class WordWolf {
     async isWinnerArray(isExecutorWolf) {
         const userNumber = await this.getUserNumber();
         let res = [];
-        for(let i=0;i<userNumber;i++){
+        for (let i = 0; i < userNumber; i++) {
             const isUserWolfSide = await this.isUserWolfSide(i);
-            if(isExecutorWolf){
-                if(!isUserWolfSide){
-                    res[i]=true;
-                }else{
-                    res[i]=false;
+            if (isExecutorWolf) {
+                if (!isUserWolfSide) {
+                    res[i] = true;
+                } else {
+                    res[i] = false;
                 }
-            }else{
-                if(!isUserWolfSide){
-                    res[i]=false;
-                }else{
-                    res[i]=true;
+            } else {
+                if (!isUserWolfSide) {
+                    res[i] = false;
+                } else {
+                    res[i] = true;
                 }
             }
         }
@@ -1953,21 +1983,21 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getDiscussingPlIds(){
+    /* async getDiscussingPlIds() {
         const query = {
-            text: `SELECT pl_id FROM ${this.status} WHERE finished = false and confirm = true`
+            text: `SELECT pl_id FROM playing_game WHERE status = 'discuss'`
         }
         try {
             const res = await pg.query(query);
             let plIds = []
-            for(let i=0;i<res.rowCount;i++){
+            for (let i = 0; i < res.rowCount; i++) {
                 plIds.push(res.rows[i].pl_id);
             }
             return plIds;
         } catch (err) {
             console.log(err);
         }
-    }
+    } */
 
     /**
      * 設定変更中のものを設定
@@ -1975,7 +2005,7 @@ class WordWolf {
      * @param {*} text
      * @memberof WordWolf
      */
-    async updateChanging(text){
+    async updateChanging(text) {
         const query = {
             text: `update ${this.setting} set changing = $1 WHERE pl_id = $2`,
             values: [text, this.plId]
@@ -1988,7 +2018,7 @@ class WordWolf {
         }
     }
 
-    async updateChangingNull(){
+    async updateChangingNull() {
         const query = {
             text: `update ${this.setting} set changing = null WHERE pl_id = $1`,
             values: [this.plId]
@@ -2007,7 +2037,7 @@ class WordWolf {
      * @returns
      * @memberof WordWolf
      */
-    async getChanging(){
+    async getChanging() {
         const query = {
             text: `SELECT changing FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -2020,10 +2050,10 @@ class WordWolf {
         }
     }
 
-    async isChanginNull(){
+    async isChanginNull() {
         const changing = await this.getChanging();
         let res = false;
-        if(changing == null){
+        if (changing == null) {
             res = true;
         }
         return res;
