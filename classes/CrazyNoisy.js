@@ -180,7 +180,7 @@ class CrazyNoisy extends ParticipantList {
         // const fanaticNumber = 1;
         const detectiveNumber = await this.chooseDetectiveNumber();
         // const detectiveNumber = 1;
-        const spNumber = await this.chooseSpNumber();
+        // const spNumber = await this.chooseSpNumber();
         let positions = [];
         let isDecided = [];
 
@@ -214,11 +214,11 @@ class CrazyNoisy extends ParticipantList {
             isDecided[fanaticIndex] = true;
         }
 
-        const spIndexes = await commonFunction.getRandomIndexes(undecided,spNumber);
-        for (let spIndex of spIndexes) {
-            positions[spIndex] = this.sp;
-            isDecided[spIndex] = true;
-        }
+        // const spIndexes = await commonFunction.getRandomIndexes(undecided,spNumber);
+        // for (let spIndex of spIndexes) {
+        //     positions[spIndex] = this.sp;
+        //     isDecided[spIndex] = true;
+        // }
 
         undecided = [];
         for (let i = 0; i < userNumber; i++) {
