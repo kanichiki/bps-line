@@ -145,7 +145,7 @@ class CrazyNoisy extends ParticipantList {
     async chooseDetectiveNumber() {
         const userNumber = await this.getUserNumber();
         const number = Math.floor((userNumber - 1) / 3);
-        const detectiveNumber = await commonFunction.getRandomNumber(number - 1, number);
+        let detectiveNumber = await commonFunction.getRandomNumber(number - 1, number);
         if (detectiveNumber > 1) {
             detectiveNumber = 1;
         }
