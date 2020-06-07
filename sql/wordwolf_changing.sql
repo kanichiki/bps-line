@@ -1,0 +1,1 @@
+ALTER TABLE word_wolf_setting ADD COLUMN changing varchar(33);

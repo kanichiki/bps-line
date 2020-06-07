@@ -64,7 +64,7 @@ exports.main = async (voterDisplayName,executorDisplayName,isExecutorWolf,displa
                         "label": "ワードを見る",
                         "text": "ワードを見る"
                       },
-                      "color": "#E83b10"
+                      "color": parts.mainColor
                     }
                   ]
                 }

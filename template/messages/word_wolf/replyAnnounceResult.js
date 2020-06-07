@@ -62,6 +62,15 @@ exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wo
                       },
                       "color": "#e83b10",
                       "style": "primary"
+                    },
+                    {
+                      "type": "button",
+                      "action": {
+                        "type": "message",
+                        "label": "ゲーム一覧",
+                        "text": "ゲーム一覧"
+                      },
+                      "color": "#e83b10",
                     }
                   ]
                 }

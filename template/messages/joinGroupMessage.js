@@ -21,51 +21,7 @@ exports.main = async () => {
         {
             "type": "flex",
             "altText": "ゲーム一覧",
-            "contents":{
-              "type": "carousel",
-              "contents": [
-                {
-                  "type": "bubble",
-                  "size": "kilo",
-                  "footer": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                      {
-                        "type": "button",
-                        "action": {
-                          "type": "message",
-                          "label": "ワードウルフ",
-                          "text": "ワードウルフ"
-                        },
-                        "style": "primary",
-                        "color":parts.mainColor
-                      }
-                    ]
-                  }
-                },
-                {
-                  "type": "bubble",
-                  "size": "kilo",
-                  "footer": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                      {
-                        "type": "button",
-                        "action": {
-                          "type": "message",
-                          "label": "クレイジーノイジー",
-                          "text": "クレイジーノイジー"
-                        },
-                        "style": "primary",
-                        "color":parts.mainColor
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
+            "contents": await parts.gamesMessage()
         }
     ]
 }

@@ -5,6 +5,8 @@ const request = require('request');
 
 const ParticipantList = require("../classes/ParticipantList");
 const PlayingGame = require("../classes/PlayingGame");
+const WordWolf = require("../classes/WordWolf");
+const CrazyNoisy = require("../classes/CrazyNoisy");
 const User = require("../classes/User");
 const Game = require("../classes/Game");
 
@@ -76,6 +78,10 @@ const main = async (req, res) => {
             groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
 
+          if(text == "ゲーム一覧"){
+            await replyGameList(replyToken);
+          }
+
 
           // TODO 友達追加されていないユーザーの場合の分岐
           // 初めの処理
@@ -86,10 +92,9 @@ const main = async (req, res) => {
             }
           }
 
-          const game = new Game();
-          const gameNameExists = await game.gameNameExists(text);
+          const gameNameExists = await Game.gameNameExists(text);
           if (gameNameExists) {
-            const gameId = await game.getGameIdFromName(text);
+            const gameId = await Game.getGameIdFromName(text);
 
             const isRestarting = await pl.hasGroupRestartingParticipantList(groupId);
             const isRecruiting = await pl.hasGroupRecruitingParticipantList(groupId);
@@ -270,6 +275,7 @@ const main = async (req, res) => {
           } else if (toType == "room") {
             groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
+
           const isPlaying = await pl.hasGroupPlayingParticipantList(groupId);
           if (isPlaying) {
             const plId = await pl.getPlayingParticipantListId(groupId);
@@ -277,13 +283,22 @@ const main = async (req, res) => {
             if (isUserParticipant) {
               const playingGame = new PlayingGame(plId);
               const gameId = await playingGame.getGameId();
-              if (gameId == 1) {
-                await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
-                continue;
-              }
-              if (gameId == 2) {
-                await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
-                continue;
+              if (event.postback.params != undefined) {
+                const params = event.postback.params;
+
+                if (gameId == 1) {
+                  await wordWolfBranch.postbackDatetimeBranch(plId, userId, params, replyToken);
+                  continue;
+                }
+              } else {
+                if (gameId == 1) {
+                  await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
+                  continue;
+                }
+                if (gameId == 2) {
+                  await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
+                  continue;
+                }
               }
             }
           }
@@ -344,6 +359,16 @@ const replyDefaultPersonalMessage = async (event) => {
 
 
 /**
+ * ゲームリストを返す
+ *
+ * @param {*} replyToken
+ */
+const replyGameList = async (replyToken) =>{
+  const replyMessage = require("../template/messages/replyGameList");
+  return client.replyMessage(replyToken, await replyMessage.main());
+}
+
+/**
  * 参加受付用リプライ
  * 
  * DB変更操作は以下の通り
@@ -375,8 +400,8 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
 
   // DB変更操作３
   const playingGame = new PlayingGame(plId);
-  playingGame.createPlayingGame(gameId); // playing_gameテーブルに今から遊ぶゲームのidを入れる
-  const gameName = await playingGame.getGameName();
+  playingGame.createPlayingGame(gameId);
+  const gameName = await Game.getGameName(gameId);
 
 
   client.replyMessage(replyToken, await replyMessage.main(gameName));
@@ -503,13 +528,12 @@ const replyRestartConfirmIfRecruiting = async (plId, gameId, replyToken) => {
   const replyMessage = require("../template/messages/replyRestartConfirmIfRecruiting");
   const pl = new ParticipantList();
   const recruitingGame = new PlayingGame(plId);
-  const newGame = new Game();
 
   // DB変更操作１
   pl.updateIsRestartingTrue(plId); // 参加者リストをリスタート待ちにする
 
   const recruitingGameName = await recruitingGame.getGameName();
-  const newGameName = await newGame.getGameName(gameId);
+  const newGameName = await Game.getGameName(gameId);
 
   // 一応newGameNameも渡すがまだ使ってない
   // TODO is_restartingをrestart_game_idに変更する
@@ -531,13 +555,12 @@ const replyRestartConfirmIfPlaying = async (plId, gameId, replyToken) => {
   const replyMessage = require("../template/messages/replyRestartConfirmIfPlaying");
   const pl = new ParticipantList();
   const playingGame = new PlayingGame(plId);
-  const newGame = new Game();
 
   // DB変更操作１
   pl.updateIsRestartingTrue(plId); // 参加者リストをリスタート待ちにする
 
   const playingGameName = await playingGame.getGameName();
-  const newGameName = await newGame.getGameName(gameId);
+  const newGameName = await Game.getGameName(gameId);
 
   // 一応newGameNameも渡すがまだ使ってない
   return client.replyMessage(replyToken, await replyMessage.main(playingGameName, newGameName));
