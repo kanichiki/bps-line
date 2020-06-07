@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const indexRouter = require('./routes/index');
+const plRouter = require('./routes/participantList');
+const playingRouter = require('./routes/playingGame');
 // const usersRouter = require('./routes/users');
 
 const app = express();
@@ -18,7 +20,10 @@ const config = {
   channelSecret: process.env.channelSecret
 };
 
-app.use(line.middleware(config));
+// エミュレータを使えるように
+if (process.env.SERVER_ENV != "dev") {
+  app.use(line.middleware(config));
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -32,6 +37,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/webhook', indexRouter);
+app.use('/api/v1/participant',plRouter);
+app.use('/api/v1/games/playing',playingRouter);
 // app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
@@ -58,7 +65,7 @@ const cron = require('node-cron');
 const cronFunction = require("./routes/cron");
 // const client = new line.Client(config);
 
-cron.schedule('*/3 * * * * *', async () => {
+cron.schedule('*/2 * * * * *', async () => {
   await cronFunction.crazyNoisyDiscussFinish();
   await cronFunction.wordWolfDiscussFinish();
 });

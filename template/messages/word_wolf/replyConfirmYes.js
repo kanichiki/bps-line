@@ -54,7 +54,7 @@ exports.main = async (timer) => {
                     "contents": [
                         {
                             "type": "text",
-                            "text": `話し合い時間は${timer}分です`,
+                            "text": `話し合い時間は${timer}です`,
                             "wrap": true,
                             "weight":"bold"
                         },

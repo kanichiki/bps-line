@@ -1,0 +1,19 @@
+{
+    "type": "bubble",
+    "size": "micro",
+    "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+            {
+                "type": "button",
+                "action": {
+                    "type": "postback",
+                    "label": null,
+                    "data": null
+                },
+                "color": null
+            }
+        ]
+    }
+}

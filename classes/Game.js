@@ -5,7 +5,7 @@ pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
 
-module.exports = class Game{
+class Game{
     constructor() {
 
     }
@@ -16,7 +16,7 @@ module.exports = class Game{
      * @param {*} gameName
      * @returns
      */
-    async gameNameExists(gameName){
+    static async gameNameExists(gameName){
         const query = {
             text: 'SELECT id FROM game WHERE name = $1',
             values: [gameName]
@@ -41,7 +41,7 @@ module.exports = class Game{
      * @param {*} gameName
      * @returns
      */
-    async getGameIdFromName(gameName){
+    static async getGameIdFromName(gameName){
         const query = {
             text: 'SELECT id FROM game WHERE name = $1',
             values: [gameName]
@@ -61,7 +61,7 @@ module.exports = class Game{
      * @param {*} gameId
      * @returns
      */
-    async getGameName(gameId) {
+    static async getGameName(gameId) {
         const query = {
             text: 'SELECT name FROM game WHERE id = $1;',
             values: [gameId]
@@ -74,4 +74,27 @@ module.exports = class Game{
             console.log("ゲームの名前とってこれんやった")
         }
     }
+
+    /**
+     * 設定名を取得
+     *
+     * @static
+     * @param {*} gameId
+     * @returns
+     * @memberof Game
+     */
+    static async getSettingNames(gameId){
+        const query = {
+            text: 'SELECT setting_names FROM game WHERE id = $1',
+            values: [gameId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].setting_names;
+        } catch (err) {
+            console.log(err);
+        }
+    }
 }
+
+module.exports = Game;
