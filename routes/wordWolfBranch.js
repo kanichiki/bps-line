@@ -54,9 +54,7 @@ exports.playingMessageBranch = async (plId, text, replyToken) => {
         if (!isSettingCompleted) {
             for (let i = 0; i < settingNames.length; i++) {
                 if (!settingStatus[i]) {
-                    console.log(settingNames)
                     if (settingNames[i] == "depth") {
-                        console.log("hello")
                         if (text == 1 || text == 2 || text == 3 || text == 4 || text == 5) {
                             await replyDepthChosen(plId, text, replyToken);
                         }
@@ -193,17 +191,18 @@ exports.postbackDatetimeBranch = async (plId, userId, params, replyToken) => {
  */
 const replyRollCallEnd = async (plId, replyToken) => {
     const replyMessage = require("../template/messages/word_wolf/replyRollCallEnd");
-    const pl = new ParticipantList();
 
-    const displayNames = await pl.getDisplayNames(plId); // 参加者の表示名リスト
+    const wordWolf = new WordWolf(plId);
+    wordWolf.updateDefaultSettingStatus();
+
+    const displayNames = await wordWolf.getDisplayNames(plId); // 参加者の表示名リスト
 
     // DB変更操作１
-    await pl
-        .updateIsPlayingTrue(plId)
-        .then(await pl.updateIsRecruitingFalse(plId)); // 参加者リストをプレイ中にして、募集中を解除する
+    await wordWolf
+        .updateIsPlayingTrue()
+        .then(await wordWolf.updateIsRecruitingFalse()); // 参加者リストをプレイ中にして、募集中を解除する
 
     // DB変更操作２
-    const wordWolf = new WordWolf(plId);
     await wordWolf.updateStatus("setting");
 
     await wordWolf.createWordWolfSetting(); // 設定テーブル作成
@@ -589,12 +588,11 @@ const replyNotifyAndRemainingTime = async (plId, replyToken) => {
  */
 const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
     const wordWolf = new WordWolf(plId);
-    const pl = new ParticipantList();
     const voterDisplayName = await wordWolf.getDisplayName(userIndex);
 
     // DB変更操作１，２
     // 投票ユーザーの投票状況をtrueにできたら得票ユーザーの得票数を+1する同期処理
-    const votedUserIndex = await pl.getUserIndexFromUserId(plId, postbackData);
+    const votedUserIndex = await wordWolf.getUserIndexFromUserId(postbackData);
     await wordWolf
         .updateVoteState(userIndex)
         .then(await wordWolf.updateVoteNumber(votedUserIndex));
@@ -609,7 +607,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
             const mostVotedUserIndex = await wordWolf.getMostVotedUserIndex(); // 最多得票者＝処刑者
             const executorDisplayName = await wordWolf.getDisplayName(mostVotedUserIndex);
             const isExecutorWolf = await wordWolf.isUserWolf(mostVotedUserIndex); // 処刑者がウルフかどうか
-            
+
             await wordWolf.updateStatus("winner"); // 勝者発表状況をtrueにする
             const displayNames = await wordWolf.getDisplayNames();
             const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf);
@@ -635,11 +633,10 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
 
                 // DB変更操作３’，４’
                 // 再投票データを作成したら、投票データを初期化する同期処理
-                await wordWolf.updateVotingFalse();
-                await wordWolf.createRevote(mostVotedUserIndexes, 2);
+                await wordWolf.createRevote(mostVotedUserIndexes);
 
                 const displayNames = await wordWolf.getDisplayNames();
-                const userIds = await pl.getUserIds(plId);
+                const userIds = await wordWolf.getUserIds();
                 return client.replyMessage(
                     replyToken,
                     await replyMessage.main(
@@ -740,7 +737,7 @@ const replyWolfNumberChange = async (plId, replyToken) => {
 
     const index = await wordWolf.getSettingIndex("wolf_number");
     wordWolf.updateSettingStateFalse(index); // 設定状態をfalseに
-    
+
     const wolfNumberOptions = await wordWolf.getWolfNumberOptions();
     return client.replyMessage(replyToken, await replyMessage.main(wolfNumberOptions));
 };

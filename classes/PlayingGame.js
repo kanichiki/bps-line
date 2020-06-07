@@ -65,6 +65,14 @@ class PlayingGame extends ParticipantList {
         return super.getUserIndexes(this.plId);
     }
 
+    async updateIsPlayingTrue(){
+        return super.updateIsPlayingTrue(this.plId);
+    }
+
+    async updateIsRecruitingFalse(){
+        return super.updateIsRecruitingFalse(this.plId);
+    }
+
     /**
      * plIdのgameIdを返す
      *
@@ -142,10 +150,10 @@ class PlayingGame extends ParticipantList {
      * @param {*} gameId
      * @returns
      */
-    async createPlayingGame(gameId,settingStatus) {
+    async createPlayingGame(gameId) {
         const query = {
-            text: 'INSERT INTO playing_game (pl_id,game_id,setting_status) VALUES ($1,$2,$3);',
-            values: [this.plId, gameId, settingStatus]
+            text: 'INSERT INTO playing_game (pl_id,game_id) VALUES ($1,$2);',
+            values: [this.plId, gameId]
         }
         try {
             await pg.query(query);
@@ -153,6 +161,19 @@ class PlayingGame extends ParticipantList {
         } catch (err) {
             console.log(err);
             console.log("新しい進行中ゲーム作れんかったよ");
+        }
+    }
+
+    async updateSettingStatus(settingStatus){
+        const query = {
+            text: `UPDATE playing_game set setting_status = $1 where pl_id = $2`,
+            values: [settingStatus, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated setting-status");
+        } catch (err) {
+            console.log(err);
         }
     }
 
@@ -614,9 +635,11 @@ class PlayingGame extends ParticipantList {
      *
      * @memberof PlayingGame
      */
-    async createRevote(indexes,count){
+    async createRevote(indexes){
         const userNumber = await this.getUserNumber();
         const day = await this.getDay();
+        const count = await this.getVoteCount() + 1;
+        await this.updateVotingFalse();
         let votes = [];
         let status = [];
         for (let i = 0; i < userNumber; i++) {

@@ -399,10 +399,8 @@ const replyRollCall = async (groupId, gameId, isRestarting, replyToken) => {
   const plId = await pl.getRecruitingParticipantListId(groupId);
 
   // DB変更操作３
-  if(gameId==1){
-    const wordWolf = new WordWolf(plId);
-    wordWolf.createPlayingGame();
-  }
+  const playingGame = new PlayingGame(plId);
+  playingGame.createPlayingGame(gameId);
   const gameName = await Game.getGameName(gameId);
 
 

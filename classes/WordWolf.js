@@ -76,12 +76,12 @@ class WordWolf extends PlayingGame {
     }
 
     /**
-     * PlayingGameデータ挿入
+     * PlayingGameデータにデフォルトの設定ステータス挿入
      * timerのみtrue
      *
      * @memberof WordWolf
      */
-    async createPlayingGame() {
+    async updateDefaultSettingStatus() {
         const settingNames = await Game.getSettingNames(1);
         let settingStatus = [];
         for (let i = 0; i < settingNames.length; i++) {
@@ -91,17 +91,7 @@ class WordWolf extends PlayingGame {
                 settingStatus[i] = false;
             }
         }
-        const query = {
-            text: 'INSERT INTO playing_game (pl_id,game_id,setting_status) VALUES ($1,$2,$3);',
-            values: [this.plId, 1, settingStatus]
-        }
-        try {
-            await pg.query(query);
-            console.log("Playing Game Inserted");
-        } catch (err) {
-            console.log(err);
-            console.log("新しい進行中ゲーム作れんかったよ");
-        }
+        await this.updateSettingStatus(settingStatus);
     }
 
     /**
