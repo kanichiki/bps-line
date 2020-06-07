@@ -162,7 +162,7 @@ class CrazyNoisy extends PlayingGame {
     async chooseDetectiveNumber() {
         const userNumber = await this.getUserNumber();
         const number = Math.floor((userNumber - 1) / 3);
-        const detectiveNumber = await commonFunction.getRandomNumber(number - 1, number);
+        let detectiveNumber = await commonFunction.getRandomNumber(number - 1, number);
         if (detectiveNumber > 1) {
             detectiveNumber = 1;
         }
@@ -197,7 +197,7 @@ class CrazyNoisy extends PlayingGame {
         // const fanaticNumber = 1;
         const detectiveNumber = await this.chooseDetectiveNumber();
         // const detectiveNumber = 1;
-        const spNumber = await this.chooseSpNumber();
+        // const spNumber = await this.chooseSpNumber();
         let positions = [];
         let isDecided = [];
 
@@ -231,11 +231,11 @@ class CrazyNoisy extends PlayingGame {
             isDecided[fanaticIndex] = true;
         }
 
-        const spIndexes = await commonFunction.getRandomIndexes(undecided, spNumber);
-        for (let spIndex of spIndexes) {
-            positions[spIndex] = this.sp;
-            isDecided[spIndex] = true;
-        }
+        // const spIndexes = await commonFunction.getRandomIndexes(undecided,spNumber);
+        // for (let spIndex of spIndexes) {
+        //     positions[spIndex] = this.sp;
+        //     isDecided[spIndex] = true;
+        // }
 
         undecided = [];
         for (let i = 0; i < userNumber; i++) {
