@@ -213,6 +213,8 @@ const main = async (req, res) => {
                       }
                     };
                     request.post(options,(error,response,body)=>{});
+                    pl.updateIsRecruitingFalse();
+                    pl.updateIsPlayingTrue();
                   }
                 }
               }
@@ -241,6 +243,9 @@ const main = async (req, res) => {
 
                   await crazyNoisyBranch.playingMessageBranch(plId, text, replyToken);
                   continue;
+                }
+                if (gameId == 3) { // 人狼の場合
+
                 }
               }
             }
@@ -290,6 +295,13 @@ const main = async (req, res) => {
                   await wordWolfBranch.postbackDatetimeBranch(plId, userId, params, replyToken);
                   continue;
                 }
+                if (gameId == 2) {
+                  await crazyNoisyBranch.postbackDatetimeBranch(plId, userId, params, replyToken);
+                  continue;
+                }
+                if (gameId == 3) { // 人狼の場合
+
+                }
               } else {
                 if (gameId == 1) {
                   await wordWolfBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
@@ -298,6 +310,9 @@ const main = async (req, res) => {
                 if (gameId == 2) {
                   await crazyNoisyBranch.postbackPlayingBranch(plId, userId, postbackData, replyToken);
                   continue;
+                }
+                if (gameId == 3) { // 人狼の場合
+
                 }
               }
             }
@@ -313,6 +328,10 @@ const main = async (req, res) => {
             if (gameId == 2) {
 
               await crazyNoisyBranch.postbackUserBranch(plId, userId, postbackData, replyToken);
+            }
+
+            if (gameId == 3) { // 人狼の場合
+
             }
           }
         }

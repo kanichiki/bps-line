@@ -32,7 +32,7 @@ exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wo
         },
         {
             "type": "flex",
-            "altText": "役職確認",
+            "altText": "ゲーム終了",
             "contents": {
                 "type": "bubble",
                 "body": {

@@ -698,9 +698,8 @@ const replyDuplicateVote = async (plId, replyToken, userIndex) => {
 const replyAnnounceResult = async (plId, replyToken) => {
     const replyMessage = require("../template/messages/word_wolf/replyAnnounceResult");
     const wordWolf = new WordWolf(plId);
-    const pl = new ParticipantList();
 
-    const displayNames = await pl.getDisplayNames(plId);
+    const displayNames = await wordWolf.getDisplayNames();
     const wolfIndexes = await wordWolf.getWolfIndexes();
     const lunaticIndexes = await wordWolf.getLunaticIndexes();
 
@@ -708,7 +707,7 @@ const replyAnnounceResult = async (plId, replyToken) => {
     const wolfWord = await wordWolf.getWolfWord();
 
     await wordWolf.updateStatus("result");
-    await pl.finishParticipantList(plId);
+    await wordWolf.finishParticipantList();
 
     return client.replyMessage(
         replyToken,

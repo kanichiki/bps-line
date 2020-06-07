@@ -73,6 +73,7 @@ class WordWolf extends PlayingGame {
         this.status = "word_wolf_status";
         this.vote = "word_wolf_vote";
         this.revote = "word_wolf_revote";
+        this.gameId = 1;
     }
 
     /**
@@ -82,7 +83,7 @@ class WordWolf extends PlayingGame {
      * @memberof WordWolf
      */
     async updateDefaultSettingStatus() {
-        const settingNames = await Game.getSettingNames(1);
+        const settingNames = await Game.getSettingNames(this.gameId);
         let settingStatus = [];
         for (let i = 0; i < settingNames.length; i++) {
             if (settingNames[i] == "timer") {

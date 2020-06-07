@@ -8,6 +8,7 @@ pg.connect().catch((error) => {
 require('date-utils');
 
 const PlayingGame = require("./PlayingGame");
+const Game = require("./Game");
 const commonFunction = require("../template/functions/commonFunction");
 
 class CrazyNoisy extends PlayingGame {
@@ -29,6 +30,7 @@ class CrazyNoisy extends PlayingGame {
         this.detective = "探偵";
         this.sp = "用心棒"
         this.citizen = "市民";
+        this.gameId = 2;
     }
 
     /**
@@ -77,6 +79,19 @@ class CrazyNoisy extends PlayingGame {
         return super.getUserId(this.plId, userIndex);
     }
     */
+
+    async updateDefaultSettingStatus() {
+        const settingNames = await Game.getSettingNames(this.gameId);
+        let settingStatus = [];
+        for (let i = 0; i < settingNames.length; i++) {
+            if (settingNames[i] == "timer") {
+                settingStatus[i] = true;
+            } else {
+                settingStatus[i] = false;
+            }
+        }
+        await this.updateSettingStatus(settingStatus);
+    }
 
     /**
      * settingデータを挿入
@@ -216,7 +231,7 @@ class CrazyNoisy extends PlayingGame {
             isDecided[fanaticIndex] = true;
         }
 
-        const spIndexes = await commonFunction.getRandomIndexes(undecided,spNumber);
+        const spIndexes = await commonFunction.getRandomIndexes(undecided, spNumber);
         for (let spIndex of spIndexes) {
             positions[spIndex] = this.sp;
             isDecided[spIndex] = true;
@@ -310,7 +325,7 @@ class CrazyNoisy extends PlayingGame {
      * @returns
      * @memberof CrazyNoisy
      */
-    
+
     async createStatus() {
         let actions = [];
         const userNumber = this.getUserNumber();
@@ -329,7 +344,7 @@ class CrazyNoisy extends PlayingGame {
             console.log("新しいクレイジーノイジーの設定の進捗データ作れんかったよ");
         }
     }
-    
+
 
     /**
      * ステータスデータを持っているかどうかを返す
@@ -1172,20 +1187,20 @@ class CrazyNoisy extends PlayingGame {
      *
      * @memberof CrazyNoisy
      */
-   /*  async updateStartTime() {
-        const startTime = await commonFunction.getCurrentTime();
-        // const startTime = new Date().toUTCString;
-        const query = {
-            text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
-            values: [startTime, this.plId]
-        };
-        try {
-            await pg.query(query);
-            console.log("Updated start-time");
-        } catch (err) {
-            console.log(err);
-        }
-    } */
+    /*  async updateStartTime() {
+         const startTime = await commonFunction.getCurrentTime();
+         // const startTime = new Date().toUTCString;
+         const query = {
+             text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
+             values: [startTime, this.plId]
+         };
+         try {
+             await pg.query(query);
+             console.log("Updated start-time");
+         } catch (err) {
+             console.log(err);
+         }
+     } */
 
 
     /**
@@ -1398,11 +1413,11 @@ class CrazyNoisy extends PlayingGame {
      * @returns
      * @memberof CrazyNoisy
      */
-    async notBrainwashNumber(){
+    async notBrainwashNumber() {
         const status = await this.getBrainwashStatus();
         let res = 0;
-        for(let state of status){
-            if(!state){
+        for (let state of status) {
+            if (!state) {
                 res++;
             }
         }
@@ -1429,9 +1444,9 @@ class CrazyNoisy extends PlayingGame {
 
         const notBrainwashNumber = await this.notBrainwashNumber();
         let res = false;
-        if(notBrainwashNumber <= 1){ // 教祖の人数と同じかそれより少なかったら
+        if (notBrainwashNumber <= 1) { // 教祖の人数と同じかそれより少なかったら
             res = true;
-        }   
+        }
         return res;
     }
 
@@ -2168,14 +2183,14 @@ class CrazyNoisy extends PlayingGame {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getDiscussingPlIds(){
+    async getDiscussingPlIds() {
         const query = {
             text: `SELECT pl_id FROM ${this.status} WHERE discuss = true`
         }
         try {
             const res = await pg.query(query);
             let plIds = []
-            for(let i=0;i<res.rowCount;i++){
+            for (let i = 0; i < res.rowCount; i++) {
                 plIds.push(res.rows[i].pl_id);
             }
             return plIds;
@@ -2191,10 +2206,10 @@ class CrazyNoisy extends PlayingGame {
      * @param {*} userIndex
      * @memberof CrazyNoisy
      */
-    async updateBrainwashTarget(userIndex){
+    async updateBrainwashTarget(userIndex) {
         const query = {
             text: `UPDATE ${this.setting} set brainwash_target = $1 where pl_id = $2`,
-            values: [userIndex,this.plId]
+            values: [userIndex, this.plId]
         };
         try {
             await pg.query(query);
@@ -2210,7 +2225,7 @@ class CrazyNoisy extends PlayingGame {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getBrainwashTarget(){
+    async getBrainwashTarget() {
         const query = {
             text: `SELECT brainwash_target FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -2229,10 +2244,10 @@ class CrazyNoisy extends PlayingGame {
      * @param {*} userIndex
      * @memberof CrazyNoisy
      */
-    async updateSpTarget(userIndex){
+    async updateSpTarget(userIndex) {
         const query = {
             text: `UPDATE ${this.setting} set sp_target = $1 where pl_id = $2`,
-            values: [userIndex,this.plId]
+            values: [userIndex, this.plId]
         };
         try {
             await pg.query(query);
@@ -2248,7 +2263,7 @@ class CrazyNoisy extends PlayingGame {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getSpTarget(){
+    async getSpTarget() {
         const query = {
             text: `SELECT sp_target FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -2266,7 +2281,7 @@ class CrazyNoisy extends PlayingGame {
      *
      * @memberof CrazyNoisy
      */
-    async resetSpTarget(){
+    async resetSpTarget() {
         const query = {
             text: `UPDATE ${this.setting} set sp_target = null where pl_id = $1`,
             values: [this.plId]

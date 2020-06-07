@@ -73,6 +73,10 @@ class PlayingGame extends ParticipantList {
         return super.updateIsRecruitingFalse(this.plId);
     }
 
+    async finishParticipantList(){
+        return super.finishParticipantList(this.plId);
+    }
+
     /**
      * plIdのgameIdを返す
      *
@@ -324,7 +328,7 @@ class PlayingGame extends ParticipantList {
      */
     async updateDay() {
         const query = {
-            text: `UPDATE changing_setting set day = day + 1 where pl_id = $1`,
+            text: `UPDATE playing_game set day = day + 1 where pl_id = $1`,
             values: [this.plId]
         };
         try {
