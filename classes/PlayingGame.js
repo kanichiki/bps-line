@@ -71,11 +71,11 @@ module.exports = class PlayingGame {
             const game = new Game();
             const gameName = await game.getGameName(gameId);
             return gameName;
-        }catch(err){
+        } catch (err) {
             console.log(err);
             console.log("プレイ中のゲームの名前とってこれんやった");
         }
-        }
+    }
 
     /**
      * WordWolfクラスのメソッド転用
@@ -84,12 +84,10 @@ module.exports = class PlayingGame {
      * これ使わない
      *
      */
-    async createWordWolfStatus(){
-            const WordWolf = require("./WordWolf");
-            const wordWolf = new WordWolf(this.plId);
-            await wordWolf.createWordWolfStatus();
-        }
-
-
-
+    async createWordWolfStatus() {
+        const WordWolf = require("./WordWolf");
+        const wordWolf = new WordWolf(this.plId);
+        await wordWolf.createWordWolfStatus();
     }
+
+}

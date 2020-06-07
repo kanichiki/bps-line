@@ -1,0 +1,1 @@
+ALTER TABLE playing_game ADD COLUMN winner varchar(33) ;

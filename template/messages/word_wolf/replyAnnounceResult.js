@@ -35,6 +35,7 @@ exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wo
             "altText": "役職確認",
             "contents": {
                 "type": "bubble",
+                "size": "mega",
                 "body": {
                   "type": "box",
                   "layout": "vertical",
@@ -60,9 +61,21 @@ exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wo
                           "desktop": "https://forms.gle/kGHqE924ACYQmTKj7"
                         }
                       },
-                      "color": "#e83b10",
+                      "color": parts.mainColor,
                       "style": "primary"
                     },
+                    /* {
+                      "type": "button",
+                      "action": {
+                        "type": "uri",
+                        "label": "Twitterでシェア",
+                        "uri": "http://twitter.com/share?text=test",
+                        "altUri": {
+                          "desktop": "http://twitter.com/share?text=test"
+                        }
+                      },
+                      "color": "#00acee"
+                    }, */
                     {
                       "type": "button",
                       "action": {
@@ -70,7 +83,7 @@ exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wo
                         "label": "ゲーム一覧",
                         "text": "ゲーム一覧"
                       },
-                      "color": "#e83b10",
+                      "color": parts.mainColor,
                     }
                   ]
                 }
