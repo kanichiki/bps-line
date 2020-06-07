@@ -1,5 +1,5 @@
 # MiniGame DABYSS (ダビス)
-グループでミニゲームを行うLINE Bot  
+グループでトークゲームを行うLINE Bot  
 友達追加はこちらからお願いします！  
 ![390zkjvc](https://user-images.githubusercontent.com/45839107/82004363-a6c23a00-969d-11ea-9de1-b79af6d5fffb.png)
 
