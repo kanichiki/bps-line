@@ -46,7 +46,7 @@ const main = async (req, res) => {
   const events = req.body.events;
   try {
     // イベント内容をログに保存
-    debugLogger.info(events);
+    console.log(events);
   } catch (err) {
     console.log(err);
   }
