@@ -84,11 +84,6 @@ const main = async (req, res) => {
             await replyGameList(replyToken);
           }
 
-          if (text == "test") {
-            const replyMessage = require("../template/messages/word_wolf/replyAnnounceResult");
-            await client.replyMessage(replyToken, await replyMessage.main([], [], [],"a","b","citizen"));
-          }
-
 
           // TODO 友達追加されていないユーザーの場合の分岐
           // 初めの処理
