@@ -139,6 +139,16 @@ exports.main = async (userNumber, numberOption) => {
               "color": parts.mainColor
             },
             {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "確認状況",
+                "data": "確認状況"
+              },
+              "color": parts.subColor,
+              "margin": "sm"
+            },
+            {
               "type": "separator",
               "margin": "sm"
             },

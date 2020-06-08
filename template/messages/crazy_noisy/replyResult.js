@@ -29,41 +29,50 @@ exports.main = async (displayNames,positions,contentsList) =>{
             text: crazinessMessages
         },
         {
-            "type": "flex",
-            "altText": "役職確認",
-            "contents": {
-                "type": "bubble",
-                "body": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "サービス向上のためフィードバックにご協力ください！",
-                      "wrap": true
-                    }
-                  ]
-                },
-                "footer": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "button",
-                      "action": {
-                        "type": "uri",
-                        "label": "フィードバックを書く",
-                        "uri": "https://forms.gle/kGHqE924ACYQmTKj7",
-                        "altUri": {
-                          "desktop": "https://forms.gle/kGHqE924ACYQmTKj7"
-                        }
-                      },
-                      "color": "#e83b10",
-                      "style": "primary"
-                    }
-                  ]
-                }
+          "type": "flex",
+          "altText": "ゲーム終了",
+          "contents": {
+              "type": "bubble",
+              "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "サービス向上のためフィードバックにご協力ください！",
+                    "wrap": true
+                  }
+                ]
+              },
+              "footer": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                  {
+                    "type": "button",
+                    "action": {
+                      "type": "uri",
+                      "label": "フィードバックを書く",
+                      "uri": "https://forms.gle/kGHqE924ACYQmTKj7",
+                      "altUri": {
+                        "desktop": "https://forms.gle/kGHqE924ACYQmTKj7"
+                      }
+                    },
+                    "color": "#e83b10",
+                    "style": "primary"
+                  },
+                  {
+                    "type": "button",
+                    "action": {
+                      "type": "message",
+                      "label": "ゲーム一覧",
+                      "text": "ゲーム一覧"
+                    },
+                    "color": "#e83b10",
+                  }
+                ]
               }
-        }
+            }
+      }
     ]
 }

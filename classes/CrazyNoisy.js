@@ -6,11 +6,13 @@ pg.connect().catch((error) => {
 })
 
 require('date-utils');
+const systemLogger = require("../modules/log4js").systemLogger;
 
-const ParticipantList = require("./ParticipantList");
+const PlayingGame = require("./PlayingGame");
+const Game = require("./Game");
 const commonFunction = require("../template/functions/commonFunction");
 
-class CrazyNoisy extends ParticipantList {
+class CrazyNoisy extends PlayingGame {
 
     /**
      *Creates an instance of CrazyNoisy.
@@ -29,6 +31,7 @@ class CrazyNoisy extends ParticipantList {
         this.detective = "探偵";
         this.sp = "用心棒"
         this.citizen = "市民";
+        this.gameId = 2;
     }
 
     /**
@@ -48,6 +51,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
+    /*
     async getDisplayName(userIndex) {
         return super.getDisplayName(userIndex, this.plId);
     }
@@ -75,6 +79,20 @@ class CrazyNoisy extends ParticipantList {
     async getUserId(userIndex) {
         return super.getUserId(this.plId, userIndex);
     }
+    */
+
+    async updateDefaultSettingStatus() {
+        const settingNames = await Game.getSettingNames(this.gameId);
+        let settingStatus = [];
+        for (let i = 0; i < settingNames.length; i++) {
+            if (settingNames[i] == "timer") {
+                settingStatus[i] = true;
+            } else {
+                settingStatus[i] = false;
+            }
+        }
+        await this.updateSettingStatus(settingStatus);
+    }
 
     /**
      * settingデータを挿入
@@ -90,7 +108,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Crazy-Noisy Setting Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの設定作れんかったよ");
         }
     }
@@ -116,7 +134,7 @@ class CrazyNoisy extends ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -247,7 +265,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated positions");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
 
     }
@@ -267,7 +285,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].positions;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -308,6 +326,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
+
     async createStatus() {
         let actions = [];
         const userNumber = this.getUserNumber();
@@ -321,13 +340,12 @@ class CrazyNoisy extends ParticipantList {
         try {
             await pg.query(query);
             console.log("Crazy Noisy Setting Status Inserted");
-            return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの設定の進捗データ作れんかったよ");
-            return false;
         }
     }
+
 
     /**
      * ステータスデータを持っているかどうかを返す
@@ -335,7 +353,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async hasStatus() {
+    /* async hasStatus() {
         const query = {
             text: `SELECT pl_id from ${this.status} where pl_id = $1`,
             values: [this.plId]
@@ -350,16 +368,16 @@ class CrazyNoisy extends ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * モード選択ステータスをtrueに
      *
      * @memberof CrazyNoisy
      */
-    async updateModeStatusTrue() {
+    /* async updateModeStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set mode = true where pl_id = $1`,
             values: [this.plId]
@@ -368,16 +386,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated mode status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * モード選択ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateModeStatusFalse() {
+    /* async updateModeStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set mode = false where pl_id = $1`,
             values: [this.plId]
@@ -386,9 +404,9 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated mode status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * モードステータスを取得
@@ -396,7 +414,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getModeStatus() {
+    /* async getModeStatus() {
         const query = {
             text: `SELECT mode FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -405,16 +423,16 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].mode;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * タイプ選択ステータスをtrueに
      *
      * @memberof CrazyNoisy
      */
-    async updateTypeStatusTrue() {
+    /* async updateTypeStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set type = true where pl_id = $1`,
             values: [this.plId]
@@ -423,16 +441,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated type status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * タイプ選択ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateTypeStatusFalse() {
+    /* async updateTypeStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set type = false where pl_id = $1`,
             values: [this.plId]
@@ -441,19 +459,19 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated type status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 確認がNoだった場合に設定ステータスをリセット
      *
      * @memberof CrazyNoisy
      */
-    async resetSettingStatus() {
+    /* async resetSettingStatus() {
         await this.updateModeStatusFalse();
         await this.updateTypeStatusFalse();
-    }
+    } */
 
     /**
      * タイプステータスを取得
@@ -461,7 +479,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getTypeStatus() {
+    /* async getTypeStatus() {
         const query = {
             text: `SELECT type FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -470,15 +488,15 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].type;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 確認状況をtrueにする
      *
      */
-    async updateConfirmStatusTrue() {
+    /* async updateConfirmStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set confirm = true where pl_id = $1`,
             values: [this.plId]
@@ -487,16 +505,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated confirm status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 設定を確認済みかどうかを返す
      *
      * @returns
      */
-    async getSettingConfirmStatus() {
+    /* async getSettingConfirmStatus() {
         const query = {
             text: `SELECT confirm FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -505,16 +523,16 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].confirm;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 議論中ステータスをtrueに
      *
      * @memberof CrazyNoisy
      */
-    async updateDiscussStatusTrue() {
+    /* async updateDiscussStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set discuss = true where pl_id = $1`,
             values: [this.plId]
@@ -523,16 +541,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated discuss status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 議論中ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateDiscussStatusFalse() {
+    /* async updateDiscussStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set discuss = false where pl_id = $1`,
             values: [this.plId]
@@ -541,9 +559,9 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated discuss status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 議論中ステータスを取得
@@ -551,7 +569,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getDiscussStatus() {
+    /* async getDiscussStatus() {
         const query = {
             text: `SELECT discuss FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -560,15 +578,15 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].discuss;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 通知ステータスをtrueにする
      *
      */
-    async updateNotifyStatusTrue() {
+    /* async updateNotifyStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set notify = true where pl_id = $1`,
             values: [this.plId]
@@ -577,16 +595,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated notify status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 通知ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateNotifyStatusFalse() {
+    /* async updateNotifyStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set notify = false where pl_id = $1`,
             values: [this.plId]
@@ -595,16 +613,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated notify status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 残り1分を通知済みかどうかを返す
      *
      * @returns
      */
-    async getNotifyStatus() {
+    /* async getNotifyStatus() {
         const query = {
             text: `SELECT notify FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -613,15 +631,15 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].notify;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 投票ステータスをtrueにする
      *
      */
-    async updateVoteStatusTrue() {
+    /* async updateVoteStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set vote = true where pl_id = $1`,
             values: [this.plId]
@@ -630,16 +648,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated vote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 投票ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateVoteStatusFalse() {
+    /* async updateVoteStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set vote = false where pl_id = $1`,
             values: [this.plId]
@@ -648,16 +666,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated vote status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 投票中かどうかを返す
      *
      * @returns
      */
-    async getVoteStatus() {
+    /* async getVoteStatus() {
         const query = {
             text: `SELECT vote FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -666,16 +684,16 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].vote;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
 
     /**
      * 再投票ステータスをtrueにする
      *
      */
-    async updateRevoteStatusTrue() {
+    /* async updateRevoteStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set revote = true where pl_id = $1`,
             values: [this.plId]
@@ -684,16 +702,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated revote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 再投票ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateRevoteStatusFalse() {
+    /* async updateRevoteStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set revote = false where pl_id = $1`,
             values: [this.plId]
@@ -702,16 +720,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated revote status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 再投票中かどうかを返す
      *
      * @returns
      */
-    async getRevoteStatus() {
+    /* async getRevoteStatus() {
         const query = {
             text: `SELECT revote FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -720,15 +738,15 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].revote;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * アクション中ステータスをtrueにする
      *
      */
-    async updateActionStatusTrue() {
+    /* async updateActionStatusTrue() {
         const query = {
             text: `UPDATE ${this.status} set action = true where pl_id = $1`,
             values: [this.plId]
@@ -737,16 +755,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated action status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * アクション中ステータスをfalseに
      *
      * @memberof CrazyNoisy
      */
-    async updateActionStatusFalse() {
+    /* async updateActionStatusFalse() {
         const query = {
             text: `UPDATE ${this.status} set action = false where pl_id = $1`,
             values: [this.plId]
@@ -755,16 +773,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated action status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * アクション中かどうかを返す
      *
      * @returns
      */
-    async getActionStatus() {
+    /* async getActionStatus() {
         const query = {
             text: `SELECT action FROM ${this.status} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -773,9 +791,9 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].action;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * Action実行ステータスをすべてfalseにする
@@ -796,7 +814,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated actions false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -827,7 +845,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated actions false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -848,7 +866,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated action true");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -868,7 +886,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].actions[userIndex];
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -887,7 +905,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].actions;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -930,7 +948,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated confirms status first");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -950,7 +968,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].confirms;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -988,7 +1006,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated confirms state");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1006,7 +1024,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated winner status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1024,7 +1042,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].winner;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1041,7 +1059,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated result status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1059,7 +1077,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].result;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1081,7 +1099,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated mode");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("モード設定できんかった");
         }
     }
@@ -1101,7 +1119,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].mode;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1121,7 +1139,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated type");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("話し合いタイプ設定できんかった");
         }
     }
@@ -1141,7 +1159,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].type;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1152,7 +1170,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getStartTime() {
+    /* async getStartTime() {
         const query = {
             text: `SELECT start_time FROM ${this.setting} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -1161,29 +1179,29 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].start_time;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * start_timeを現在の標準時刻で設定
      *
      * @memberof CrazyNoisy
      */
-    async updateStartTime() {
-        const startTime = await commonFunction.getCurrentTime();
-        // const startTime = new Date().toUTCString;
-        const query = {
-            text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
-            values: [startTime, this.plId]
-        };
-        try {
-            await pg.query(query);
-            console.log("Updated start-time");
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    /*  async updateStartTime() {
+         const startTime = await commonFunction.getCurrentTime();
+         // const startTime = new Date().toUTCString;
+         const query = {
+             text: `UPDATE ${this.setting} set start_time = $1 where pl_id = $2`,
+             values: [startTime, this.plId]
+         };
+         try {
+             await pg.query(query);
+             console.log("Updated start-time");
+         } catch (err) {
+             systemLogger.error(err);
+         }
+     } */
 
 
     /**
@@ -1192,7 +1210,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getTimer() {
+    /* async getTimer() {
         const query = {
             text: `SELECT timer FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1201,9 +1219,9 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].timer;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * タイマーの値を設定
@@ -1211,7 +1229,7 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} minutes
      * @memberof CrazyNoisy
      */
-    async updateTimer(minutes) {
+    /* async updateTimer(minutes) {
         const query = {
             text: `UPDATE ${this.setting} set timer = $1 where pl_id = $2`,
             values: [minutes, this.plId]
@@ -1220,9 +1238,9 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated timer");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * endTimeを計算して入れる
@@ -1230,7 +1248,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async updateEndTime() {
+    /* async updateEndTime() {
         const timer = await this.getTimer();
         const minutes = timer + " minutes";
         const query = {
@@ -1241,19 +1259,19 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated end-time ");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 時間の設定を一括挿入
      *
      * @memberof CrazyNoisy
      */
-    async updateTimeSetting() {
+    /* async updateTimeSetting() {
         await this.updateStartTime();
         await this.updateEndTime();
-    }
+    } */
 
     /**
      * 残り時間が1分を切っているかどうかを返す
@@ -1261,7 +1279,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async isRemainingTimeLessThan1minute() {
+    /* async isRemainingTimeLessThan1minute() {
         const currentTime = await commonFunction.getCurrentTime();
         const minutes = "1 minutes"
         const query = {
@@ -1272,9 +1290,9 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 話し合い時間が終了しているかどうかを返す
@@ -1282,7 +1300,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async isOverTime() {
+    /* async isOverTime() {
         const currentTime = await commonFunction.getCurrentTime();
         const second = "0 second"
         const query = {
@@ -1293,10 +1311,10 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log(currentTime);
         }
-    }
+    } */
 
     /**
      * 〇分××秒の形で残り時間を返す
@@ -1304,7 +1322,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getRemainingTime() {
+    /* async getRemainingTime() {
         const currentTime = await commonFunction.getCurrentTime();
 
         const query1 = {
@@ -1325,9 +1343,9 @@ class CrazyNoisy extends ParticipantList {
             const remainingTime = minutes + "分" + second + "秒";
             return remainingTime;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
 
     /**
@@ -1355,7 +1373,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated brainwash first");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1374,7 +1392,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].brainwash;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1396,11 +1414,11 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async notBrainwashNumber(){
+    async notBrainwashNumber() {
         const status = await this.getBrainwashStatus();
         let res = 0;
-        for(let state of status){
-            if(!state){
+        for (let state of status) {
+            if (!state) {
                 res++;
             }
         }
@@ -1427,9 +1445,9 @@ class CrazyNoisy extends ParticipantList {
 
         const notBrainwashNumber = await this.notBrainwashNumber();
         let res = false;
-        if(notBrainwashNumber <= 1){ // 教祖の人数と同じかそれより少なかったら
+        if (notBrainwashNumber <= 1) { // 教祖の人数と同じかそれより少なかったら
             res = true;
-        }   
+        }
         return res;
     }
 
@@ -1450,7 +1468,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated brainwash");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1485,7 +1503,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1516,7 +1534,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated default crazinessIds");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1543,7 +1561,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated default crazinessIds in demo");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1562,7 +1580,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].craziness_ids;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1582,7 +1600,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].content;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1602,7 +1620,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].remark;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1640,7 +1658,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Added crazinessIds");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
 
     }
@@ -1650,7 +1668,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @memberof CrazyNoisy
      */
-    async updateDay() {
+    /* async updateDay() {
         const query = {
             text: `UPDATE ${this.status} set day = day + 1 where pl_id = $1`,
             values: [this.plId]
@@ -1659,9 +1677,9 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated day");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 何日目かを返す
@@ -1669,7 +1687,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getDay() {
+    /* async getDay() {
         const query = {
             text: `SELECT day from ${this.status} where pl_id = $1`,
             values: [this.plId]
@@ -1678,9 +1696,9 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].day;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
 
     // 以下投票に関する関数
@@ -1692,7 +1710,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async createVote() {
+    /* async createVote() {
         const userNumber = await this.getUserNumber();
         let votes = [];
         let status = [];
@@ -1710,11 +1728,11 @@ class CrazyNoisy extends ParticipantList {
             console.log("Crazy-Noisy Vote Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの投票データ作れんかったよ");
             return false;
         }
-    }
+    } */
 
     /**
      * 投票データを持っているか
@@ -1722,7 +1740,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async hasVote() {
+    /* async hasVote() {
         const query = {
             text: `SELECT pl_id from ${this.vote} where pl_id = $1`,
             values: [this.plId]
@@ -1737,9 +1755,9 @@ class CrazyNoisy extends ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
 
 
@@ -1749,7 +1767,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async getVoteNumbers() {
+    /* async getVoteNumbers() {
         const query = {
             text: `SELECT numbers FROM ${this.vote} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1758,16 +1776,16 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].numbers;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 投票状況の配列を返す
      *
      * @returns
      */
-    async getUsersVoteStatus() {
+    /* async getUsersVoteStatus() {
         const query = {
             text: `SELECT status FROM ${this.vote} WHERE pl_id = $1`,
             values: [this.plId]
@@ -1776,9 +1794,9 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].status;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 与えられたuserIndexのユーザーの投票状況を返す
@@ -1786,17 +1804,17 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} userIndex
      * @returns
      */
-    async isVotedUser(userIndex) {
+    /* async isVotedUser(userIndex) {
         const status = await this.getUsersVoteStatus();
         return status[userIndex];
-    }
+    } */
 
     /**
      * 投票が全員完了しているか否かを返す
      *
      * @returns
      */
-    async isVoteCompleted() {
+    /* async isVoteCompleted() {
         const status = await this.getUsersVoteStatus();
         let res = true;
         for (let state of status) {
@@ -1805,14 +1823,14 @@ class CrazyNoisy extends ParticipantList {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 与えられたuserIndexのユーザーの得票数を1増やす
      *
      * @param {*} userIndex
      */
-    async updateVoteNumber(userIndex) {
+    /* async updateVoteNumber(userIndex) {
         let numbers = await this.getVoteNumbers();
         numbers[userIndex] += 1; // 得票数1追加
         const query = {
@@ -1823,16 +1841,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated vote number");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 与えられたuserIndexのユーザーの投票状況をtrueにする
      *
      * @param {*} userIndex
      */
-    async updateUserVoteStatus(userIndex) {
+    /* async updateUserVoteStatus(userIndex) {
         let status = await this.getUsersVoteStatus();
         if (!status[userIndex]) {
             status[userIndex] = true;
@@ -1847,16 +1865,16 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Updated vote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
     /**
      * 最多得票者が複数いるかどうかを返す
      *
      * @returns
      */
-    async multipleMostVotedUserExists() {
+    /* async multipleMostVotedUserExists() {
         const voteNumbers = await this.getVoteNumbers();
         let res = false;
         let max = -1;
@@ -1869,18 +1887,18 @@ class CrazyNoisy extends ParticipantList {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 最多得票数を返す
      *
      * @returns
      */
-    async getMostVotedNumber() {
+    /* async getMostVotedNumber() {
         const voteNumbers = await this.getVoteNumbers();
         const number = Math.max.apply(null, voteNumbers);
         return number;
-    }
+    } */
 
     /**
      * 最も得票数の多いユーザーのインデックスの配列を返す
@@ -1888,7 +1906,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async getMostVotedUserIndexes() {
+    /* async getMostVotedUserIndexes() {
         const voteNumbers = await this.getVoteNumbers();
         const mostVotedNumber = await this.getMostVotedNumber();
         let indexes = [];
@@ -1898,7 +1916,7 @@ class CrazyNoisy extends ParticipantList {
             }
         }
         return indexes;
-    }
+    } */
 
     /**
      * 再投票の候補者の配列を取得する
@@ -1907,7 +1925,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async getRevoteCandidateIndexes() {
+    /* async getRevoteCandidateIndexes() {
         const query = {
             text: `SELECT indexes FROM ${this.revote} WHERE pl_id = $1;`,
             values: [this.plId]
@@ -1916,10 +1934,10 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].indexes;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("再投票の候補者取得できんかった");
         }
-    }
+    } */
 
     /**
      * ParticipantListの拡張メソッド
@@ -1927,9 +1945,9 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async getUserIndexes() {
+    /* async getUserIndexes() {
         return super.getUserIndexes(this.plId);
-    }
+    } */
 
     /**
      * 与えられたテキストがユーザーインデックスかどうかを返す
@@ -1938,7 +1956,7 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} text
      * @returns
      */
-    async isUserIndex(text) {
+    /* async isUserIndex(text) {
         const userIndexes = await this.getUserIndexes();
         let res = false;
         for (let userIndex of userIndexes) {
@@ -1947,7 +1965,7 @@ class CrazyNoisy extends ParticipantList {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 与えられたテキストが再投票の候補者かどうかを返す
@@ -1956,7 +1974,7 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} text
      * @returns
      */
-    async isRevoteCandidateIndex(text) {
+    /* async isRevoteCandidateIndex(text) {
         const candidateIndexes = await this.getRevoteCandidateIndexes();
         let res = false;
         for (let candidateIndex of candidateIndexes) {
@@ -1965,7 +1983,7 @@ class CrazyNoisy extends ParticipantList {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 与えられたindexesで再投票データを作る
@@ -1973,7 +1991,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async createRevote(candidateIndexes) {
+    /* async createRevote(candidateIndexes) {
         const query = {
             text: `INSERT INTO ${this.revote} (pl_id,indexes) VALUES ($1,$2);`,
             values: [this.plId, candidateIndexes]
@@ -1983,17 +2001,17 @@ class CrazyNoisy extends ParticipantList {
             console.log("Crazy-noisy Revote Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの再投票データ作れんかったよ");
             return false;
         }
-    }
+    } */
 
     /**
      * 投票データを初期化する
      *
      */
-    async initializeVote() {
+    /* async initializeVote() {
         const userNumber = await this.getUserNumber();
         let votes = [];
         let status = [];
@@ -2009,17 +2027,17 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Initialized Crazy-noisy Vote");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("投票データ初期化できんかった");
         }
-    }
+    } */
 
     /**
      * 再投票データが存在するかを返す
      *
      * @returns
      */
-    async hasRevote() {
+    /* async hasRevote() {
         const query = {
             text: `SELECT pl_id FROM ${this.revote} WHERE pl_id = $1`,
             values: [this.plId]
@@ -2034,11 +2052,11 @@ class CrazyNoisy extends ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
-    }
+    } */
 
-    async initializeRevote(candidateIndexes) {
+    /* async initializeRevote(candidateIndexes) {
         const query = {
             text: `UPDATE ${this.revote} set indexes = $1 where pl_id = $3`,
             values: [candidateIndexes, this.plId]
@@ -2047,10 +2065,10 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Initialized Crazy-noisy Revote");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("再投票データ初期化できんかった");
         }
-    }
+    } */
 
 
 
@@ -2060,7 +2078,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @returns
      */
-    async getMostVotedUserIndex() {
+    /* async getMostVotedUserIndex() {
         const voteNumbers = await this.getVoteNumbers();
         let res = -1;
         let max = -1;
@@ -2071,7 +2089,7 @@ class CrazyNoisy extends ParticipantList {
             }
         }
         return res;
-    }
+    } */
 
     /**
      * 再投票で最多得票者が複数出た場合に最多得票者の中から処刑者をランダムで選ぶ
@@ -2080,10 +2098,10 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} userIndexes
      * @returns
      */
-    async chooseExecutorIndex(userIndexes) {
+    /* async chooseExecutorIndex(userIndexes) {
         const index = Math.floor(Math.random() * userIndexes.length); // これは返さない
         return userIndexes[index];
-    }
+    } */
 
 
     /**
@@ -2166,19 +2184,19 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getDiscussingPlIds(){
+    async getDiscussingPlIds() {
         const query = {
             text: `SELECT pl_id FROM ${this.status} WHERE discuss = true`
         }
         try {
             const res = await pg.query(query);
             let plIds = []
-            for(let i=0;i<res.rowCount;i++){
+            for (let i = 0; i < res.rowCount; i++) {
                 plIds.push(res.rows[i].pl_id);
             }
             return plIds;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ここでエラー")
         }
     }
@@ -2189,16 +2207,16 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} userIndex
      * @memberof CrazyNoisy
      */
-    async updateBrainwashTarget(userIndex){
+    async updateBrainwashTarget(userIndex) {
         const query = {
             text: `UPDATE ${this.setting} set brainwash_target = $1 where pl_id = $2`,
-            values: [userIndex,this.plId]
+            values: [userIndex, this.plId]
         };
         try {
             await pg.query(query);
             console.log("Updated brainwash target");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2208,7 +2226,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getBrainwashTarget(){
+    async getBrainwashTarget() {
         const query = {
             text: `SELECT brainwash_target FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -2217,7 +2235,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].brainwash_target;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2227,16 +2245,16 @@ class CrazyNoisy extends ParticipantList {
      * @param {*} userIndex
      * @memberof CrazyNoisy
      */
-    async updateSpTarget(userIndex){
+    async updateSpTarget(userIndex) {
         const query = {
             text: `UPDATE ${this.setting} set sp_target = $1 where pl_id = $2`,
-            values: [userIndex,this.plId]
+            values: [userIndex, this.plId]
         };
         try {
             await pg.query(query);
             console.log("Updated sp target");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2246,7 +2264,7 @@ class CrazyNoisy extends ParticipantList {
      * @returns
      * @memberof CrazyNoisy
      */
-    async getSpTarget(){
+    async getSpTarget() {
         const query = {
             text: `SELECT sp_target FROM ${this.setting} WHERE pl_id = $1`,
             values: [this.plId]
@@ -2255,7 +2273,7 @@ class CrazyNoisy extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].sp_target;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2264,7 +2282,7 @@ class CrazyNoisy extends ParticipantList {
      *
      * @memberof CrazyNoisy
      */
-    async resetSpTarget(){
+    async resetSpTarget() {
         const query = {
             text: `UPDATE ${this.setting} set sp_target = null where pl_id = $1`,
             values: [this.plId]
@@ -2273,7 +2291,7 @@ class CrazyNoisy extends ParticipantList {
             await pg.query(query);
             console.log("Reset sp target");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 

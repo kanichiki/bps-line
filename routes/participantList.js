@@ -18,7 +18,6 @@ router.use(function (req, res, next) {
 
     /*
      * Hostがlocalhostへのアクセスだったらリクエストを処理する.
-     * next()を呼ぶことで、下のapp.get()の部分が処理される.
      *
      * Hostがlocalhostへのアクセスで無い場合.
      * 例えば127.0.0.1などIPアドレス直打ちの場合は400を返して終了する.
@@ -49,5 +48,7 @@ router.get('/:id', async (req, res, next) => {
         })
     }
 });
+
+router.post('/:id')
 
 module.exports = router;
