@@ -6,6 +6,7 @@ pg.connect().catch((error) => {
 })
 
 require('date-utils');
+const systemLogger = require("../modules/log4js").systemLogger;
 
 const PlayingGame = require("./PlayingGame");
 const Game = require("./Game");
@@ -107,7 +108,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Crazy-Noisy Setting Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの設定作れんかったよ");
         }
     }
@@ -133,7 +134,7 @@ class CrazyNoisy extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -264,7 +265,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated positions");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
 
     }
@@ -284,7 +285,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].positions;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -340,7 +341,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Crazy Noisy Setting Status Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの設定の進捗データ作れんかったよ");
         }
     }
@@ -367,7 +368,7 @@ class CrazyNoisy extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -385,7 +386,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated mode status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -403,7 +404,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated mode status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -422,7 +423,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].mode;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -440,7 +441,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated type status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -458,7 +459,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated type status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -487,7 +488,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].type;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -504,7 +505,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated confirm status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -522,7 +523,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].confirm;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -540,7 +541,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated discuss status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -558,7 +559,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated discuss status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -577,7 +578,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].discuss;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -594,7 +595,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated notify status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -612,7 +613,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated notify status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -630,7 +631,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].notify;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -647,7 +648,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated vote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -665,7 +666,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated vote status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -683,7 +684,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].vote;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -701,7 +702,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated revote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -719,7 +720,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated revote status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -737,7 +738,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].revote;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -754,7 +755,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated action status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -772,7 +773,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated action status false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -790,7 +791,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].action;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -813,7 +814,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated actions false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -844,7 +845,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated actions false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -865,7 +866,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated action true");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -885,7 +886,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].actions[userIndex];
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -904,7 +905,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].actions;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -947,7 +948,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated confirms status first");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -967,7 +968,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].confirms;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1005,7 +1006,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated confirms state");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1023,7 +1024,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated winner status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1041,7 +1042,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].winner;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1058,7 +1059,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated result status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1076,7 +1077,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].result;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1098,7 +1099,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated mode");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("モード設定できんかった");
         }
     }
@@ -1118,7 +1119,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].mode;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1138,7 +1139,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated type");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("話し合いタイプ設定できんかった");
         }
     }
@@ -1158,7 +1159,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].type;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1178,7 +1179,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].start_time;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1198,7 +1199,7 @@ class CrazyNoisy extends PlayingGame {
              await pg.query(query);
              console.log("Updated start-time");
          } catch (err) {
-             console.log(err);
+             systemLogger.error(err);
          }
      } */
 
@@ -1218,7 +1219,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].timer;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1237,7 +1238,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated timer");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1258,7 +1259,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated end-time ");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1289,7 +1290,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1310,7 +1311,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log(currentTime);
         }
     } */
@@ -1342,7 +1343,7 @@ class CrazyNoisy extends PlayingGame {
             const remainingTime = minutes + "分" + second + "秒";
             return remainingTime;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1372,7 +1373,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated brainwash first");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1391,7 +1392,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].brainwash;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1467,7 +1468,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated brainwash");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1502,7 +1503,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1533,7 +1534,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated default crazinessIds");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1560,7 +1561,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated default crazinessIds in demo");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1579,7 +1580,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].craziness_ids;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1599,7 +1600,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].content;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1619,7 +1620,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].remark;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1657,7 +1658,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Added crazinessIds");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
 
     }
@@ -1676,7 +1677,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated day");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1695,7 +1696,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].day;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1727,7 +1728,7 @@ class CrazyNoisy extends PlayingGame {
             console.log("Crazy-Noisy Vote Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの投票データ作れんかったよ");
             return false;
         }
@@ -1754,7 +1755,7 @@ class CrazyNoisy extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1775,7 +1776,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].numbers;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1793,7 +1794,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].status;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1840,7 +1841,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated vote number");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1864,7 +1865,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated vote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1933,7 +1934,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].indexes;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("再投票の候補者取得できんかった");
         }
     } */
@@ -2000,7 +2001,7 @@ class CrazyNoisy extends PlayingGame {
             console.log("Crazy-noisy Revote Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいクレイジーノイジーの再投票データ作れんかったよ");
             return false;
         }
@@ -2026,7 +2027,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Initialized Crazy-noisy Vote");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("投票データ初期化できんかった");
         }
     } */
@@ -2051,7 +2052,7 @@ class CrazyNoisy extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -2064,7 +2065,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Initialized Crazy-noisy Revote");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("再投票データ初期化できんかった");
         }
     } */
@@ -2195,7 +2196,7 @@ class CrazyNoisy extends PlayingGame {
             }
             return plIds;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ここでエラー")
         }
     }
@@ -2215,7 +2216,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated brainwash target");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2234,7 +2235,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].brainwash_target;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2253,7 +2254,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Updated sp target");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2272,7 +2273,7 @@ class CrazyNoisy extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].sp_target;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2290,7 +2291,7 @@ class CrazyNoisy extends PlayingGame {
             await pg.query(query);
             console.log("Reset sp target");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 

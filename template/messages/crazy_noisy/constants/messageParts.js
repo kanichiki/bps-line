@@ -257,10 +257,6 @@ exports.settingConfirmMessage = async (userNumber, mode, type, timer) => {
               "color": parts.mainColor
             }
           ]
-        },
-        {
-          "type": "separator",
-          "margin": "md"
         }
       ]
     },

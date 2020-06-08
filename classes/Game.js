@@ -4,6 +4,7 @@ const pg = new Client(process.env.DATABASE_URL)
 pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
+const systemLogger = require("../modules/log4js").systemLogger;
 
 class Game{
     constructor() {
@@ -31,7 +32,7 @@ class Game{
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -50,7 +51,7 @@ class Game{
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ゲームのidとれん");
         }
     }
@@ -70,7 +71,7 @@ class Game{
             const res = await pg.query(query);
             return res.rows[0].name;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ゲームの名前とってこれんやった")
         }
     }
@@ -92,7 +93,7 @@ class Game{
             const res = await pg.query(query);
             return res.rows[0].setting_names;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 }

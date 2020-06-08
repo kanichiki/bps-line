@@ -609,6 +609,11 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
             const isExecutorWolf = await wordWolf.isUserWolf(mostVotedUserIndex); // 処刑者がウルフかどうか
 
             await wordWolf.updateStatus("winner"); // 勝者発表状況をtrueにする
+            if(isExecutorWolf){
+                wordWolf.updateWinner("citizen");
+            }else{
+                wordWolf.updateWinner("wolf");
+            }
             const displayNames = await wordWolf.getDisplayNames();
             const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf);
 
@@ -655,6 +660,11 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
                 const isExecutorWolf = await wordWolf.isUserWolf(executorIndex); // 処刑者がウルフかどうか
 
                 await wordWolf.updateStatus("winner");
+                if(isExecutorWolf){
+                    wordWolf.updateWinner("citizen");
+                }else{
+                    wordWolf.updateWinner("wolf");
+                }
                 const displayNames = await wordWolf.getDisplayNames();
                 const isWinnerArray = await wordWolf.isWinnerArray(isExecutorWolf);
 
@@ -708,6 +718,7 @@ const replyAnnounceResult = async (plId, replyToken) => {
 
     await wordWolf.updateStatus("result");
     await wordWolf.finishParticipantList();
+    const winner = await wordWolf.getWinner();
 
     return client.replyMessage(
         replyToken,
@@ -716,7 +727,8 @@ const replyAnnounceResult = async (plId, replyToken) => {
             wolfIndexes,
             lunaticIndexes,
             citizenWord,
-            wolfWord
+            wolfWord,
+            winner
         )
     );
 };

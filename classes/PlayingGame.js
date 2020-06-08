@@ -5,6 +5,8 @@ pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
 
+const systemLogger = require("../modules/log4js").systemLogger;
+
 const Game = require("./Game")
 const ParticipantList = require("./ParticipantList");
 const commonFunction = require("../template/functions/commonFunction");
@@ -65,15 +67,15 @@ class PlayingGame extends ParticipantList {
         return super.getUserIndexes(this.plId);
     }
 
-    async updateIsPlayingTrue(){
+    async updateIsPlayingTrue() {
         return super.updateIsPlayingTrue(this.plId);
     }
 
-    async updateIsRecruitingFalse(){
+    async updateIsRecruitingFalse() {
         return super.updateIsRecruitingFalse(this.plId);
     }
 
-    async finishParticipantList(){
+    async finishParticipantList() {
         return super.finishParticipantList(this.plId);
     }
 
@@ -91,7 +93,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].game_id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ゲームidとってこれんやった");
         }
     }
@@ -108,7 +110,7 @@ class PlayingGame extends ParticipantList {
             const gameName = await Game.getGameName(gameId);
             return gameName;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("プレイ中のゲームの名前とってこれんやった");
         }
     }
@@ -119,13 +121,13 @@ class PlayingGame extends ParticipantList {
      * @returns
      * @memberof PlayingGame
      */
-    async getGameSettingNames(){
+    async getGameSettingNames() {
         try {
             const gameId = await this.getGameId()
             const settingNames = await Game.getSettingNames(gameId);
             return settingNames;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -136,11 +138,11 @@ class PlayingGame extends ParticipantList {
      * @returns
      * @memberof PlayingGame
      */
-    async getSettingIndex(name){
+    async getSettingIndex(name) {
         const settingNames = await this.getGameSettingNames();
         let res = -1;
-        for(let i=0;i<settingNames.length;i++){
-            if(settingNames[i]==name){
+        for (let i = 0; i < settingNames.length; i++) {
+            if (settingNames[i] == name) {
                 res = i;
             }
         }
@@ -163,12 +165,12 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Playing Game Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しい進行中ゲーム作れんかったよ");
         }
     }
 
-    async updateSettingStatus(settingStatus){
+    async updateSettingStatus(settingStatus) {
         const query = {
             text: `UPDATE playing_game set setting_status = $1 where pl_id = $2`,
             values: [settingStatus, this.plId]
@@ -177,7 +179,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated setting-status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -187,7 +189,7 @@ class PlayingGame extends ParticipantList {
      * @returns
      * @memberof PlayingGame
      */
-    async exists(){
+    async exists() {
         const query = {
             text: `SELECT pl_id FROM playing_game WHERE pl_id = $1`,
             values: [this.plId]
@@ -200,11 +202,11 @@ class PlayingGame extends ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
-    
+
 
     /**
      * 進行ステータスを設定
@@ -220,7 +222,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -238,7 +240,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].status;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -257,7 +259,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].setting_status;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -267,11 +269,11 @@ class PlayingGame extends ParticipantList {
      * @returns
      * @memberof PlayingGame
      */
-    async isSettingCompleted(){
+    async isSettingCompleted() {
         const settingStatus = await this.getSettingStatus();
         let res = true;
-        for(let settingState of settingStatus){
-            if(!settingState){
+        for (let settingState of settingStatus) {
+            if (!settingState) {
                 res = false;
             }
         }
@@ -295,7 +297,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated setting-state true");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -316,7 +318,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated setting-state false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -335,7 +337,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated day");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -354,7 +356,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].day;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -385,7 +387,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Vote Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -405,7 +407,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].indexes;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -425,7 +427,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].numbers;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -445,7 +447,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].status;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -455,7 +457,7 @@ class PlayingGame extends ParticipantList {
      * @returns
      * @memberof PlayingGame
      */
-    async getVoteCount(){
+    async getVoteCount() {
         const day = await this.getDay();
         const query = {
             text: `SELECT count FROM vote WHERE pl_id = $1 AND day = $2 AND voting = true`,
@@ -465,7 +467,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].count;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -476,11 +478,11 @@ class PlayingGame extends ParticipantList {
      * @returns
      * @memberof PlayingGame
      */
-    async isUserCandidate(index){
+    async isUserCandidate(index) {
         const voteIndexes = await this.getVoteIndexes();
         let res = false;
-        for(let voteIndex of voteIndexes){
-            if(index == voteIndex){
+        for (let voteIndex of voteIndexes) {
+            if (index == voteIndex) {
                 res = true;
             }
         }
@@ -534,7 +536,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated vote number");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -560,7 +562,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated vote state");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -639,7 +641,7 @@ class PlayingGame extends ParticipantList {
      *
      * @memberof PlayingGame
      */
-    async createRevote(indexes){
+    async createRevote(indexes) {
         const userNumber = await this.getUserNumber();
         const day = await this.getDay();
         const count = await this.getVoteCount() + 1;
@@ -659,7 +661,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Revote Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -680,7 +682,7 @@ class PlayingGame extends ParticipantList {
      *
      * @memberof PlayingGame
      */
-    async updateVotingFalse(){
+    async updateVotingFalse() {
         const day = await this.getDay();
         const query = {
             text: `UPDATE vote set voting = false where pl_id = $1 AND day = $2 AND voting = true`,
@@ -690,7 +692,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated voting false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -712,7 +714,7 @@ class PlayingGame extends ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].timer;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -738,7 +740,7 @@ class PlayingGame extends ParticipantList {
         return timerString;
     }
 
-    
+
     /**
      * タイマーの値を設定
      *
@@ -754,7 +756,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query);
             console.log("Updated timer");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -763,14 +765,14 @@ class PlayingGame extends ParticipantList {
      *
      * @memberof PlayingGame
      */
-    async createDiscuss(){
+    async createDiscuss() {
         const startTime = await commonFunction.getCurrentTime();
         const timer = await this.getTimer();
         const day = await this.getDay();
 
         const query1 = {
             text: 'INSERT INTO discuss (pl_id,day,start_time) VALUES ($1,$2,$3)',
-            values: [this.plId, day,startTime]
+            values: [this.plId, day, startTime]
         }
         const query2 = {
             text: `update discuss set end_time = start_time + $1 WHERE pl_id = $2 AND day = $3`,
@@ -781,7 +783,7 @@ class PlayingGame extends ParticipantList {
             await pg.query(query2);
             console.log("Discuss Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -797,13 +799,13 @@ class PlayingGame extends ParticipantList {
         const second = "0 second"
         const query = {
             text: `SELECT ((end_time - $1 ) < $2 ) as ans FROM discuss WHERE pl_id = $3 AND day = $4`,
-            values: [currentTime, second, this.plId,day]
+            values: [currentTime, second, this.plId, day]
         }
         try {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -819,11 +821,11 @@ class PlayingGame extends ParticipantList {
 
         const query1 = {
             text: `SELECT EXTRACT(minutes from (end_time - $1 )) AS minutes FROM discuss WHERE pl_id = $2 AND day = $3`,
-            values: [currentTime, this.plId,day]
+            values: [currentTime, this.plId, day]
         }
         const query2 = {
             text: `SELECT EXTRACT(second from (end_time - $1 )) AS second FROM discuss WHERE pl_id = $2 AND day = $3`,
-            values: [currentTime, this.plId,day]
+            values: [currentTime, this.plId, day]
         }
 
         try {
@@ -835,7 +837,7 @@ class PlayingGame extends ParticipantList {
             const remainingTime = minutes + "分" + second + "秒";
             return remainingTime;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -857,7 +859,39 @@ class PlayingGame extends ParticipantList {
             }
             return plIds;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
+        }
+    }
+
+    /**
+     * 勝者を取得
+     *
+     * @returns
+     * @memberof PlayingGame
+     */
+    async getWinner() {
+        const query = {
+            text: `SELECT winner from playing_game where pl_id = $1`,
+            values: [this.plId]
+        };
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].winner;
+        } catch (err) {
+            systemLogger.error(err);
+        }
+    }
+
+    async updateWinner(name) {
+        const query = {
+            text: `UPDATE playing_game set winner = $1 where pl_id = $2`,
+            values: [name, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated winner");
+        } catch (err) {
+            systemLogger.error(err);
         }
     }
 

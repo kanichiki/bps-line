@@ -8,6 +8,7 @@
   "dependencies": {
     "@line/bot-sdk": "^6.8.4",
     "async": "^3.2.0",
+    "config": "^3.3.1",
     "cookie-parser": "~1.4.4",
     "date-utils": "^1.2.21",
     "debug": "~2.6.9",
@@ -15,8 +16,10 @@
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "log4js": "^3.0.6",
     "morgan": "~1.9.1",
     "node-cron": "^2.0.3",
+    "path": "^0.12.7",
     "pg": "^8.0.3",
     "request": "^2.88.2"
   }

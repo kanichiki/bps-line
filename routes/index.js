@@ -3,6 +3,8 @@ const router = express.Router();
 const line = require("@line/bot-sdk");
 const request = require('request');
 
+const debugLogger = require("../modules/log4js").debugLogger;
+
 const ParticipantList = require("../classes/ParticipantList");
 const PlayingGame = require("../classes/PlayingGame");
 const WordWolf = require("../classes/WordWolf");
@@ -41,13 +43,13 @@ router.post('/', (req, res, next) => {
 const main = async (req, res) => {
   res.status(200).end(); // 先に200を返してあげる
 
-  try {
-    // イベント内容をコンソールに表示
-    console.log(req.body.events);
-  } catch (err) {
-    return 0;
-  }
   const events = req.body.events;
+  try {
+    // イベント内容をログに保存
+    debugLogger.info(events);
+  } catch (err) {
+    console.log(err);
+  }
   // const promises = [];
   for (const event of events) {
     const eventType = event.type;
@@ -78,8 +80,13 @@ const main = async (req, res) => {
             groupId = event.source.roomId; // roomIdもgroupId扱いしよう
           }
 
-          if(text == "ゲーム一覧"){
+          if (text == "ゲーム一覧") {
             await replyGameList(replyToken);
+          }
+
+          if (text == "test") {
+            const replyMessage = require("../template/messages/word_wolf/replyAnnounceResult");
+            await client.replyMessage(replyToken, await replyMessage.main([], [], [],"a","b","citizen"));
           }
 
 
@@ -200,19 +207,19 @@ const main = async (req, res) => {
                     await crazyNoisyBranch.rollCallBranch(plId, replyToken);
                     continue;
                   }
-                  if(gameId == 3){ // 人狼の場合
+                  if (gameId == 3) { // 人狼の場合
                     const options = {
                       uri: "http://localhost:8000/rollcall",
                       headers: {
-                        "Content-type":"application/json"
+                        "Content-type": "application/json"
                       },
                       // これがpythonに渡される
-                      json:{
-                        "replyToken":replyToken,
-                        "pl_id":plId
+                      json: {
+                        "replyToken": replyToken,
+                        "pl_id": plId
                       }
                     };
-                    request.post(options,(error,response,body)=>{});
+                    request.post(options, (error, response, body) => { });
                     pl.updateIsRecruitingFalse();
                     pl.updateIsPlayingTrue();
                   }
@@ -382,7 +389,7 @@ const replyDefaultPersonalMessage = async (event) => {
  *
  * @param {*} replyToken
  */
-const replyGameList = async (replyToken) =>{
+const replyGameList = async (replyToken) => {
   const replyMessage = require("../template/messages/replyGameList");
   return client.replyMessage(replyToken, await replyMessage.main());
 }

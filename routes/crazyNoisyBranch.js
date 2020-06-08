@@ -111,35 +111,39 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) =
     const crazyNoisy = new CrazyNoisy(plId);
 
     const status = await crazyNoisy.getStatus();
-    const isConfirmsCompleted = await crazyNoisy.isConfirmsCompleted();
-    if (!isConfirmsCompleted) { // まだ役職確認が済んでいなかったら
+
+    if (status == "confirm") {
+
         if (postbackData == "確認しました") {
             await replyPositionConfirm(plId, userId, replyToken);
         }
 
-    } else { // 役職確認済み
-
-        if (status == "discuss") {
-            if (postbackData == "残り時間") {
-                await replyRemainingTime(plId, replyToken);
-            }
+        if (postbackData == "確認状況"){
+            await replyConfirmStatus(plId,replyToken);
         }
+    }
 
-        if (status == "vote") {
-            if (postbackData == "投票状況確認") {
-                await replyVoteConfirm(plId, replyToken);
-            }
+    if (status == "discuss") {
+        if (postbackData == "残り時間") {
+            await replyRemainingTime(plId, replyToken);
+        }
+    }
+
+    if (status == "vote") {
+        if (postbackData == "投票状況確認") {
+            await replyVoteConfirm(plId, replyToken);
+        } else {
 
             const userIndex = await crazyNoisy.getUserIndexFromUserId(userId);
             const voteState = await crazyNoisy.isVotedUser(userIndex);
             if (!voteState) {
                 // postbackした参加者の投票がまだの場合
-    
+
                 const votedUserIndex = await crazyNoisy.getUserIndexFromUserId(postbackData); // postbackDataがuserIdじゃなかったら-1がかえる
                 const isUserCandidate = await crazyNoisy.isUserCandidate(votedUserIndex);
                 if (isUserCandidate) {
                     // postbackのデータが候補者のインデックスだった場合
-    
+
                     // ※
                     if (userId != postbackData) {
                         // 自分以外に投票していた場合
@@ -154,6 +158,7 @@ exports.postbackPlayingBranch = async (plId, userId, postbackData, replyToken) =
             }
         }
     }
+
 }
 
 /**
@@ -282,10 +287,10 @@ const replyModeChosen = async (plId, text, replyToken) => {
         // 設定が完了していなかったら
         const replyMessage = require("../template/messages/crazy_noisy/replyModeChosen");
         return client.replyMessage(replyToken, await replyMessage.main(text));
-    }else{
-        replyConfirm(plId,replyToken);
+    } else {
+        replyConfirm(plId, replyToken);
     }
-    
+
 }
 
 /**
@@ -304,12 +309,12 @@ const replyTypeChosen = async (plId, text, replyToken) => {
 
     const settingIndex = await crazyNoisy.getSettingIndex("type");
     await crazyNoisy.updateType(text).then(await crazyNoisy.updateSettingStateTrue(settingIndex));
-    
+
     const isSettingCompleted = await crazyNoisy.isSettingCompleted();
     if (!isSettingCompleted) {
         // 設定が完了していなかったら
-    }else{
-        replyConfirm(plId,replyToken);
+    } else {
+        replyConfirm(plId, replyToken);
     }
 }
 
@@ -331,7 +336,7 @@ const replyTimerChosen = async (plId, params, replyToken) => {
     }
 };
 
-const replyModeChange = async (plId,replyToken) => {
+const replyModeChange = async (plId, replyToken) => {
     const replyMessage = require("../template/messages/crazy_noisy/replyModeChange");
     const crazyNoisy = new CrazyNoisy(plId);
 
@@ -360,7 +365,7 @@ const replyTimerChange = async (plId, replyToken) => {
     return client.replyMessage(replyToken, await replyMessage.main());
 };
 
-const replyConfirm = async (plId,replyToken) => {
+const replyConfirm = async (plId, replyToken) => {
     const crazyNoisy = new CrazyNoisy(plId);
     const replyMessgae = require("../template/messages/crazy_noisy/replyChanged");
 
@@ -369,7 +374,7 @@ const replyConfirm = async (plId,replyToken) => {
     const type = await crazyNoisy.getType();
     const timer = await crazyNoisy.getTimerString();
 
-    return client.replyMessage(replyToken,await replyMessgae.main(userNumber,mode,type,timer));
+    return client.replyMessage(replyToken, await replyMessgae.main(userNumber, mode, type, timer));
 }
 
 /**
@@ -479,10 +484,25 @@ const replyPositionConfirm = async (plId, userId, replyToken) => {
         await crazyNoisy.updateDay();
         await crazyNoisy.updateStatus("discuss");
         await crazyNoisy.createDiscuss();
-        
+
         const timer = await crazyNoisy.getTimerString(); // タイマー設定を取得
         return client.replyMessage(replyToken, await replyMessage.main(timer));
     }
+}
+
+const replyConfirmStatus = async (plId,replyToken) => {
+    const crazyNoisy = new CrazyNoisy(plId);
+    const displayNames = await crazyNoisy.getDisplayNames();
+    const confirmStatus = await crazyNoisy.getConfirmsStatus();
+    let unconfirmed = [];
+    for (let i = 0; i < displayNames.length; i++) {
+        if (!confirmStatus[i]) {
+            unconfirmed.push(displayNames[i]);
+        }
+    }
+
+    const replyMessage = require("../template/messages/crazy_noisy/replyConfirmStatus");
+    return client.replyMessage(replyToken, await replyMessage.main(unconfirmed)); 
 }
 
 /**
@@ -678,7 +698,7 @@ const replyVoteSuccess = async (plId, postbackData, replyToken, userIndex) => {
 
                 const isGuru = await crazyNoisy.isGuru(executorIndex); // 最多得票者が教祖かどうか
                 if (!isGuru) { // 処刑者が教祖じゃなかったら
-                    replyMessage = replyMessage.concat(await replyExecutorIsNotGuru(plId, executorDisplayName, mostVotedUserIndex));
+                    replyMessage = replyMessage.concat(await replyExecutorIsNotGuru(plId, executorDisplayName,executorIndex));
 
                     const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
                     if (!isBrainwashCompleted) {

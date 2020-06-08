@@ -6,6 +6,7 @@ pg.connect().catch((error) => {
 })
 
 require('date-utils');
+const systemLogger = require("../modules/log4js").systemLogger;
 
 const ParticipantList = require("./ParticipantList");
 const PlayingGame = require("./PlayingGame");
@@ -113,7 +114,7 @@ class WordWolf extends PlayingGame {
             console.log("Word-Wolf Setting Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいワードウルフの設定作れんかったよ");
             return false;
         }
@@ -140,7 +141,7 @@ class WordWolf extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -166,7 +167,7 @@ class WordWolf extends PlayingGame {
             }
             return wordSetIds;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -213,7 +214,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].word_set_id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -233,7 +234,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated word-set-id");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("単語セットのid設定できんかった");
         }
     }
@@ -254,7 +255,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].genre_id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -274,7 +275,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].name;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -297,7 +298,7 @@ class WordWolf extends PlayingGame {
             console.log(obj);
             return obj;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -316,7 +317,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -341,7 +342,7 @@ class WordWolf extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -359,7 +360,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].is_reverse;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -394,7 +395,7 @@ class WordWolf extends PlayingGame {
                 return res.rows[0].word2;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -430,7 +431,7 @@ class WordWolf extends PlayingGame {
                 return res.rows[0].word1;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -453,7 +454,7 @@ class WordWolf extends PlayingGame {
             }
             return wordSetIds;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -487,7 +488,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated word-set-id");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("単語セットのid設定できんかった");
         }
     }
@@ -508,7 +509,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].depth;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -532,7 +533,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated wolf-number");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ウルフの人数設定できんかった");
         }
     }
@@ -551,7 +552,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].wolf_number;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -587,7 +588,7 @@ class WordWolf extends PlayingGame {
         try {
             await pg.query(query).then(console.log("Updated wolf-indexes"));
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -605,7 +606,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].wolf_indexes;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -722,7 +723,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated lunatic-number");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("狂人の人数設定できんかった");
         }
     }
@@ -741,7 +742,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].lunatic_number;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -777,7 +778,7 @@ class WordWolf extends PlayingGame {
         try {
             await pg.query(query).then(console.log("Updated lunatic-indexes"));
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -795,7 +796,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].lunatic_indexes;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -953,7 +954,7 @@ class WordWolf extends PlayingGame {
             console.log("Word-Wolf Setting Status Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいワードウルフの設定の進捗データ作れんかったよ");
             return false;
         }
@@ -979,7 +980,7 @@ class WordWolf extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -998,7 +999,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated genre status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1015,7 +1016,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated genre status to false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1033,7 +1034,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].genre;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1053,7 +1054,7 @@ class WordWolf extends PlayingGame {
         try {
             await pg.query(query).then(console.log("Updated wolf-number status"));
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ウルフの人数の設定状況更新できんかった");
         }
     }
@@ -1070,7 +1071,7 @@ class WordWolf extends PlayingGame {
         try {
             await pg.query(query).then(console.log("Updated wolf-number status to false"));
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("ウルフの人数の設定状況更新できんかった");
         }
     }
@@ -1089,7 +1090,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].wolf_number;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1109,7 +1110,7 @@ class WordWolf extends PlayingGame {
         try {
             await pg.query(query).then(console.log("Updated lunatic status"));
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("狂人の人数の設定状況更新できんかった");
         }
     }
@@ -1126,7 +1127,7 @@ class WordWolf extends PlayingGame {
         try {
             await pg.query(query).then(console.log("Updated lunatic status to false"));
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("狂人の人数の設定状況更新できんかった");
         }
     }
@@ -1145,7 +1146,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].lunatic;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1173,7 +1174,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated confirm status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1191,7 +1192,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].confirm;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1208,7 +1209,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated notify status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1226,7 +1227,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].notify;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1243,7 +1244,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated finished status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1261,7 +1262,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].finished;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1278,7 +1279,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated winner status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1296,7 +1297,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].winner;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1313,7 +1314,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated result status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1331,7 +1332,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].result;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -1410,7 +1411,7 @@ class WordWolf extends PlayingGame {
             console.log("Word-Wolf Vote Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいワードウルフの投票データ作れんかったよ");
             return false;
         }
@@ -1431,7 +1432,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].numbers;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1449,7 +1450,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].status;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1496,7 +1497,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated vote number");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1520,7 +1521,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated vote status");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1589,7 +1590,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].indexes;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("再投票の候補者取得できんかった");
         }
     } */
@@ -1646,7 +1647,7 @@ class WordWolf extends PlayingGame {
             console.log("Word-Wolf Revote Inserted");
             return true;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいワードウルフの再投票データ作れんかったよ");
             return false;
         }
@@ -1672,7 +1673,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Initialized Word-Wolf Vote");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("投票データ初期化できんかった");
         }
     } */
@@ -1697,7 +1698,7 @@ class WordWolf extends PlayingGame {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1750,7 +1751,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].start_time;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1769,7 +1770,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated start-time");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1789,7 +1790,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].timer;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1830,7 +1831,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated timer");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1850,7 +1851,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated end-time ");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1881,7 +1882,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1902,7 +1903,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log(currentTime);
         }
     } */
@@ -1934,7 +1935,7 @@ class WordWolf extends PlayingGame {
             const remainingTime = minutes + "分" + second + "秒";
             return remainingTime;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -1986,7 +1987,7 @@ class WordWolf extends PlayingGame {
             }
             return plIds;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     } */
 
@@ -2005,7 +2006,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated changing");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2018,7 +2019,7 @@ class WordWolf extends PlayingGame {
             await pg.query(query);
             console.log("Updated changing null");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -2037,7 +2038,7 @@ class WordWolf extends PlayingGame {
             const res = await pg.query(query);
             return res.rows[0].changing;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
