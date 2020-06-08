@@ -25,7 +25,7 @@ exports.main = async (displayNames, wolfIndexes, lunaticIndexes, citizenWord, wo
     const resultEnter = result.join("\n");
     resultMessage = resultMessage + resultEnter;
 
-    let shareMessage = encodeURI("Dabyssでワードウルフをプレイしました！")+"%0a%0a"+encodeURI("市民側ワード：")+citizenWord+"%0a"+encodeURI("ウルフ側ワード：")+wolfWord+"%0a%0a"
+    let shareMessage = encodeURI("Dabyssでワードウルフをプレイしました！")+"%0a%0a"+encodeURI("市民側ワード：")+encodeURI(citizenWord)+"%0a"+encodeURI("ウルフ側ワード：")+encodeURI(wolfWord)+"%0a%0a"
     if(winner == "citizen"){
       shareMessage += encodeURI("市民側の勝利！！")+"%0a%0a"
     }else{

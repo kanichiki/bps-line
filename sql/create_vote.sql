@@ -5,5 +5,5 @@ CREATE TABLE vote(
     indexes integer[],
     numbers integer[],
     status boolean[],
-    voting boolean
+    voting boolean DEFAULT true
 );
