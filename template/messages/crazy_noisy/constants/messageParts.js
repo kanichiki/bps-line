@@ -118,6 +118,20 @@ exports.modeOptions = {
       },
       {
         "type": "separator"
+      },
+      {
+        "type": "text",
+        "text": "デモモードでは最初から全員に狂気が配られます。(洗脳されているわけではありません)",
+        "margin": "md",
+        "wrap": true,
+        "size": "sm"
+      },
+      {
+        "type": "text",
+        "text": "どのような狂気があるか全員が確認することができます。初めての方がいらっしゃる場合におすすめです。",
+        "margin": "md",
+        "wrap": true,
+        "size": "sm"
       }
     ],
     "spacing": "xs",
@@ -208,6 +222,16 @@ exports.settingConfirmMessage = async (userNumber, mode, type, timer) => {
             {
               "type": "text",
               "text": `話し合い方法 : ${type}`,
+              "size": "lg"
+            },
+            {
+              "type": "text",
+              "text": `0日目洗脳(教祖) : なし`,
+              "size": "lg"
+            },
+            {
+              "type": "text",
+              "text": `0日目調査(探偵) : なし`,
               "size": "lg"
             },
             {
