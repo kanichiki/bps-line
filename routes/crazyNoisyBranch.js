@@ -86,6 +86,8 @@ exports.playingMessageBranch = async (plId, text, replyToken) => {
                     break;
             }
         }
+    }else if(text == "役職人数確認"){
+        await replyPositionNumber(plId,replyToken);
     }
 
     if (status == "discuss") {
@@ -429,6 +431,14 @@ const replyConfirm = async (plId, replyToken) => {
     const zeroDetective = await crazyNoisy.getZeroDetective();
 
     return client.replyMessage(replyToken, await replyMessage.main(userNumber, mode, type, timer,zeroGuru, zeroDetective));
+}
+
+const replyPositionNumber = async (plId, replyToken) => {
+    const crazyNoisy = new CrazyNoisy(plId);
+    const replyMessage = require("../template/messages/crazy_noisy/replyPositionNumber");
+    const userNumber = await crazyNoisy.getUserNumber();
+    const numberOption = Math.floor((userNumber - 1) / 3);
+    return client.replyMessage(replyToken, await replyMessage.main(userNumber,numberOption));
 }
 
 /**

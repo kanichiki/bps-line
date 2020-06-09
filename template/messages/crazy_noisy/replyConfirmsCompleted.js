@@ -56,6 +56,15 @@ exports.main = async (timer) => {
                             },
                             "color": parts.mainColor,
                             "style": "primary"
+                        },
+                        {
+                            "type": "button",
+                            "action": {
+                              "type": "message",
+                              "label": "役職人数確認",
+                              "text": "役職人数確認"
+                            },
+                            "color": parts.subColor
                         }
                     ]
                 }

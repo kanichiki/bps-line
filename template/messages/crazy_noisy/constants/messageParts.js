@@ -225,32 +225,37 @@ exports.settingConfirmMessage = async (userNumber, mode, type, timer,zeroGuru,ze
             {
               "type": "text",
               "text": `参加者 : ${userNumber}人`,
-              "size": "lg"
+              "size": "md"
+            },
+            {
+              "type": "text",
+              "text": `役職 : ランダム`,
+              "size": "md"
             },
             {
               "type": "text",
               "text": `モード : ${mode}`,
-              "size": "lg"
+              "size": "md"
             },
             {
               "type": "text",
               "text": `話し合い方法 : ${type}`,
-              "size": "lg"
+              "size": "md"
             },
             {
               "type": "text",
               "text": `0日目洗脳(教祖) : ${zeroGuruMessage}`,
-              "size": "lg"
+              "size": "md"
             },
             {
               "type": "text",
               "text": `0日目調査(探偵) : ${zeroDetectiveMessage}`,
-              "size": "lg"
+              "size": "md"
             },
             {
               "type": "text",
               "text": `議論時間 : ${timer}`,
-              "size": "lg"
+              "size": "md"
             }
           ],
           "margin": "md"
@@ -393,6 +398,56 @@ exports.timerMessage = async () => {
         }
       ],
       "flex": 0
+    }
+  }
+}
+
+exports.positionNumberMessage = async (userNumber, numberOption) => {
+  let detectiveNumber = ""
+  let citizenNumber = ""
+
+  if (userNumber > 6) {
+    detectiveNumber = "1";
+    citizenNumber = `${userNumber - numberOption - 2}~${userNumber - numberOption - 1}`
+  } else {
+    detectiveNumber = `0~1`
+    citizenNumber = `${userNumber - numberOption * 2 - 1}~${userNumber - numberOption * 2 + 1}`
+  }
+
+  return {
+    "type": "bubble",
+    "body": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "各役職の人数は以下の通りです",
+          "size": "md",
+          "wrap": true
+        },
+        {
+          "type": "separator",
+          "margin": "md"
+        },
+        {
+          "type": "text",
+          "text": "教祖 : 1人",
+          "margin": "md"
+        },
+        {
+          "type": "text",
+          "text": `狂信者 : ${numberOption - 1}~${numberOption}人`
+        },
+        {
+          "type": "text",
+          "text": `探偵 : ${detectiveNumber}人`
+        },
+        {
+          "type": "text",
+          "text": `市民 : ${citizenNumber}人`
+        }
+      ]
     }
   }
 }
