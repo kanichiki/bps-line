@@ -117,7 +117,7 @@ exports.main = async (userNumber, numberOption) => {
             },
             {
               "type": "text",
-              "text": "役職を確認した方は「確認しました」ボタンを押してください",
+              "text": "役職を確認した方は個人トークルームにて「確認しました」ボタンを押してください",
               "wrap": true
             }
           ]
@@ -147,22 +147,22 @@ exports.main = async (userNumber, numberOption) => {
               },
               "color": parts.subColor,
               "margin": "sm"
-            },
-            {
-              "type": "separator",
-              "margin": "sm"
-            },
-            {
-              "type": "button",
-              "action": {
-                "type": "postback",
-                "label": "確認しました",
-                "data": "確認しました"
-              },
-              "color": parts.mainColor,
-              "style": "primary",
-              "margin": "sm"
-            }
+            } //,
+            // {
+            //   "type": "separator",
+            //   "margin": "sm"
+            // },
+            // {
+            //   "type": "button",
+            //   "action": {
+            //     "type": "postback",
+            //     "label": "確認しました",
+            //     "data": "確認しました"
+            //   },
+            //   "color": parts.mainColor,
+            //   "style": "primary",
+            //   "margin": "sm"
+            // }
           ]
         }
       }

@@ -178,7 +178,20 @@ exports.modeOptions = {
 }
 
 
-exports.settingConfirmMessage = async (userNumber, mode, type, timer) => {
+exports.settingConfirmMessage = async (userNumber, mode, type, timer,zeroGuru,zeroDetective) => {
+  let zeroGuruMessage;
+  if(zeroGuru){
+    zeroGuruMessage = "あり";
+  }else{
+    zeroGuruMessage = "なし";
+  }
+  
+  let zeroDetectiveMessage;
+  if(zeroDetective){
+    zeroDetectiveMessage = "あり";
+  }else{
+    zeroDetectiveMessage = "なし";
+  }
   return {
     "type": "bubble",
     "size": "giga",
@@ -226,12 +239,12 @@ exports.settingConfirmMessage = async (userNumber, mode, type, timer) => {
             },
             {
               "type": "text",
-              "text": `0日目洗脳(教祖) : なし`,
+              "text": `0日目洗脳(教祖) : ${zeroGuruMessage}`,
               "size": "lg"
             },
             {
               "type": "text",
-              "text": `0日目調査(探偵) : なし`,
+              "text": `0日目調査(探偵) : ${zeroDetectiveMessage}`,
               "size": "lg"
             },
             {
@@ -275,12 +288,38 @@ exports.settingConfirmMessage = async (userNumber, mode, type, timer) => {
               "type": "button",
               "action": {
                 "type": "message",
+                "label": "0日目洗脳有無",
+                "text": "0日目洗脳有無"
+              },
+              "color": parts.mainColor
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "message",
+                "label": "0日目調査有無",
+                "text": "0日目調査有無"
+              },
+              "color": parts.mainColor
+            }
+          ],
+          "margin": "md"
+        },
+        {
+          "type": "box",
+          "layout": "horizontal",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "message",
                 "label": "話し合い方法変更",
                 "text": "話し合い方法変更"
               },
               "color": parts.mainColor
             }
-          ]
+          ],
+          "margin": "md"
         }
       ]
     },
