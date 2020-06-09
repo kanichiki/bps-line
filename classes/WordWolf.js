@@ -89,7 +89,7 @@ class WordWolf extends PlayingGame {
         for (let i = 0; i < settingNames.length; i++) {
             if (settingNames[i] == "timer") {
                 settingStatus[i] = true;
-            }else{
+            } else {
                 settingStatus[i] = false;
             }
         }
@@ -442,9 +442,16 @@ class WordWolf extends PlayingGame {
      * @returns
      */
     async getWordSetIdsMatchDepth(depth) {
-        const query = {
-            text: `SELECT id FROM word_set WHERE depth = $1;`,
-            values: [depth]
+        let query;
+        if (depth != 3) {
+            query = {
+                text: `SELECT id FROM word_set WHERE depth = $1;`,
+                values: [depth]
+            }
+        }else{
+            query = {
+                text: `SELECT id FROM word_set WHERE depth = 3 OR depth = 4;`
+            }
         }
         try {
             const res = await pg.query(query);
@@ -467,7 +474,6 @@ class WordWolf extends PlayingGame {
      */
     async chooseWordSetIdMatchDepth(depth) {
         const wordSetIds = await this.getWordSetIdsMatchDepth(depth);
-        console.log("wordSetIds :" + wordSetIds);
         const index = Math.floor(Math.random() * wordSetIds.length);
         return wordSetIds[index];
     }

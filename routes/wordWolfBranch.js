@@ -55,7 +55,7 @@ exports.playingMessageBranch = async (plId, text, replyToken) => {
             for (let i = 0; i < settingNames.length; i++) {
                 if (!settingStatus[i]) {
                     if (settingNames[i] == "depth") {
-                        if (text == 1 || text == 2 || text == 3 || text == 4 || text == 5) {
+                        if (text == 1 || text == 2 || text == 3 || text == 5) {
                             await replyDepthChosen(plId, text, replyToken);
                         }
                     }
@@ -278,7 +278,7 @@ const replyDepthChosen = async (plId, text, replyToken) => {
     // ワードセットはランダムで選んでる
 
     const settingIndex = await wordWolf.getSettingIndex("depth");
-
+    
     await wordWolf
         .updateWordSetIdMatchDepth(text)
         .then(await wordWolf.updateSettingStateTrue(settingIndex));

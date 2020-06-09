@@ -20,7 +20,7 @@ exports.depthOptions = {
       },
       {
         "type": "text",
-        "text": "1~4 : ",
+        "text": "1~3 : ",
         "wrap": true,
         "size": "sm"
       },
@@ -32,7 +32,7 @@ exports.depthOptions = {
       },
       {
         "type": "text",
-        "text": "5：恋愛",
+        "text": "恋愛だけワード数が豊富なのでジャンルとして分かれてます",
         "size": "sm",
         "wrap": true,
         "margin": "md"
@@ -72,20 +72,11 @@ exports.depthOptions = {
               "text": "2"
             },
             "color": parts.mainColor
-          },
-          {
-            "type": "separator"
-          },
-          {
-            "type": "button",
-            "action": {
-              "type": "message",
-              "label": "3",
-              "text": "3"
-            },
-            "color": parts.mainColor
           }
         ]
+      },
+      {
+        "type": "separator"
       },
       {
         "type": "box",
@@ -95,8 +86,8 @@ exports.depthOptions = {
             "type": "button",
             "action": {
               "type": "message",
-              "label": "4",
-              "text": "4"
+              "label": "3",
+              "text": "3"
             },
             "color": parts.mainColor
           },
@@ -107,7 +98,7 @@ exports.depthOptions = {
             "type": "button",
             "action": {
               "type": "message",
-              "label": "5",
+              "label": "恋愛",
               "text": "5"
             },
             "color": parts.mainColor
@@ -265,6 +256,9 @@ exports.timerMessage = async () => {
 }
 
 exports.settingConfirmMessage = async (userNumber, depth, wolfNumber, lunaticNumber, timer) => {
+  if(depth == 5){
+    depth = "恋愛"
+  }
   return {
     "type": "bubble",
     "size": "giga",
