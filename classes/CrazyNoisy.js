@@ -85,10 +85,19 @@ class CrazyNoisy extends PlayingGame {
         const settingNames = await Game.getSettingNames(this.gameId);
         let settingStatus = [];
         for (let i = 0; i < settingNames.length; i++) {
-            if (settingNames[i] == "timer") {
-                settingStatus[i] = true;
-            } else {
-                settingStatus[i] = false;
+            switch (settingNames[i]) {
+                case "timer":
+                    settingStatus[i] = true;
+                    break;
+                case "zero_detective":
+                    settingStatus[i] = true;
+                    break;
+                case "zero_guru":
+                    settingStatus[i] = true;
+                    break;
+                default:
+                    settingStatus[i] = false;
+                    break;
             }
         }
         await this.updateSettingStatus(settingStatus);
@@ -315,6 +324,82 @@ class CrazyNoisy extends PlayingGame {
             res = true;
         }
         return res;
+    }
+
+    /**
+     * 0日目調査
+     *
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async getZeroDetective() {
+        const query = {
+            text: `SELECT zero_detective FROM ${this.setting} WHERE pl_id = $1;`,
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].zero_detective;
+        } catch (err) {
+            systemLogger.error(err);
+        }
+    }
+
+    /**
+     * 0日目調査の有無を変更
+     *
+     * @memberof CrazyNoisy
+     */
+    async switchZeroDetecive() {
+        const zeroDetective = await this.getZeroDetective();
+        const query = {
+            text: `UPDATE ${this.setting} set zero_detective = $1 where pl_id = $2`,
+            values: [!zeroDetective, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated zero-detective");
+        } catch (err) {
+            systemLogger.error(err);
+        }
+    }
+
+    /**
+     * 0日目洗脳
+     *
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async getZeroGuru() {
+        const query = {
+            text: `SELECT zero_guru FROM ${this.setting} WHERE pl_id = $1;`,
+            values: [this.plId]
+        }
+        try {
+            const res = await pg.query(query);
+            return res.rows[0].zero_guru;
+        } catch (err) {
+            systemLogger.error(err);
+        }
+    }
+
+    /**
+     * 0日目洗脳の有無を変更
+     *
+     * @memberof CrazyNoisy
+     */
+    async switchZeroGuru() {
+        const zeroGuru = await this.getZeroGuru();
+        const query = {
+            text: `UPDATE ${this.setting} set zero_guru = $1 where pl_id = $2`,
+            values: [!zeroGuru, this.plId]
+        };
+        try {
+            await pg.query(query);
+            console.log("Updated zero-guru");
+        } catch (err) {
+            systemLogger.error(err);
+        }
     }
 
 
@@ -970,6 +1055,18 @@ class CrazyNoisy extends PlayingGame {
         } catch (err) {
             systemLogger.error(err);
         }
+    }
+
+    /**
+     * 確認が済んでいるかどうか
+     *
+     * @param {*} userIndex
+     * @returns
+     * @memberof CrazyNoisy
+     */
+    async getConfirmsState(userIndex) {
+        const confirmStatus = await this.getConfirmsStatus();
+        return confirmStatus[userIndex];
     }
 
     /**
