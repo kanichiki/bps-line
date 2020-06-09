@@ -1007,7 +1007,7 @@ const replyActionCompleted = async (plId) => {
         const displayNames = await crazyNoisy.getDisplayNames();
         const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerGuru, winnerIndexes);
 
-        const pushMessage = await pushDayMessage.concat(pushWinnerMessage);
+        pushMessage = await pushMessage.concat(pushWinnerMessage);
         return client.pushMessage(groupId, pushMessage);
     }
 }
