@@ -6,6 +6,8 @@ pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
 
+const systemLogger = require("../modules/log4js").systemLogger;
+
 const config = {
     channelAccessToken: process.env.channelAccessToken,
     channelSecret: process.env.channelSecret
@@ -53,7 +55,7 @@ module.exports = class User {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -71,7 +73,7 @@ module.exports = class User {
             const res = await pg.query(query);
             return res.rows[0].ans;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -89,7 +91,7 @@ module.exports = class User {
             const res = await pg.query(query);
             return res.rows[0].pl_id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -112,7 +114,7 @@ module.exports = class User {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -130,7 +132,7 @@ module.exports = class User {
             await pg.query(query);
             console.log("User Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しいユーザーデータ作れんかったよ");
         }
     }
@@ -149,7 +151,7 @@ module.exports = class User {
             await pg.query(query);
             console.log("Updated pl_id");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -166,7 +168,7 @@ module.exports = class User {
             await pg.query(query);
             console.log("Updated pl_id of user to null");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -183,7 +185,7 @@ module.exports = class User {
             await pg.query(query);
             console.log("Updated is_restarting true");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -200,7 +202,7 @@ module.exports = class User {
             await pg.query(query);
             console.log("Updated is_restarting false");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -218,7 +220,7 @@ module.exports = class User {
             const res = await pg.query(query);
             return res.rows[0].is_restarting;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 

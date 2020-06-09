@@ -1,3 +1,5 @@
+const systemLogger = require("../../modules/log4js").systemLogger;
+
 exports.makeShuffuleNumberArray = async (number) => {
     let shuffleNumbers = [];
     LOOP: for (let i = 0; i < number; i++) {
@@ -86,7 +88,7 @@ exports.chooseRandomIndexes = async (userNumber, chooseNumber) => {
         }
         return randomIndexes;
     } catch (err) {
-        console.log(err);
+        systemLogger.error(err);
     }
 }
 
@@ -118,7 +120,7 @@ exports.getRandomIndexes = async (indexes,chooseNumber) => {
         }
         return randomIndexes;
     }catch(err){
-        console.log(err);
+        systemLogger.error(err);
     }
 }
 

@@ -7,7 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const indexRouter = require('./routes/index');
-// const usersRouter = require('./routes/users');
+const plRouter = require('./routes/participantList');
+const playingRouter = require('./routes/playingGame');
 
 const app = express();
 const port = process.env.PORT || 4000
@@ -35,7 +36,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/webhook', indexRouter);
-// app.use('/users', usersRouter);
+app.use('/api/v1/participant',plRouter);
+app.use('/api/v1/games/playing',playingRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -53,15 +55,14 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
-
-app.listen(port, () => console.log(`BPS for LINE listening on port ${port}!`));
-
 const cron = require('node-cron');
 const cronFunction = require("./routes/cron");
 // const client = new line.Client(config);
 
-cron.schedule('*/3 * * * * *', async () => {
-  await cronFunction.crazyNoisyDiscussFinish();
-  await cronFunction.wordWolfDiscussFinish();
+cron.schedule('*/2 * * * * *', async () => {
+  await cronFunction.discussFinish();
 });
+
+module.exports = app;
+
+app.listen(port, () => console.log(`Dabyss listening on port ${port}!`));

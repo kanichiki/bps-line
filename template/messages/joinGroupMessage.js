@@ -4,7 +4,7 @@ exports.main = async () => {
     return [
         {
             "type": "text",
-            "text": "招待ありがとうございます$\n\n現在、このアカウントではワードウルフで遊ぶことができます！\n\n$ゲーム参加者はこのアカウントを友達追加してください",
+            "text": "招待ありがとうございます$\n\n現在、このアカウントではワードウルフ、クレイジーノイジーで遊ぶことができます！\n\n$ゲーム参加者はこのアカウントを友達追加してください",
             "emojis":[
                 {
                     "index":12,
@@ -12,7 +12,7 @@ exports.main = async () => {
                     "emojiId":"044"
                 },
                 {
-                    "index":46,
+                    "index":56,
                     "productId":"5ac21a18040ab15980c9b43e",
                     "emojiId":"048"
                 }
@@ -20,38 +20,8 @@ exports.main = async () => {
         },
         {
             "type": "flex",
-            "altText": "参加募集",
-            "contents":{
-                "type": "bubble",
-                "body": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "開始するには「ワードウルフ」と発言するか下のボタンを押してください！",
-                      "size": "sm",
-                      "wrap": true
-                    }
-                  ]
-                },
-                "footer": {
-                  "type": "box",
-                  "layout": "vertical",
-                  "contents": [
-                    {
-                      "type": "button",
-                      "action": {
-                        "type": "message",
-                        "label": "ワードウルフ",
-                        "text": "ワードウルフ"
-                      },
-                      "color": parts.mainColor,
-                      "style": "primary"
-                    }
-                  ]
-                }
-              }
+            "altText": "ゲーム一覧",
+            "contents": await parts.gamesMessage()
         }
     ]
 }

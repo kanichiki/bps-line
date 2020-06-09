@@ -6,6 +6,8 @@ pg.connect().catch((error) => {
     console.log('Error connecting to database', error)
 })
 
+const systemLogger = require("../modules/log4js").systemLogger;
+
 const config = {
     channelAccessToken: process.env.channelAccessToken,
     channelSecret: process.env.channelSecret
@@ -45,7 +47,7 @@ module.exports = class ParticipantList {
             await pg.query(query);
             console.log("Paticipant List Inserted");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("新しい参加者リスト作れんかったよ");
         }
     }
@@ -65,7 +67,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].group_id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -86,7 +88,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].user_ids;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -108,7 +110,7 @@ module.exports = class ParticipantList {
             await pg.query(query);
             console.log("Added Participant");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -116,11 +118,10 @@ module.exports = class ParticipantList {
     /**
      * userIdがplIdの参加者リストに含まれるかどうか
      *
-     * @param 
-     * @param
-     * @returns boolean
+     * @param {*} plId
+     * @param {*} userId
+     * @returns
      */
-
     async isUserParticipant(plId, userId) {
         const userIds = await this.getUserIds(plId);
         let res = false;
@@ -136,11 +137,11 @@ module.exports = class ParticipantList {
 
 
     /**
-    * 発言グループが募集中の参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループが募集中の参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupRecruitingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_recruiting = true;',
@@ -153,11 +154,10 @@ module.exports = class ParticipantList {
             } else if (res.rowCount > 1) {
                 throw "募集中の参加者リストが１グループに２つ以上ある";
             } else {
-                console.log("false");
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -176,7 +176,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_recruitingをfalseにできんやった");
         }
     }
@@ -196,7 +196,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_recruitingを全部falseにできんやった");
         }
     }
@@ -220,7 +220,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             return -1;
         }
     }
@@ -231,11 +231,11 @@ module.exports = class ParticipantList {
     // ここからプレイ状況（is_playing）に関する関数
 
     /**
-    * 発言グループがプレイ中の参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループがプレイ中の参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupPlayingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_playing = true;',
@@ -248,11 +248,10 @@ module.exports = class ParticipantList {
             } else if (res.rowCount > 1) {
                 throw "プレイ中の参加者リストが１グループに２つ以上ある";
             } else {
-                console.log("false");
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -274,7 +273,7 @@ module.exports = class ParticipantList {
             await pg.query(query);
             console.log("This group began to set");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_playingをtrueにできんやった");
         }
     }
@@ -294,7 +293,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_playingをfalseにできんやった");
         }
     }
@@ -315,7 +314,7 @@ module.exports = class ParticipantList {
             await pg.query(query);
             console.log("This group began to play");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_playingを全部falseにできんやった");
         }
     }
@@ -337,7 +336,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -356,7 +355,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].is_playing;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -365,12 +364,13 @@ module.exports = class ParticipantList {
     // ここからリスタート待ち状況（is_restarting）に関する関数
     // リスタート待ち状況とは募集中、並びにプレイ中にゲーム名が発言された場合に本当にリスタートするか確認待ちの状況
 
+
     /**
-    * 発言グループがリスタート待ちの参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループがリスタート待ちの参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupRestartingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_restarting = true;',
@@ -387,7 +387,7 @@ module.exports = class ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -406,7 +406,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_restartingをtrueにできんやった");
         }
     }
@@ -426,7 +426,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_restartingをfalseにできんやった");
         }
     }
@@ -446,7 +446,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_restartingを全部falseにできんやった");
         }
     }
@@ -467,7 +467,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].id;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -476,11 +476,11 @@ module.exports = class ParticipantList {
     // ここから終了待ち状況
 
     /**
-    * 発言グループが終了待ちの参加者リストを有するかどうかを返す
-    *
-    * @param
-    * @returns
-    */
+     * 発言グループが終了待ちの参加者リストを有するかどうかを返す
+     *
+     * @param {*} groupId
+     * @returns
+     */
     async hasGroupFinishingParticipantList(groupId) {
         const query = {
             text: 'SELECT id FROM participant_list WHERE group_id = $1 AND is_finishing = true;',
@@ -497,7 +497,7 @@ module.exports = class ParticipantList {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -516,7 +516,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_finishingをtrueにできんやった");
         }
     }
@@ -536,7 +536,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_finishingをfalseにできんやった");
         }
     }
@@ -556,7 +556,7 @@ module.exports = class ParticipantList {
         try {
             await pg.query(query);
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("is_finishingを全部falseにできんやった");
         }
     }
@@ -612,7 +612,7 @@ module.exports = class ParticipantList {
             await pg.query(query);
             console.log("Added display-name");
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
             console.log("display-name追加できんかった")
         }
     }
@@ -634,7 +634,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].display_names;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -668,7 +668,7 @@ module.exports = class ParticipantList {
             }
             return index;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -690,7 +690,7 @@ module.exports = class ParticipantList {
             }
             return res;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -713,7 +713,7 @@ module.exports = class ParticipantList {
             const res = await pg.query(query);
             return res.rows[0].user_ids.length;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -745,7 +745,7 @@ module.exports = class ParticipantList {
             const userIds = await this.getUserIds(plId);
             return userIds[index];
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
         }
     }
 
@@ -769,7 +769,24 @@ module.exports = class ParticipantList {
             }
             return index;
         } catch (err) {
-            console.log(err);
+            systemLogger.error(err);
+        }
+    }
+
+    async exists(plId){
+        const query = {
+            text: `SELECT id FROM participant_list WHERE id = $1`,
+            values: [plId]
+        }
+        try {
+            const res = await pg.query(query);
+            if (res.rowCount == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (err) {
+            systemLogger.error(err);
         }
     }
 
